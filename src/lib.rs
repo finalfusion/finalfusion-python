@@ -20,8 +20,8 @@ use pyo3::prelude::*;
 /// queries.
 #[pymodinit]
 fn finalfrontier(_py: Python, m: &PyModule) -> PyResult<()> {
-    m.add_class::<PythonModel>()?;
-    m.add_class::<PythonWordSimilarity>()?;
+    m.add_class::<PyModel>()?;
+    m.add_class::<PyWordSimilarity>()?;
     Ok(())
 }
 
@@ -30,7 +30,7 @@ fn finalfrontier(_py: Python, m: &PyModule) -> PyResult<()> {
 /// The similarity is normally a value between -1 (opposite
 /// vectors) and 1 (identical vectors).
 #[pyclass(name=WordSimilarity)]
-struct PythonWordSimilarity {
+struct PyWordSimilarity {
     #[prop(get)]
     word: String,
 
@@ -41,7 +41,7 @@ struct PythonWordSimilarity {
 }
 
 #[pyproto]
-impl PyObjectProtocol for PythonWordSimilarity {
+impl PyObjectProtocol for PyWordSimilarity {
     fn __repr__(&self) -> PyResult<String> {
         Ok(format!(
             "WordSimilarity('{}', {})",
@@ -56,13 +56,13 @@ impl PyObjectProtocol for PythonWordSimilarity {
 
 /// A finalfrontier model.
 #[pyclass(name=Model)]
-struct PythonModel {
+struct PyModel {
     model: finalfrontier::Model,
     token: PyToken,
 }
 
 #[pymethods]
-impl PythonModel {
+impl PyModel {
     /// Load a model from the given `path`.
     ///
     /// When the `mmap` argument is `True`, the embedding matrix is
@@ -79,7 +79,7 @@ impl PythonModel {
             }
         };
 
-        obj.init(|token| PythonModel { model, token })
+        obj.init(|token| PyModel { model, token })
     }
 
     /// Perform an anology query.
@@ -103,7 +103,7 @@ impl PythonModel {
         let mut r = Vec::with_capacity(results.len());
         for ws in results {
             r.push(
-                Py::new(py, |token| PythonWordSimilarity {
+                Py::new(py, |token| PyWordSimilarity {
                     word: ws.word.to_owned(),
                     similarity: ws.similarity.into_inner(),
                     token,
@@ -136,7 +136,7 @@ impl PythonModel {
         let mut r = Vec::with_capacity(results.len());
         for ws in results {
             r.push(
-                Py::new(py, |token| PythonWordSimilarity {
+                Py::new(py, |token| PyWordSimilarity {
                     word: ws.word.to_owned(),
                     similarity: ws.similarity.into_inner(),
                     token,
