@@ -2,14 +2,17 @@
 
 extern crate failure;
 extern crate finalfrontier;
+extern crate ndarray;
 extern crate pyo3;
 
 use std::fs::File;
 use std::io::BufReader;
+use std::rc::Rc;
 
 use failure::Error;
 use finalfrontier::similarity::{Analogy, Similarity};
-use finalfrontier::{MmapModelBinary, ReadModelBinary};
+use finalfrontier::{MmapModelBinary, Model, ReadModelBinary};
+use ndarray::Axis;
 use pyo3::prelude::*;
 
 /// This is a binding for finalfrontier.
@@ -57,7 +60,7 @@ impl PyObjectProtocol for PyWordSimilarity {
 /// A finalfrontier model.
 #[pyclass(name=Model)]
 struct PyModel {
-    model: finalfrontier::Model,
+    model: Rc<Model>,
     token: PyToken,
 }
 
@@ -73,9 +76,9 @@ impl PyModel {
     #[args(mmap = false)]
     fn __new__(obj: &PyRawObject, path: &str, mmap: bool) -> PyResult<()> {
         let model = match load_model(path, mmap) {
-            Ok(model) => model,
+            Ok(model) => Rc::new(model),
             Err(err) => {
-                return Err(exc::IOError::new(err.to_string()));
+                return Err(exc::IOError::py_err(err.to_string()));
             }
         };
 
@@ -97,7 +100,7 @@ impl PyModel {
     ) -> PyResult<Vec<PyObject>> {
         let results = match self.model.analogy(word1, word2, word3, limit) {
             Some(results) => results,
-            None => return Err(exc::KeyError::new("Unknown word and n-grams")),
+            None => return Err(exc::KeyError::py_err("Unknown word and n-grams")),
         };
 
         let mut r = Vec::with_capacity(results.len());
@@ -121,7 +124,7 @@ impl PyModel {
     fn embedding(&self, word: &str) -> PyResult<Vec<f32>> {
         match self.model.embedding(word) {
             Some(embedding) => Ok(embedding.to_vec()),
-            None => Err(exc::KeyError::new("Unknown word and n-grams")),
+            None => Err(exc::KeyError::py_err("Unknown word and n-grams")),
         }
     }
 
@@ -130,7 +133,7 @@ impl PyModel {
     fn similarity(&self, py: Python, word: &str, limit: usize) -> PyResult<Vec<PyObject>> {
         let results = match self.model.similarity(word, limit) {
             Some(results) => results,
-            None => return Err(exc::KeyError::new("Unknown word and n-grams")),
+            None => return Err(exc::KeyError::py_err("Unknown word and n-grams")),
         };
 
         let mut r = Vec::with_capacity(results.len());
@@ -148,14 +151,57 @@ impl PyModel {
     }
 }
 
-fn load_model(path: &str, mmap: bool) -> Result<finalfrontier::Model, Error> {
+#[pyproto]
+impl PyIterProtocol for PyModel {
+    fn __iter__(&mut self) -> PyResult<PyObject> {
+        let gil = Python::acquire_gil();
+        let py = gil.python();
+        let iter = Py::new(py, |token| PyModelIterator {
+            model: self.model.clone(),
+            idx: 0,
+            token,
+        })?.into_object(py);
+
+        Ok(iter)
+    }
+}
+
+fn load_model(path: &str, mmap: bool) -> Result<Model, Error> {
     let f = File::open(path)?;
 
     let model = if mmap {
-        finalfrontier::Model::mmap_model_binary(f)?
+        Model::mmap_model_binary(f)?
     } else {
-        finalfrontier::Model::read_model_binary(&mut BufReader::new(f))?
+        Model::read_model_binary(&mut BufReader::new(f))?
     };
 
     Ok(model)
+}
+
+#[pyclass(name=ModelIterator)]
+struct PyModelIterator {
+    model: Rc<Model>,
+    idx: usize,
+    token: PyToken,
+}
+
+#[pyproto]
+impl PyIterProtocol for PyModelIterator {
+    fn __iter__(&mut self) -> PyResult<PyObject> {
+        Ok(self.into())
+    }
+
+    fn __next__(&mut self) -> PyResult<Option<(String, Vec<f32>)>> {
+        let vocab = self.model.vocab();
+        let embeddings = self.model.embedding_matrix();
+
+        if self.idx < vocab.len() {
+            let word = vocab.words()[self.idx].word().to_string();
+            let embed = embeddings.subview(Axis(0), self.idx).to_vec();
+            self.idx += 1;
+            Ok(Some((word, embed)))
+        } else {
+            Ok(None)
+        }
+    }
 }

@@ -8,9 +8,10 @@ name = "finalfrontier"
 crate-type = ["cdylib"]
 
 [dependencies.pyo3]
-version = "0.4"
+version = "0.5.0-alpha.1"
 features = ["extension-module"]
 
 [dependencies]
 failure = "0.1"
 finalfrontier = "0.2"
+ndarray = "0.11"
