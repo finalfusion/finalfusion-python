@@ -13,4 +13,4 @@ features = ["extension-module"]
 
 [dependencies]
 failure = "0.1"
-finalfrontier = { version = "0.1", path = "../finalfrontier/finalfrontier" }
+finalfrontier = "0.2"
