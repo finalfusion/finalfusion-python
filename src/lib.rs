@@ -13,6 +13,8 @@ use failure::Error;
 use finalfrontier::similarity::{Analogy, Similarity};
 use finalfrontier::{MmapModelBinary, Model, ReadModelBinary};
 use ndarray::Axis;
+use pyo3::class::{basic::PyObjectProtocol, iter::PyIterProtocol};
+use pyo3::exceptions;
 use pyo3::prelude::*;
 
 /// This is a binding for finalfrontier.
@@ -78,7 +80,7 @@ impl PyModel {
         let model = match load_model(path, mmap) {
             Ok(model) => Rc::new(model),
             Err(err) => {
-                return Err(exc::IOError::py_err(err.to_string()));
+                return Err(exceptions::IOError::py_err(err.to_string()));
             }
         };
 
@@ -100,7 +102,7 @@ impl PyModel {
     ) -> PyResult<Vec<PyObject>> {
         let results = match self.model.analogy(word1, word2, word3, limit) {
             Some(results) => results,
-            None => return Err(exc::KeyError::py_err("Unknown word and n-grams")),
+            None => return Err(exceptions::KeyError::py_err("Unknown word and n-grams")),
         };
 
         let mut r = Vec::with_capacity(results.len());
@@ -110,7 +112,8 @@ impl PyModel {
                     word: ws.word.to_owned(),
                     similarity: ws.similarity.into_inner(),
                     token,
-                })?.into_object(py),
+                })?
+                .into_object(py),
             )
         }
 
@@ -124,7 +127,7 @@ impl PyModel {
     fn embedding(&self, word: &str) -> PyResult<Vec<f32>> {
         match self.model.embedding(word) {
             Some(embedding) => Ok(embedding.to_vec()),
-            None => Err(exc::KeyError::py_err("Unknown word and n-grams")),
+            None => Err(exceptions::KeyError::py_err("Unknown word and n-grams")),
         }
     }
 
@@ -133,7 +136,7 @@ impl PyModel {
     fn similarity(&self, py: Python, word: &str, limit: usize) -> PyResult<Vec<PyObject>> {
         let results = match self.model.similarity(word, limit) {
             Some(results) => results,
-            None => return Err(exc::KeyError::py_err("Unknown word and n-grams")),
+            None => return Err(exceptions::KeyError::py_err("Unknown word and n-grams")),
         };
 
         let mut r = Vec::with_capacity(results.len());
@@ -143,7 +146,8 @@ impl PyModel {
                     word: ws.word.to_owned(),
                     similarity: ws.similarity.into_inner(),
                     token,
-                })?.into_object(py),
+                })?
+                .into_object(py),
             )
         }
 
@@ -160,7 +164,8 @@ impl PyIterProtocol for PyModel {
             model: self.model.clone(),
             idx: 0,
             token,
-        })?.into_object(py);
+        })?
+        .into_object(py);
 
         Ok(iter)
     }
