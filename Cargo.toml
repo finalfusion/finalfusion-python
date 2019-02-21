@@ -1,11 +1,11 @@
 [package]
-name = "finalfrontier-python"
+name = "finalfusion-python"
 version = "0.1.0"
 authors = ["Daniël de Kok <me@danieldk.eu>"]
 edition = "2018"
 
 [lib]
-name = "finalfrontier"
+name = "finalfusion"
 crate-type = ["cdylib"]
 
 [dependencies.pyo3]
@@ -14,5 +14,5 @@ features = ["extension-module"]
 
 [dependencies]
 failure = "0.1"
-finalfrontier = "0.2"
-ndarray = "0.11"
+rust2vec = "0.5"
+toml = "0.4"

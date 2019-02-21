@@ -1,26 +1,26 @@
 #![feature(specialization)]
 
+use std::cell::RefCell;
 use std::fs::File;
 use std::io::BufReader;
 use std::rc::Rc;
 
 use failure::Error;
-use finalfrontier::similarity::{Analogy, Similarity};
-use finalfrontier::{MmapModelBinary, Model, ReadModelBinary};
-use ndarray::Axis;
 use pyo3::class::{basic::PyObjectProtocol, iter::PyIterProtocol};
 use pyo3::exceptions;
 use pyo3::prelude::*;
+use rust2vec::metadata::Metadata;
+use rust2vec::prelude::*;
+use rust2vec::similarity::*;
+use toml::{self, Value};
 
-/// This is a binding for finalfrontier.
+/// This is a Python module for using finalfusion embeddings.
 ///
-/// finalfrontier is a library and set of programs for training
-/// word embeddings with subword units. The Python binding can
-/// be used to query the resulting embeddings and do similarity
-/// queries.
+/// finalfusion is a format for word embeddings that supports words,
+/// subwords, memory-mapped matrices, and quantized matrices.
 #[pymodinit]
-fn finalfrontier(_py: Python, m: &PyModule) -> PyResult<()> {
-    m.add_class::<PyModel>()?;
+fn finalfusion(_py: Python, m: &PyModule) -> PyResult<()> {
+    m.add_class::<PyEmbeddings>()?;
     m.add_class::<PyWordSimilarity>()?;
     Ok(())
 }
@@ -54,32 +54,46 @@ impl PyObjectProtocol for PyWordSimilarity {
     }
 }
 
-/// A finalfrontier model.
-#[pyclass(name=Model)]
-struct PyModel {
-    model: Rc<Model>,
+enum EmbeddingsWrap {
+    NonView(Embeddings<VocabWrap, StorageWrap>),
+    View(Embeddings<VocabWrap, StorageViewWrap>),
+}
+
+/// finalfusion embeddings.
+#[pyclass(name=Embeddings)]
+struct PyEmbeddings {
+    // The use of Rc + RefCell should be safe in this crate:
+    //
+    // 1. Python is single-threaded.
+    // 2. The only mutable borrow (in set_metadata) is limited
+    //    to its method scope.
+    // 3. None of the methods returns borrowed embeddings.
+    embeddings: Rc<RefCell<EmbeddingsWrap>>,
     token: PyToken,
 }
 
 #[pymethods]
-impl PyModel {
-    /// Load a model from the given `path`.
+impl PyEmbeddings {
+    /// Load embeddings from the given `path`.
     ///
     /// When the `mmap` argument is `True`, the embedding matrix is
     /// not loaded into memory, but memory mapped. This results in
-    /// lower memory use and shorter model load times, while sacrificing
+    /// lower memory use and shorter load times, while sacrificing
     /// some query efficiency.
     #[new]
     #[args(mmap = false)]
     fn __new__(obj: &PyRawObject, path: &str, mmap: bool) -> PyResult<()> {
-        let model = match load_model(path, mmap) {
-            Ok(model) => Rc::new(model),
-            Err(err) => {
-                return Err(exceptions::IOError::py_err(err.to_string()));
-            }
+        // First try to load embeddings with viewable storage. If that
+        // fails, attempt to load the embeddings as non-viewable
+        // storage.
+        let embeddings = match load_embeddings(path, mmap) {
+            Ok(e) => Rc::new(RefCell::new(EmbeddingsWrap::View(e))),
+            Err(_) => load_embeddings(path, mmap)
+                .map(|e| Rc::new(RefCell::new(EmbeddingsWrap::NonView(e))))
+                .map_err(|err| exceptions::IOError::py_err(err.to_string()))?,
         };
 
-        obj.init(|token| PyModel { model, token })
+        obj.init(|token| PyEmbeddings { embeddings, token })
     }
 
     /// Perform an anology query.
@@ -95,9 +109,20 @@ impl PyModel {
         word3: &str,
         limit: usize,
     ) -> PyResult<Vec<PyObject>> {
-        let results = match self.model.analogy(word1, word2, word3, limit) {
+        use EmbeddingsWrap::*;
+        let embeddings = self.embeddings.borrow();
+        let embeddings = match &*embeddings {
+            View(e) => e,
+            NonView(_) => {
+                return Err(exceptions::ValueError::py_err(
+                    "Analogy queries are not supported for this type of embedding matrix",
+                ));
+            }
+        };
+
+        let results = match embeddings.analogy(word1, word2, word3, limit) {
             Some(results) => results,
-            None => return Err(exceptions::KeyError::py_err("Unknown word and n-grams")),
+            None => return Err(exceptions::KeyError::py_err("Unknown word or n-grams")),
         };
 
         let mut r = Vec::with_capacity(results.len());
@@ -120,16 +145,80 @@ impl PyModel {
     /// If the word is not known, its representation is approximated
     /// using subword units.
     fn embedding(&self, word: &str) -> PyResult<Vec<f32>> {
-        match self.model.embedding(word) {
-            Some(embedding) => Ok(embedding.to_vec()),
+        let embeddings = self.embeddings.borrow();
+
+        use EmbeddingsWrap::*;
+        let embedding = match &*embeddings {
+            View(e) => e.embedding(word),
+            NonView(e) => e.embedding(word),
+        };
+
+        match embedding {
+            Some(embedding) => Ok(embedding.as_view().to_vec()),
             None => Err(exceptions::KeyError::py_err("Unknown word and n-grams")),
         }
+    }
+
+    /// Embeddings metadata.
+    #[getter]
+    fn metadata(&self) -> PyResult<Option<String>> {
+        let embeddings = self.embeddings.borrow();
+
+        use EmbeddingsWrap::*;
+        let metadata = match &*embeddings {
+            View(e) => e.metadata(),
+            NonView(e) => e.metadata(),
+        };
+
+        match metadata.map(|v| toml::ser::to_string_pretty(&v.0)) {
+            Some(Ok(toml)) => Ok(Some(toml)),
+            Some(Err(err)) => Err(exceptions::IOError::py_err(format!(
+                "Metadata is invalid TOML: {}",
+                err
+            ))),
+            None => Ok(None),
+        }
+    }
+
+    #[setter]
+    fn set_metadata(&mut self, metadata: &str) -> PyResult<()> {
+        let value = match metadata.parse::<Value>() {
+            Ok(value) => value,
+            Err(err) => {
+                return Err(exceptions::ValueError::py_err(format!(
+                    "Metadata is invalid TOML: {}",
+                    err
+                )));
+            }
+        };
+
+        let mut embeddings = self.embeddings.borrow_mut();
+
+        use EmbeddingsWrap::*;
+        match &mut *embeddings {
+            View(e) => e.set_metadata(Some(Metadata(value))),
+            NonView(e) => e.set_metadata(Some(Metadata(value))),
+        };
+
+        Ok(())
     }
 
     /// Perform a similarity query.
     #[args(limit = 10)]
     fn similarity(&self, py: Python, word: &str, limit: usize) -> PyResult<Vec<PyObject>> {
-        let results = match self.model.similarity(word, limit) {
+        let embeddings = self.embeddings.borrow();
+
+        use EmbeddingsWrap::*;
+        let embeddings = match &*embeddings {
+            View(e) => e,
+            NonView(_) => {
+                return Err(exceptions::ValueError::py_err(
+                    "Similarity queries are not supported for this type of embedding matrix",
+                ));
+            }
+        };
+
+        let results = match embeddings.similarity(word, limit) {
             Some(results) => results,
             None => return Err(exceptions::KeyError::py_err("Unknown word and n-grams")),
         };
@@ -151,12 +240,12 @@ impl PyModel {
 }
 
 #[pyproto]
-impl PyIterProtocol for PyModel {
+impl PyIterProtocol for PyEmbeddings {
     fn __iter__(&mut self) -> PyResult<PyObject> {
         let gil = Python::acquire_gil();
         let py = gil.python();
-        let iter = Py::new(py, |token| PyModelIterator {
-            model: self.model.clone(),
+        let iter = Py::new(py, |token| PyEmbeddingIterator {
+            embeddings: self.embeddings.clone(),
             idx: 0,
             token,
         })?
@@ -166,40 +255,55 @@ impl PyIterProtocol for PyModel {
     }
 }
 
-fn load_model(path: &str, mmap: bool) -> Result<Model, Error> {
+fn load_embeddings<S>(path: &str, mmap: bool) -> Result<Embeddings<VocabWrap, S>, Error>
+where
+    Embeddings<VocabWrap, S>: ReadEmbeddings + MmapEmbeddings,
+{
     let f = File::open(path)?;
+    let mut reader = BufReader::new(f);
 
-    let model = if mmap {
-        Model::mmap_model_binary(f)?
+    let embeddings = if mmap {
+        Embeddings::mmap_embeddings(&mut reader)?
     } else {
-        Model::read_model_binary(&mut BufReader::new(f))?
+        Embeddings::read_embeddings(&mut reader)?
     };
 
-    Ok(model)
+    Ok(embeddings)
 }
 
-#[pyclass(name=ModelIterator)]
-struct PyModelIterator {
-    model: Rc<Model>,
+#[pyclass(name=EmbeddingIterator)]
+struct PyEmbeddingIterator {
+    embeddings: Rc<RefCell<EmbeddingsWrap>>,
     idx: usize,
     token: PyToken,
 }
 
 #[pyproto]
-impl PyIterProtocol for PyModelIterator {
+impl PyIterProtocol for PyEmbeddingIterator {
     fn __iter__(&mut self) -> PyResult<PyObject> {
         Ok(self.into())
     }
 
     fn __next__(&mut self) -> PyResult<Option<(String, Vec<f32>)>> {
-        let vocab = self.model.vocab();
-        let embeddings = self.model.embedding_matrix();
+        let embeddings = self.embeddings.borrow();
+
+        use EmbeddingsWrap::*;
+        let vocab = match &*embeddings {
+            View(e) => e.vocab(),
+            NonView(e) => e.vocab(),
+        };
 
         if self.idx < vocab.len() {
-            let word = vocab.words()[self.idx].word().to_string();
-            let embed = embeddings.subview(Axis(0), self.idx).to_vec();
+            let word = vocab.words()[self.idx].to_string();
+
+            let embed = match &*embeddings {
+                View(e) => e.storage().embedding(self.idx),
+                NonView(e) => e.storage().embedding(self.idx),
+            };
+
             self.idx += 1;
-            Ok(Some((word, embed)))
+
+            Ok(Some((word, embed.as_view().to_vec())))
         } else {
             Ok(None)
         }
