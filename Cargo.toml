@@ -2,6 +2,7 @@
 name = "finalfrontier-python"
 version = "0.1.0"
 authors = ["Daniël de Kok <me@danieldk.eu>"]
+edition = "2018"
 
 [lib]
 name = "finalfrontier"

@@ -1,10 +1,5 @@
 #![feature(specialization)]
 
-extern crate failure;
-extern crate finalfrontier;
-extern crate ndarray;
-extern crate pyo3;
-
 use std::fs::File;
 use std::io::BufReader;
 use std::rc::Rc;
