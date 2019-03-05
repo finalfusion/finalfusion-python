@@ -2,7 +2,7 @@
 
 use std::cell::RefCell;
 use std::fs::File;
-use std::io::BufReader;
+use std::io::{BufReader, BufWriter};
 use std::rc::Rc;
 
 use failure::Error;
@@ -236,6 +236,24 @@ impl PyEmbeddings {
         }
 
         Ok(r)
+    }
+
+    /// Write the embeddings to a finalfusion file.
+    fn write(&self, filename: &str) -> PyResult<()> {
+        let f = File::create(filename)?;
+        let mut writer = BufWriter::new(f);
+
+        let embeddings = self.embeddings.borrow();
+
+        use EmbeddingsWrap::*;
+        match &*embeddings {
+            View(e) => e
+                .write_embeddings(&mut writer)
+                .map_err(|err| exceptions::IOError::py_err(err.to_string())),
+            NonView(e) => e
+                .write_embeddings(&mut writer)
+                .map_err(|err| exceptions::IOError::py_err(err.to_string())),
+        }
     }
 }
 
