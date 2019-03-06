@@ -1,5 +1,5 @@
 [package]
-name = "finalfusion-python"
+name = "finalfusion"
 version = "0.1.0"
 authors = ["Daniël de Kok <me@danieldk.eu>"]
 edition = "2018"
