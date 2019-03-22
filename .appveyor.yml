@@ -1,0 +1,18 @@
+os: Visual Studio 2015
+
+install:
+  - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
+  - "python --version"
+  - appveyor DownloadFile https://win.rustup.rs/ -FileName rustup-init.exe
+  - rustup-init -yv --default-toolchain nightly --default-host x86_64-pc-windows-msvc
+  - set PATH=%PATH%;%USERPROFILE%\.cargo\bin
+  - rustc -V
+  - cargo -V
+  - cargo install pyo3-pack
+
+build_script:
+- pyo3-pack build
+
+artifacts:
+  - path: '**/*.whl'
+    name: Wheels
