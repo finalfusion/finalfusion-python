@@ -6,12 +6,12 @@ use std::io::{BufReader, BufWriter};
 use std::rc::Rc;
 
 use failure::Error;
+use finalfusion::metadata::Metadata;
+use finalfusion::prelude::*;
+use finalfusion::similarity::*;
 use pyo3::class::{basic::PyObjectProtocol, iter::PyIterProtocol};
 use pyo3::exceptions;
 use pyo3::prelude::*;
-use rust2vec::metadata::Metadata;
-use rust2vec::prelude::*;
-use rust2vec::similarity::*;
 use toml::{self, Value};
 
 /// This is a Python module for using finalfusion embeddings.
