@@ -18,7 +18,7 @@ use toml::{self, Value};
 ///
 /// finalfusion is a format for word embeddings that supports words,
 /// subwords, memory-mapped matrices, and quantized matrices.
-#[pymodinit]
+#[pymodule]
 fn finalfusion(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyEmbeddings>()?;
     m.add_class::<PyWordSimilarity>()?;
@@ -31,13 +31,11 @@ fn finalfusion(_py: Python, m: &PyModule) -> PyResult<()> {
 /// vectors) and 1 (identical vectors).
 #[pyclass(name=WordSimilarity)]
 struct PyWordSimilarity {
-    #[prop(get)]
+    #[pyo3(get)]
     word: String,
 
-    #[prop(get)]
+    #[pyo3(get)]
     similarity: f32,
-
-    token: PyToken,
 }
 
 #[pyproto]
@@ -69,7 +67,6 @@ struct PyEmbeddings {
     //    to its method scope.
     // 3. None of the methods returns borrowed embeddings.
     embeddings: Rc<RefCell<EmbeddingsWrap>>,
-    token: PyToken,
 }
 
 #[pymethods]
@@ -93,7 +90,9 @@ impl PyEmbeddings {
                 .map_err(|err| exceptions::IOError::py_err(err.to_string()))?,
         };
 
-        obj.init(|token| PyEmbeddings { embeddings, token })
+        obj.init(PyEmbeddings { embeddings });
+
+        Ok(())
     }
 
     /// Perform an anology query.
@@ -128,11 +127,13 @@ impl PyEmbeddings {
         let mut r = Vec::with_capacity(results.len());
         for ws in results {
             r.push(
-                Py::new(py, |token| PyWordSimilarity {
-                    word: ws.word.to_owned(),
-                    similarity: ws.similarity.into_inner(),
-                    token,
-                })?
+                Py::new(
+                    py,
+                    PyWordSimilarity {
+                        word: ws.word.to_owned(),
+                        similarity: ws.similarity.into_inner(),
+                    },
+                )?
                 .into_object(py),
             )
         }
@@ -226,11 +227,13 @@ impl PyEmbeddings {
         let mut r = Vec::with_capacity(results.len());
         for ws in results {
             r.push(
-                Py::new(py, |token| PyWordSimilarity {
-                    word: ws.word.to_owned(),
-                    similarity: ws.similarity.into_inner(),
-                    token,
-                })?
+                Py::new(
+                    py,
+                    PyWordSimilarity {
+                        word: ws.word.to_owned(),
+                        similarity: ws.similarity.into_inner(),
+                    },
+                )?
                 .into_object(py),
             )
         }
@@ -259,14 +262,16 @@ impl PyEmbeddings {
 
 #[pyproto]
 impl PyIterProtocol for PyEmbeddings {
-    fn __iter__(&mut self) -> PyResult<PyObject> {
+    fn __iter__(slf: PyRefMut<Self>) -> PyResult<PyObject> {
         let gil = Python::acquire_gil();
         let py = gil.python();
-        let iter = Py::new(py, |token| PyEmbeddingIterator {
-            embeddings: self.embeddings.clone(),
-            idx: 0,
-            token,
-        })?
+        let iter = Py::new(
+            py,
+            PyEmbeddingIterator {
+                embeddings: slf.embeddings.clone(),
+                idx: 0,
+            },
+        )?
         .into_object(py);
 
         Ok(iter)
@@ -293,17 +298,18 @@ where
 struct PyEmbeddingIterator {
     embeddings: Rc<RefCell<EmbeddingsWrap>>,
     idx: usize,
-    token: PyToken,
 }
 
 #[pyproto]
 impl PyIterProtocol for PyEmbeddingIterator {
-    fn __iter__(&mut self) -> PyResult<PyObject> {
-        Ok(self.into())
+    fn __iter__(slf: PyRefMut<Self>) -> PyResult<Py<PyEmbeddingIterator>> {
+        Ok(slf.into())
     }
 
-    fn __next__(&mut self) -> PyResult<Option<(String, Vec<f32>)>> {
-        let embeddings = self.embeddings.borrow();
+    fn __next__(mut slf: PyRefMut<Self>) -> PyResult<Option<(String, Vec<f32>)>> {
+        let slf = &mut *slf;
+
+        let embeddings = slf.embeddings.borrow();
 
         use EmbeddingsWrap::*;
         let vocab = match &*embeddings {
@@ -311,15 +317,15 @@ impl PyIterProtocol for PyEmbeddingIterator {
             NonView(e) => e.vocab(),
         };
 
-        if self.idx < vocab.len() {
-            let word = vocab.words()[self.idx].to_string();
+        if slf.idx < vocab.len() {
+            let word = vocab.words()[slf.idx].to_string();
 
             let embed = match &*embeddings {
-                View(e) => e.storage().embedding(self.idx),
-                NonView(e) => e.storage().embedding(self.idx),
+                View(e) => e.storage().embedding(slf.idx),
+                NonView(e) => e.storage().embedding(slf.idx),
             };
 
-            self.idx += 1;
+            slf.idx += 1;
 
             Ok(Some((word, embed.as_view().to_vec())))
         } else {

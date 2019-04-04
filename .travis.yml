@@ -15,9 +15,9 @@ matrix:
   fast_finish: true
   include:
     - os: linux
-      rust: nightly-2019-02-04
+      rust: nightly-2019-02-07
     - os: osx
-      rust: nightly-2019-02-04
+      rust: nightly-2019-02-07
 
 install:
   - |
@@ -33,7 +33,7 @@ install:
       pip install cffi virtualenv
     fi
   - cargo install pyo3-pack
-  - rustup default nightly-2019-02-04
+  - rustup default nightly-2019-02-07
   - rustup component add rustfmt
 
 script:
