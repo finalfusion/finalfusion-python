@@ -4,9 +4,9 @@
 
 `finalfusion-python` is a Python module for reading, writing, and
 using *finalfusion* embeddings. This module is implemented in Rust as
-a wrapper around the [rust2vec](https://github.com/danieldk/rust2vec)
+a wrapper around the [finalfusion](https://docs.rs/finalfusion/)
 crate. The Python module supports the same types of finalfusion
-embeddings as rust2vec:
+embeddings:
 
 * Vocabulary:
   * No subwords
@@ -54,12 +54,12 @@ The wheels are then in the `target/wheels` directory.
 
 ## Getting embeddings
 
-rust2vec uses its own embedding format, which supports memory mapping,
+finalfusion uses its own embedding format, which supports memory mapping,
 subword units, and quantized matrices. GloVe and word2vec embeddings
-can be converted using rust2vec's `r2v-convert` utility.
+can be converted using finalfusion's `ff-convert` utility.
 
 Embeddings trained with
-[finalfrontier](https://github.com/danieldk/finalfrontier) version
+[finalfrontier](https://github.com/finalfusion/finalfrontier) version
 0.4.0 and later are in finalfusion format and can be used directly
 with this Python module.
 
@@ -85,10 +85,11 @@ embeds.analogy("Berlin", "Deutschland", "Amsterdam")
 ~~~
 
 More usage examples can be found in the
-[examples](https://github.com/danieldk/finalfusion-python/tree/master/examples)
+[examples](https://github.com/finalfusion/finalfusion-python/tree/master/examples)
 directory.
 
 ## Where to go from here
 
-  * [finalfrontier](https://github.com/danieldk/finalfrontier)
-  * [rust2vec](https://github.com/danieldk/rust2vec)
+  * [finalfrontier](https://finalfusion.github.io/finalfrontier)
+  * [finalfusion](https://finalfusion.io/)
+  * [pretrained embeddings](https://finalfusion.github.io/pretrained)
