@@ -3,6 +3,12 @@ name = "finalfusion"
 version = "0.1.0"
 authors = ["Daniël de Kok <me@danieldk.eu>"]
 edition = "2018"
+description = "Finalfusion Python module"
+documentation = "https://finalfusion.github.io/python"
+homepage = "https://finalfusion.github.io/"
+repository = "https://github.com/finalfusion/finalfusion-python.git"
+license = "Apache-2.0"
+
 
 [lib]
 name = "finalfusion"
