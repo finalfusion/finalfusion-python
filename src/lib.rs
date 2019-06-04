@@ -9,7 +9,8 @@ use failure::Error;
 use finalfusion::metadata::Metadata;
 use finalfusion::prelude::*;
 use finalfusion::similarity::*;
-use numpy::{IntoPyArray, PyArray1};
+use ndarray::Array2;
+use numpy::{IntoPyArray, PyArray1, PyArray2};
 use pyo3::class::{basic::PyObjectProtocol, iter::PyIterProtocol};
 use pyo3::exceptions;
 use pyo3::prelude::*;
@@ -162,6 +163,34 @@ impl PyEmbeddings {
             }
             None => Err(exceptions::KeyError::py_err("Unknown word and n-grams")),
         }
+    }
+
+    /// Copy the entire embeddings matrix.
+    ///
+    /// Raises an exception if the embeddings are quantized.
+    fn matrix_copy(&self) -> PyResult<Py<PyArray2<f32>>> {
+        let embeddings = self.embeddings.borrow();
+
+        use EmbeddingsWrap::*;
+        let matrix = match &*embeddings {
+            View(e) => e.storage().view().to_owned(),
+            NonView(e) => match e.storage() {
+                StorageWrap::MmapArray(mmap) => mmap.view().to_owned(),
+                StorageWrap::NdArray(array) => array.0.to_owned(),
+                StorageWrap::QuantizedArray(quantized) => {
+                    let (rows, dims) = quantized.shape();
+                    let mut array = Array2::<f32>::zeros((rows, dims));
+                    for idx in 0..rows {
+                        array
+                            .row_mut(idx)
+                            .assign(&quantized.embedding(idx).as_view());
+                    }
+                    array
+                }
+            },
+        };
+        let gil = pyo3::Python::acquire_gil();
+        Ok(matrix.into_pyarray(gil.python()).to_owned())
     }
 
     /// Embeddings metadata.
