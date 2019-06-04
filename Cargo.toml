@@ -22,5 +22,6 @@ features = ["extension-module"]
 failure = "0.1"
 finalfusion = "0.5"
 libc = "0.2"
+ndarray = "0.12"
 numpy = "0.5"
 toml = "0.4"
