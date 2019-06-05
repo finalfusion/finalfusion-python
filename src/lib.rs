@@ -166,8 +166,6 @@ impl PyEmbeddings {
     }
 
     /// Copy the entire embeddings matrix.
-    ///
-    /// Raises an exception if the embeddings are quantized.
     fn matrix_copy(&self) -> PyResult<Py<PyArray2<f32>>> {
         let embeddings = self.embeddings.borrow();
 
