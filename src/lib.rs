@@ -61,6 +61,24 @@ enum EmbeddingsWrap {
     View(Embeddings<VocabWrap, StorageViewWrap>),
 }
 
+impl EmbeddingsWrap {
+    fn storage(&self) -> &Storage {
+        use EmbeddingsWrap::*;
+        match self {
+            NonView(e) => e.storage(),
+            View(e) => e.storage(),
+        }
+    }
+
+    fn vocab(&self) -> &VocabWrap {
+        use EmbeddingsWrap::*;
+        match self {
+            NonView(e) => e.vocab(),
+            View(e) => e.vocab(),
+        }
+    }
+}
+
 /// finalfusion embeddings.
 #[pyclass(name=Embeddings)]
 struct PyEmbeddings {
@@ -329,12 +347,9 @@ impl PyVocab {
     fn item_to_indices(&self, key: String) -> PyResult<PyObject> {
         let embeds = self.embeddings.borrow();
 
-        use EmbeddingsWrap::*;
-        let indices = match &*embeds {
-            View(e) => e.vocab().idx(key.as_str()),
-            NonView(e) => e.vocab().idx(key.as_str()),
-        };
-        indices
+        embeds
+            .vocab()
+            .idx(key.as_str())
             .map(|idx| {
                 let gil = pyo3::Python::acquire_gil();
                 match idx {
@@ -350,28 +365,17 @@ impl PyVocab {
 impl PySequenceProtocol for PyVocab {
     fn __len__(&self) -> PyResult<usize> {
         let embeds = self.embeddings.borrow();
-
-        use EmbeddingsWrap::*;
-        match &*embeds {
-            View(e) => Ok(e.vocab().words().len()),
-            NonView(e) => Ok(e.vocab().words().len()),
-        }
+        Ok(embeds.vocab().len())
     }
 
     fn __getitem__(&self, idx: isize) -> PyResult<String> {
         let embeds = self.embeddings.borrow();
+        let words = embeds.vocab().words();
 
-        use EmbeddingsWrap::*;
-
-        let v = match &*embeds {
-            View(e) => e.vocab(),
-            NonView(e) => e.vocab(),
-        };
-
-        if idx >= v.words().len() as isize || idx < 0 {
+        if idx >= words.len() as isize || idx < 0 {
             Err(exceptions::IndexError::py_err("list index out of range"))
         } else {
-            Ok(v.words()[idx as usize].clone())
+            Ok(words[idx as usize].clone())
         }
     }
 }
@@ -408,20 +412,11 @@ impl PyIterProtocol for PyEmbeddingIterator {
         let slf = &mut *slf;
 
         let embeddings = slf.embeddings.borrow();
-
-        use EmbeddingsWrap::*;
-        let vocab = match &*embeddings {
-            View(e) => e.vocab(),
-            NonView(e) => e.vocab(),
-        };
+        let vocab = embeddings.vocab();
 
         if slf.idx < vocab.len() {
             let word = vocab.words()[slf.idx].to_string();
-
-            let embed = match &*embeddings {
-                View(e) => e.storage().embedding(slf.idx),
-                NonView(e) => e.storage().embedding(slf.idx),
-            };
+            let embed = embeddings.storage().embedding(slf.idx);
 
             slf.idx += 1;
 
