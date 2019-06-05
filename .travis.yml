@@ -39,3 +39,13 @@ install:
 script:
   - pyo3-pack build
   - cargo fmt --all -- --check
+deploy:
+  provider: releases
+  api_key:
+    secure: KtDkbm9l+Jc91RDLE4HF6m8Eni2AGKVhLGSokroASkKvbaMUeBz9kxoSQAbJB6z2MJtq1TytlC+6VQgLPabibh5yzhaqN/Optc3k3lhBAiaPGsbSyZqpuntRu0JnulZe3Dz0Iisdprw606+58N3Nu9SdsZPaAJtyFYw23yKsEaq4bEbRYSwdELGgXBITVNHwxFDhURiR0kw3WSq/XO0yNn2bLoGYdJVzUarmnb1Q0XJEl+vr3wJ7B1BM9Z/o4d4AuoYyuS67k7LJGbdzg2RTJL1BH7TlQfYklUFuH2/Bn68gCf03P6moDeTK9JzAz4kXv64F6KMzuB+iR69tNRQ7gZqBYOJ5G/n8QrfJ0YjzECV0d6UMJt7cJB3ssZMLRtMnXNcJedS0M0IuZa2yO37foe2D2sI3sqchFHxNSFMTT5LHla4KpCe0UIdGCkfDClqgHp0Ra499rmjdTT7bzl0dsIdWPvE1QFcegKvaviugoweD7D0O8BjTkxMw2Dd+gVqhFtKJ3eBNWTS3eFaA8DbDwJqYm6cOINDakb5+M26+OkUePizPowqnfqBHNnewSl8VuZ2LJVqMT9pEoUT027kTUQyq3j13AJ7TK8R6MTEVyq+uru5G9t/BHFIVYeQ43rqEUOxbhGvlSoT0qqDtFwLRxDnLQy/raRKgpGYxDVc6osI=
+  file_glob: true
+  file: target/wheels/*.whl
+  skip_cleanup: true
+  on:
+    repo: finalfusion/finalfusion-python
+    tags: true
