@@ -9,9 +9,10 @@ use failure::Error;
 use finalfusion::metadata::Metadata;
 use finalfusion::prelude::*;
 use finalfusion::similarity::*;
+use finalfusion::vocab::WordIndex;
 use ndarray::Array2;
 use numpy::{IntoPyArray, PyArray1, PyArray2};
-use pyo3::class::{basic::PyObjectProtocol, iter::PyIterProtocol};
+use pyo3::class::{basic::PyObjectProtocol, iter::PyIterProtocol, sequence::PySequenceProtocol};
 use pyo3::exceptions;
 use pyo3::prelude::*;
 use toml::{self, Value};
@@ -24,6 +25,7 @@ use toml::{self, Value};
 fn finalfusion(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyEmbeddings>()?;
     m.add_class::<PyWordSimilarity>()?;
+    m.add_class::<PyVocab>()?;
     Ok(())
 }
 
@@ -95,6 +97,13 @@ impl PyEmbeddings {
         obj.init(PyEmbeddings { embeddings });
 
         Ok(())
+    }
+
+    /// Get the model's vocabulary.
+    fn vocab(&self) -> PyResult<PyVocab> {
+        Ok(PyVocab {
+            embeddings: self.embeddings.clone(),
+        })
     }
 
     /// Perform an anology query.
@@ -306,6 +315,64 @@ impl PyIterProtocol for PyEmbeddings {
         .into_object(py);
 
         Ok(iter)
+    }
+}
+
+/// finalfusion vocab.
+#[pyclass(name=Vocab)]
+struct PyVocab {
+    embeddings: Rc<RefCell<EmbeddingsWrap>>,
+}
+
+#[pymethods]
+impl PyVocab {
+    fn item_to_indices(&self, key: String) -> PyResult<PyObject> {
+        let embeds = self.embeddings.borrow();
+
+        use EmbeddingsWrap::*;
+        let indices = match &*embeds {
+            View(e) => e.vocab().idx(key.as_str()),
+            NonView(e) => e.vocab().idx(key.as_str()),
+        };
+        indices
+            .map(|idx| {
+                let gil = pyo3::Python::acquire_gil();
+                match idx {
+                    WordIndex::Word(idx) => [idx].to_object(gil.python()),
+                    WordIndex::Subword(indices) => indices.to_object(gil.python()),
+                }
+            })
+            .ok_or_else(|| exceptions::KeyError::py_err("Unknown word or n-grams"))
+    }
+}
+
+#[pyproto]
+impl PySequenceProtocol for PyVocab {
+    fn __len__(&self) -> PyResult<usize> {
+        let embeds = self.embeddings.borrow();
+
+        use EmbeddingsWrap::*;
+        match &*embeds {
+            View(e) => Ok(e.vocab().words().len()),
+            NonView(e) => Ok(e.vocab().words().len()),
+        }
+    }
+
+    fn __getitem__(&self, idx: isize) -> PyResult<String> {
+        let embeds = self.embeddings.borrow();
+
+        use EmbeddingsWrap::*;
+
+        let v = match &*embeds {
+            View(e) => e.vocab(),
+            NonView(e) => e.vocab(),
+        };
+
+        if idx >= v.words().len() as isize || idx < 0 {
+            Err(exceptions::IndexError::py_err("list index out of range"))
+        } else {
+            Ok(v.words()[idx as usize].clone())
+        }
     }
 }
 
