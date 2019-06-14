@@ -11,7 +11,7 @@ install:
   - cargo install pyo3-pack
 
 build_script:
-- pyo3-pack build
+- pyo3-pack build --release
 
 artifacts:
   - path: '**/*.whl'

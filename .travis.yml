@@ -37,8 +37,8 @@ install:
   - rustup component add rustfmt
 
 script:
-  - pyo3-pack build
   - cargo fmt --all -- --check
+  - pyo3-pack build --release
 deploy:
   provider: releases
   api_key:
