@@ -7,7 +7,7 @@ description = "Finalfusion Python module"
 documentation = "https://finalfusion.github.io/python"
 homepage = "https://finalfusion.github.io/"
 repository = "https://github.com/finalfusion/finalfusion-python.git"
-license = "Apache-2.0"
+license = "BlueOak-1.0.0"
 
 
 [lib]
