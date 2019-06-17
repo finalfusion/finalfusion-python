@@ -32,7 +32,7 @@ install:
       source venv/bin/activate
       pip install cffi virtualenv
     fi
-  - cargo install pyo3-pack
+  - cargo install pyo3-pack --vers 0.5.0
   - rustup default nightly-2019-02-07
   - rustup component add rustfmt
 
