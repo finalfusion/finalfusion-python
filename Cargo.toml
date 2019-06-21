@@ -20,7 +20,7 @@ features = ["extension-module"]
 
 [dependencies]
 failure = "0.1"
-finalfusion = "0.6"
+finalfusion = "0.7"
 libc = "0.2"
 ndarray = "0.12"
 numpy = "0.5"

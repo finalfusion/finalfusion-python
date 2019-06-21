@@ -63,7 +63,7 @@ impl PyEmbeddings {
     ///
     /// This returns words for the analogy query *w1* is to *w2*
     /// as *w3* is to ?.
-    #[args(limit = 10)]
+    #[args(limit = 10, mask = "(true, true, true)")]
     fn analogy(
         &self,
         py: Python,
@@ -71,6 +71,7 @@ impl PyEmbeddings {
         word2: &str,
         word3: &str,
         limit: usize,
+        mask: (bool, bool, bool),
     ) -> PyResult<Vec<PyObject>> {
         use EmbeddingsWrap::*;
         let embeddings = self.embeddings.borrow();
@@ -83,10 +84,11 @@ impl PyEmbeddings {
             }
         };
 
-        let results = match embeddings.analogy(word1, word2, word3, limit) {
-            Some(results) => results,
-            None => return Err(exceptions::KeyError::py_err("Unknown word or n-grams")),
-        };
+        let results =
+            match embeddings.analogy_masked(word1, word2, word3, limit, [mask.0, mask.1, mask.2]) {
+                Some(results) => results,
+                None => return Err(exceptions::KeyError::py_err("Unknown word or n-grams")),
+            };
 
         let mut r = Vec::with_capacity(results.len());
         for ws in results {
