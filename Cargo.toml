@@ -15,7 +15,7 @@ name = "finalfusion"
 crate-type = ["cdylib"]
 
 [dependencies.pyo3]
-version = "0.6"
+version = "0.7"
 features = ["extension-module"]
 
 [dependencies]
@@ -23,5 +23,5 @@ failure = "0.1"
 finalfusion = "0.7"
 libc = "0.2"
 ndarray = "0.12"
-numpy = "0.5"
+numpy = "0.6"
 toml = "0.5"
