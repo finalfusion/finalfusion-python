@@ -1,5 +1,6 @@
 language: rust
 dist: xenial
+cache: cargo
 
 addons:
   apt:
@@ -17,6 +18,10 @@ matrix:
     - os: linux
       rust: nightly-2019-02-07
     - os: osx
+      osx_image: xcode9.4
+      rust: nightly-2019-02-07
+    - os: osx
+      osx_image: xcode10.1
       rust: nightly-2019-02-07
 
 install:
