@@ -9,7 +9,7 @@ mod embeddings_wrap;
 use embeddings_wrap::EmbeddingsWrap;
 
 mod iter;
-use iter::PyEmbeddingIterator;
+use iter::{PyEmbeddingIterator, PyEmbeddingWithNormIterator};
 
 mod similarity;
 use similarity::PyWordSimilarity;
