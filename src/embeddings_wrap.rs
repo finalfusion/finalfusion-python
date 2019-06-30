@@ -1,3 +1,4 @@
+use finalfusion::norms::NdNorms;
 use finalfusion::prelude::*;
 
 pub enum EmbeddingsWrap {
@@ -19,6 +20,14 @@ impl EmbeddingsWrap {
         match self {
             NonView(e) => e.vocab(),
             View(e) => e.vocab(),
+        }
+    }
+
+    pub fn norms(&self) -> Option<&NdNorms> {
+        use EmbeddingsWrap::*;
+        match self {
+            NonView(e) => e.norms(),
+            View(e) => e.norms(),
         }
     }
 }

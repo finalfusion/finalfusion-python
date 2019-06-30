@@ -28,13 +28,13 @@ install:
     if [ "$TRAVIS_OS_NAME" == "osx" ]; then
       python3 -m venv venv
       source venv/bin/activate
-      pip install cffi virtualenv pytest
+      pip install cffi virtualenv pytest numpy
     fi
   - |
     if [ "$TRAVIS_OS_NAME" == "linux" ]; then
       python3.6 -m venv venv
       source venv/bin/activate
-      pip install cffi virtualenv pytest
+      pip install cffi virtualenv pytest numpy
     fi
   - cargo install pyo3-pack --vers 0.6.1
   - rustup default nightly-2019-02-07

@@ -12,9 +12,12 @@ use numpy::{IntoPyArray, PyArray1, PyArray2};
 use pyo3::class::iter::PyIterProtocol;
 use pyo3::exceptions;
 use pyo3::prelude::*;
+use pyo3::types::PyTuple;
 use toml::{self, Value};
 
-use crate::{EmbeddingsWrap, PyEmbeddingIterator, PyVocab, PyWordSimilarity};
+use crate::{
+    EmbeddingsWrap, PyEmbeddingIterator, PyEmbeddingWithNormIterator, PyVocab, PyWordSimilarity,
+};
 
 /// finalfusion embeddings.
 #[pyclass(name=Embeddings)]
@@ -121,6 +124,29 @@ impl PyEmbeddings {
             Some(embedding) => {
                 let gil = pyo3::Python::acquire_gil();
                 Ok(embedding.into_owned().into_pyarray(gil.python()).to_owned())
+            }
+            None => Err(exceptions::KeyError::py_err("Unknown word and n-grams")),
+        }
+    }
+
+    fn embedding_with_norm(&self, word: &str) -> PyResult<Py<PyTuple>> {
+        let embeddings = self.embeddings.borrow();
+
+        use EmbeddingsWrap::*;
+        let embedding_with_norm = match &*embeddings {
+            View(e) => e.embedding_with_norm(word),
+            NonView(e) => e.embedding_with_norm(word),
+        };
+
+        match embedding_with_norm {
+            Some(embedding_with_norm) => {
+                let gil = pyo3::Python::acquire_gil();
+                let py = gil.python();
+                Ok((
+                    embedding_with_norm.embedding.into_owned().into_pyarray(py),
+                    embedding_with_norm.norm,
+                )
+                    .into_py(py))
             }
             None => Err(exceptions::KeyError::py_err("Unknown word and n-grams")),
         }
@@ -246,6 +272,10 @@ impl PyEmbeddings {
                 .write_embeddings(&mut writer)
                 .map_err(|err| exceptions::IOError::py_err(err.to_string())),
         }
+    }
+
+    fn iter_with_norm(&self) -> PyResult<PyEmbeddingWithNormIterator> {
+        Ok(PyEmbeddingWithNormIterator::new(self.embeddings.clone(), 0))
     }
 }
 
