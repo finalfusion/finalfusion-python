@@ -1,6 +1,5 @@
 language: rust
 dist: xenial
-cache: cargo
 
 addons:
   apt:
