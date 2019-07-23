@@ -137,19 +137,6 @@ dependencies = [
 
 [[package]]
 name = "finalfusion"
-version = "0.3.0"
-dependencies = [
- "failure 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
- "finalfusion 0.7.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "libc 0.2.55 (registry+https://github.com/rust-lang/crates.io-index)",
- "ndarray 0.12.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "numpy 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "pyo3 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "toml 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "finalfusion"
 version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
@@ -163,6 +150,19 @@ dependencies = [
  "rand 0.6.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand_xorshift 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "reductive 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "toml 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "finalfusion-python"
+version = "0.3.0"
+dependencies = [
+ "failure 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "finalfusion 0.7.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "libc 0.2.55 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ndarray 0.12.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "numpy 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "pyo3 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "toml 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
