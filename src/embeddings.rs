@@ -10,9 +10,9 @@ use finalfusion::similarity::*;
 use ndarray::Array2;
 use numpy::{IntoPyArray, PyArray1, PyArray2};
 use pyo3::class::iter::PyIterProtocol;
-use pyo3::exceptions;
 use pyo3::prelude::*;
 use pyo3::types::PyTuple;
+use pyo3::{exceptions, PyMappingProtocol};
 use toml::{self, Value};
 
 use crate::{
@@ -114,13 +114,7 @@ impl PyEmbeddings {
     fn embedding(&self, word: &str) -> Option<Py<PyArray1<f32>>> {
         let embeddings = self.embeddings.borrow();
 
-        use EmbeddingsWrap::*;
-        let embedding = match &*embeddings {
-            View(e) => e.embedding(word),
-            NonView(e) => e.embedding(word),
-        };
-
-        embedding.map(|e| {
+        embeddings.embedding(word).map(|e| {
             let gil = pyo3::Python::acquire_gil();
             e.into_owned().into_pyarray(gil.python()).to_owned()
         })
@@ -266,6 +260,21 @@ impl PyEmbeddings {
 
     fn iter_with_norm(&self) -> PyResult<PyEmbeddingWithNormIterator> {
         Ok(PyEmbeddingWithNormIterator::new(self.embeddings.clone(), 0))
+    }
+}
+
+#[pyproto]
+impl PyMappingProtocol for PyEmbeddings {
+    fn __getitem__(&self, word: &str) -> PyResult<Py<PyArray1<f32>>> {
+        let embeddings = self.embeddings.borrow();
+
+        match embeddings.embedding(word) {
+            Some(embedding) => {
+                let gil = pyo3::Python::acquire_gil();
+                Ok(embedding.into_owned().into_pyarray(gil.python()).to_owned())
+            }
+            None => Err(exceptions::KeyError::py_err("Unknown word and n-grams")),
+        }
     }
 }
 

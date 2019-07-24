@@ -1,5 +1,6 @@
 use finalfusion::norms::NdNorms;
 use finalfusion::prelude::*;
+use finalfusion::storage::CowArray1;
 
 pub enum EmbeddingsWrap {
     NonView(Embeddings<VocabWrap, StorageWrap>),
@@ -28,6 +29,14 @@ impl EmbeddingsWrap {
         match self {
             NonView(e) => e.norms(),
             View(e) => e.norms(),
+        }
+    }
+
+    pub fn embedding(&self, word: &str) -> Option<CowArray1<f32>> {
+        use EmbeddingsWrap::*;
+        match self {
+            View(e) => e.embedding(word),
+            NonView(e) => e.embedding(word),
         }
     }
 }
