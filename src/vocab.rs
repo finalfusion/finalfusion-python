@@ -23,20 +23,16 @@ impl PyVocab {
 
 #[pymethods]
 impl PyVocab {
-    fn item_to_indices(&self, key: String) -> PyResult<PyObject> {
+    fn item_to_indices(&self, key: String) -> Option<PyObject> {
         let embeds = self.embeddings.borrow();
 
-        embeds
-            .vocab()
-            .idx(key.as_str())
-            .map(|idx| {
-                let gil = pyo3::Python::acquire_gil();
-                match idx {
-                    WordIndex::Word(idx) => [idx].to_object(gil.python()),
-                    WordIndex::Subword(indices) => indices.to_object(gil.python()),
-                }
-            })
-            .ok_or_else(|| exceptions::KeyError::py_err("Unknown word or n-grams"))
+        embeds.vocab().idx(key.as_str()).map(|idx| {
+            let gil = pyo3::Python::acquire_gil();
+            match idx {
+                WordIndex::Word(idx) => [idx].to_object(gil.python()),
+                WordIndex::Subword(indices) => indices.to_object(gil.python()),
+            }
+        })
     }
 }
 

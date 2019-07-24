@@ -31,6 +31,12 @@ def test_embeddings_with_norms():
             embedding_with_norm) == 3, "The number of values returned by 'iter_with_norm()' does not match!"
 
 
+def test_embeddings_with_norms_oov():
+    embeds = finalfusion.Embeddings(
+        "tests/embeddings.fifu")
+    assert embeds.embedding_with_norm("Something out of vocabulary") is None
+
+
 def test_embeddings():
     embeds = finalfusion.Embeddings(
         "tests/embeddings.fifu")
@@ -47,6 +53,12 @@ def test_embeddings():
             unnormed_embed, test_embed), "Embedding from normal iterator fails to match!"
         assert len(
             embedding_with_norm) == 2, "The number of values returned by normal iterator does not match!"
+
+
+def test_embeddings_oov():
+    embeds = finalfusion.Embeddings(
+        "tests/embeddings.fifu")
+    assert embeds.embedding("Something out of vocabulary") is None
 
 
 def test_norms():
