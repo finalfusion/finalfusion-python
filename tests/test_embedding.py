@@ -28,6 +28,12 @@ def test_embeddings_with_norms_oov(embeddings_fifu):
         "Something out of vocabulary") is None
 
 
+def test_indexing(embeddings_fifu):
+    assert embeddings_fifu["one"] is not None
+    with pytest.raises(KeyError):
+        embeddings_fifu["Something out of vocabulary"]
+
+
 def test_embeddings(embeddings_fifu, embeddings_text):
     for embedding_with_norm, norm in zip(embeddings_fifu, TEST_NORMS):
         unnormed_embed = embedding_with_norm[1] * norm
