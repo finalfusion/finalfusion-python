@@ -16,7 +16,8 @@ matrix:
   include:
     - os: linux
       rust: nightly-2019-02-07
-    - os: osx
+    - if: tag IS present
+      os: osx
       osx_image: xcode9.4
       rust: nightly-2019-02-07
     - os: osx
