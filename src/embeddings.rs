@@ -111,7 +111,7 @@ impl PyEmbeddings {
     ///
     /// If the word is not known, its representation is approximated
     /// using subword units.
-    fn embedding(&self, word: &str) -> PyResult<Py<PyArray1<f32>>> {
+    fn embedding(&self, word: &str) -> Option<Py<PyArray1<f32>>> {
         let embeddings = self.embeddings.borrow();
 
         use EmbeddingsWrap::*;
@@ -120,16 +120,13 @@ impl PyEmbeddings {
             NonView(e) => e.embedding(word),
         };
 
-        match embedding {
-            Some(embedding) => {
-                let gil = pyo3::Python::acquire_gil();
-                Ok(embedding.into_owned().into_pyarray(gil.python()).to_owned())
-            }
-            None => Err(exceptions::KeyError::py_err("Unknown word and n-grams")),
-        }
+        embedding.map(|e| {
+            let gil = pyo3::Python::acquire_gil();
+            e.into_owned().into_pyarray(gil.python()).to_owned()
+        })
     }
 
-    fn embedding_with_norm(&self, word: &str) -> PyResult<Py<PyTuple>> {
+    fn embedding_with_norm(&self, word: &str) -> Option<Py<PyTuple>> {
         let embeddings = self.embeddings.borrow();
 
         use EmbeddingsWrap::*;
@@ -138,22 +135,15 @@ impl PyEmbeddings {
             NonView(e) => e.embedding_with_norm(word),
         };
 
-        match embedding_with_norm {
-            Some(embedding_with_norm) => {
-                let gil = pyo3::Python::acquire_gil();
-                let py = gil.python();
-                Ok((
-                    embedding_with_norm.embedding.into_owned().into_pyarray(py),
-                    embedding_with_norm.norm,
-                )
-                    .into_py(py))
-            }
-            None => Err(exceptions::KeyError::py_err("Unknown word and n-grams")),
-        }
+        embedding_with_norm.map(|e| {
+            let gil = pyo3::Python::acquire_gil();
+            let embedding = e.embedding.into_owned().into_pyarray(gil.python());
+            (embedding, e.norm).into_py(gil.python())
+        })
     }
 
     /// Copy the entire embeddings matrix.
-    fn matrix_copy(&self) -> PyResult<Py<PyArray2<f32>>> {
+    fn matrix_copy(&self) -> Py<PyArray2<f32>> {
         let embeddings = self.embeddings.borrow();
 
         use EmbeddingsWrap::*;
@@ -175,7 +165,7 @@ impl PyEmbeddings {
             },
         };
         let gil = pyo3::Python::acquire_gil();
-        Ok(matrix.into_pyarray(gil.python()).to_owned())
+        matrix.into_pyarray(gil.python()).to_owned()
     }
 
     /// Embeddings metadata.
