@@ -39,4 +39,11 @@ impl EmbeddingsWrap {
             NonView(e) => e.embedding(word),
         }
     }
+
+    pub fn view(&self) -> Option<&Embeddings<VocabWrap, StorageViewWrap>> {
+        match self {
+            EmbeddingsWrap::NonView(_) => None,
+            EmbeddingsWrap::View(storage) => Some(storage),
+        }
+    }
 }
