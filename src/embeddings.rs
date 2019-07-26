@@ -7,6 +7,7 @@ use failure::Error;
 use finalfusion::metadata::Metadata;
 use finalfusion::prelude::*;
 use finalfusion::similarity::*;
+use itertools::Itertools;
 use ndarray::Array2;
 use numpy::{IntoPyArray, PyArray1, PyArray2};
 use pyo3::class::iter::PyIterProtocol;
@@ -85,11 +86,17 @@ impl PyEmbeddings {
             }
         };
 
-        let results =
-            match embeddings.analogy_masked(word1, word2, word3, limit, [mask.0, mask.1, mask.2]) {
-                Some(results) => results,
-                None => return Err(exceptions::KeyError::py_err("Unknown word or n-grams")),
-            };
+        let results = embeddings
+            .analogy_masked([word1, word2, word3], [mask.0, mask.1, mask.2], limit)
+            .map_err(|lookup| {
+                let failed = [word1, word2, word3]
+                    .iter()
+                    .zip(lookup.iter())
+                    .filter(|(_, success)| !*success)
+                    .map(|(word, _)| word)
+                    .join(" ");
+                exceptions::KeyError::py_err(format!("Unknown word or n-grams: {}", failed))
+            })?;
 
         let mut r = Vec::with_capacity(results.len());
         for ws in results {
@@ -219,7 +226,7 @@ impl PyEmbeddings {
             }
         };
 
-        let results = match embeddings.similarity(word, limit) {
+        let results = match embeddings.word_similarity(word, limit) {
             Some(results) => results,
             None => return Err(exceptions::KeyError::py_err("Unknown word and n-grams")),
         };
