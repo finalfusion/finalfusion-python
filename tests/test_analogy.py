@@ -88,3 +88,5 @@ def test_analogies(analogy_fifu):
     with pytest.raises(ValueError):
         analogy_fifu.analogy("Paris", "Frankreich", "Paris",
                              1, (True, True, True, True))
+    with pytest.raises(KeyError):
+        analogy_fifu.analogy("Paris", "OOV", "Paris", 1, (True, True, True))
