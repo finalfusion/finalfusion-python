@@ -75,16 +75,13 @@ impl PyEmbeddings {
         limit: usize,
         mask: (bool, bool, bool),
     ) -> PyResult<Vec<PyObject>> {
-        use EmbeddingsWrap::*;
         let embeddings = self.embeddings.borrow();
-        let embeddings = match &*embeddings {
-            View(e) => e,
-            NonView(_) => {
-                return Err(exceptions::ValueError::py_err(
-                    "Analogy queries are not supported for this type of embedding matrix",
-                ));
-            }
-        };
+
+        let embeddings = embeddings.view().ok_or_else(|| {
+            exceptions::ValueError::py_err(
+                "Analogy queries are not supported for this type of embedding matrix",
+            )
+        })?;
 
         let results = embeddings
             .analogy_masked([word1, word2, word3], [mask.0, mask.1, mask.2], limit)
@@ -216,20 +213,15 @@ impl PyEmbeddings {
     fn similarity(&self, py: Python, word: &str, limit: usize) -> PyResult<Vec<PyObject>> {
         let embeddings = self.embeddings.borrow();
 
-        use EmbeddingsWrap::*;
-        let embeddings = match &*embeddings {
-            View(e) => e,
-            NonView(_) => {
-                return Err(exceptions::ValueError::py_err(
-                    "Similarity queries are not supported for this type of embedding matrix",
-                ));
-            }
-        };
+        let embeddings = embeddings.view().ok_or_else(|| {
+            exceptions::ValueError::py_err(
+                "Similarity queries are not supported for this type of embedding matrix",
+            )
+        })?;
 
-        let results = match embeddings.word_similarity(word, limit) {
-            Some(results) => results,
-            None => return Err(exceptions::KeyError::py_err("Unknown word and n-grams")),
-        };
+        let results = embeddings
+            .word_similarity(word, limit)
+            .ok_or_else(|| exceptions::KeyError::py_err("Unknown word and n-grams"))?;
 
         let mut r = Vec::with_capacity(results.len());
         for ws in results {
