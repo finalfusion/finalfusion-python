@@ -12,11 +12,11 @@ TEST_NORMS = [
 ]
 
 
-def test_embeddings_with_norms(embeddings_fifu, embeddings_text):
-    for embedding_with_norm, norm in zip(
-            embeddings_fifu.iter_with_norm(), TEST_NORMS):
-        unnormed_embed = embedding_with_norm.embedding * norm
-        test_embed = embeddings_text[embedding_with_norm.word]
+def test_embeddings(embeddings_fifu, embeddings_text):
+    for embedding, norm in zip(
+            embeddings_fifu, TEST_NORMS):
+        unnormed_embed = embedding.embedding * embedding.norm
+        test_embed = embeddings_text[embedding.word]
         assert numpy.allclose(
             unnormed_embed, test_embed), "Embedding from 'iter_with_norm()' fails to match!"
 
@@ -32,20 +32,12 @@ def test_indexing(embeddings_fifu):
         embeddings_fifu["Something out of vocabulary"]
 
 
-def test_embeddings(embeddings_fifu, embeddings_text):
-    for embedding, norm in zip(embeddings_fifu, TEST_NORMS):
-        unnormed_embed = embedding.embedding * norm
-        test_embed = embeddings_text[embedding.word]
-        assert numpy.allclose(
-            unnormed_embed, test_embed), "Embedding from normal iterator fails to match!"
-
-
 def test_embeddings_oov(embeddings_fifu):
     assert embeddings_fifu.embedding("Something out of vocabulary") is None
 
 
 def test_norms(embeddings_fifu):
-    for embedding_with_norm, norm in zip(
-            embeddings_fifu.iter_with_norm(), TEST_NORMS):
+    for embedding, norm in zip(
+            embeddings_fifu, TEST_NORMS):
         assert pytest.approx(
-            embedding_with_norm.norm) == norm, "Norm fails to match!"
+            embedding.norm) == norm, "Norm fails to match!"

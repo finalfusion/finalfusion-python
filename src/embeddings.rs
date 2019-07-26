@@ -15,9 +15,7 @@ use pyo3::types::PyTuple;
 use pyo3::{exceptions, PyMappingProtocol};
 use toml::{self, Value};
 
-use crate::{
-    EmbeddingsWrap, PyEmbeddingIterator, PyEmbeddingWithNormIterator, PyVocab, PyWordSimilarity,
-};
+use crate::{EmbeddingsWrap, PyEmbeddingIterator, PyVocab, PyWordSimilarity};
 
 /// finalfusion embeddings.
 #[pyclass(name=Embeddings)]
@@ -256,10 +254,6 @@ impl PyEmbeddings {
                 .write_embeddings(&mut writer)
                 .map_err(|err| exceptions::IOError::py_err(err.to_string())),
         }
-    }
-
-    fn iter_with_norm(&self) -> PyResult<PyEmbeddingWithNormIterator> {
-        Ok(PyEmbeddingWithNormIterator::new(self.embeddings.clone(), 0))
     }
 }
 
