@@ -15,12 +15,10 @@ TEST_NORMS = [
 def test_embeddings_with_norms(embeddings_fifu, embeddings_text):
     for embedding_with_norm, norm in zip(
             embeddings_fifu.iter_with_norm(), TEST_NORMS):
-        unnormed_embed = embedding_with_norm[1] * norm
-        test_embed = embeddings_text[embedding_with_norm[0]]
+        unnormed_embed = embedding_with_norm.embedding * norm
+        test_embed = embeddings_text[embedding_with_norm.word]
         assert numpy.allclose(
             unnormed_embed, test_embed), "Embedding from 'iter_with_norm()' fails to match!"
-        assert len(
-            embedding_with_norm) == 3, "The number of values returned by 'iter_with_norm()' does not match!"
 
 
 def test_embeddings_with_norms_oov(embeddings_fifu):
@@ -35,13 +33,11 @@ def test_indexing(embeddings_fifu):
 
 
 def test_embeddings(embeddings_fifu, embeddings_text):
-    for embedding_with_norm, norm in zip(embeddings_fifu, TEST_NORMS):
-        unnormed_embed = embedding_with_norm[1] * norm
-        test_embed = embeddings_text[embedding_with_norm[0]]
+    for embedding, norm in zip(embeddings_fifu, TEST_NORMS):
+        unnormed_embed = embedding.embedding * norm
+        test_embed = embeddings_text[embedding.word]
         assert numpy.allclose(
             unnormed_embed, test_embed), "Embedding from normal iterator fails to match!"
-        assert len(
-            embedding_with_norm) == 2, "The number of values returned by normal iterator does not match!"
 
 
 def test_embeddings_oov(embeddings_fifu):
@@ -52,4 +48,4 @@ def test_norms(embeddings_fifu):
     for embedding_with_norm, norm in zip(
             embeddings_fifu.iter_with_norm(), TEST_NORMS):
         assert pytest.approx(
-            embedding_with_norm[2]) == norm, "Norm fails to match!"
+            embedding_with_norm.norm) == norm, "Norm fails to match!"

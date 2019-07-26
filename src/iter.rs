@@ -26,7 +26,7 @@ impl PyIterProtocol for PyEmbeddingIterator {
         Ok(slf.into())
     }
 
-    fn __next__(mut slf: PyRefMut<Self>) -> PyResult<Option<(String, Py<PyArray1<f32>>)>> {
+    fn __next__(mut slf: PyRefMut<Self>) -> PyResult<Option<PyEmbedding>> {
         let slf = &mut *slf;
 
         let embeddings = slf.embeddings.borrow();
@@ -39,13 +39,36 @@ impl PyIterProtocol for PyEmbeddingIterator {
             slf.idx += 1;
 
             let gil = pyo3::Python::acquire_gil();
-            Ok(Some((
+            Ok(Some(PyEmbedding {
                 word,
-                embed.into_owned().into_pyarray(gil.python()).to_owned(),
-            )))
+                embedding: embed.into_owned().into_pyarray(gil.python()).to_owned(),
+            }))
         } else {
             Ok(None)
         }
+    }
+}
+
+/// A word and its embedding.
+#[pyclass(name=Embedding)]
+pub struct PyEmbedding {
+    embedding: Py<PyArray1<f32>>,
+    word: String,
+}
+
+#[pymethods]
+impl PyEmbedding {
+    /// Get the embedding.
+    #[getter]
+    pub fn get_embedding(&self) -> Py<PyArray1<f32>> {
+        let gil = Python::acquire_gil();
+        self.embedding.clone_ref(gil.python())
+    }
+
+    /// Get the word.
+    #[getter]
+    pub fn get_word(&self) -> &str {
+        &self.word
     }
 }
 
@@ -67,7 +90,7 @@ impl PyIterProtocol for PyEmbeddingWithNormIterator {
         Ok(slf.into())
     }
 
-    fn __next__(mut slf: PyRefMut<Self>) -> PyResult<Option<(String, Py<PyArray1<f32>>, f32)>> {
+    fn __next__(mut slf: PyRefMut<Self>) -> PyResult<Option<PyEmbeddingWithNorm>> {
         let slf = &mut *slf;
 
         let embeddings = slf.embeddings.borrow();
@@ -81,13 +104,43 @@ impl PyIterProtocol for PyEmbeddingWithNormIterator {
             slf.idx += 1;
 
             let gil = pyo3::Python::acquire_gil();
-            Ok(Some((
+            Ok(Some(PyEmbeddingWithNorm {
                 word,
-                embed.into_owned().into_pyarray(gil.python()).to_owned(),
+                embedding: embed.into_owned().into_pyarray(gil.python()).to_owned(),
                 norm,
-            )))
+            }))
         } else {
             Ok(None)
         }
+    }
+}
+
+/// A word and its embedding and embedding norm.
+#[pyclass(name=EmbeddingWithNorm)]
+pub struct PyEmbeddingWithNorm {
+    embedding: Py<PyArray1<f32>>,
+    norm: f32,
+    word: String,
+}
+
+#[pymethods]
+impl PyEmbeddingWithNorm {
+    /// Get the embedding.
+    #[getter]
+    pub fn get_embedding(&self) -> Py<PyArray1<f32>> {
+        let gil = Python::acquire_gil();
+        self.embedding.clone_ref(gil.python())
+    }
+
+    /// Get the word.
+    #[getter]
+    pub fn get_word(&self) -> &str {
+        &self.word
+    }
+
+    /// Get the norm.
+    #[getter]
+    pub fn get_norm(&self) -> f32 {
+        self.norm
     }
 }
