@@ -9,7 +9,7 @@ mod embeddings_wrap;
 use embeddings_wrap::EmbeddingsWrap;
 
 mod iter;
-use iter::{PyEmbedding, PyEmbeddingIterator, PyEmbeddingWithNorm, PyEmbeddingWithNormIterator};
+use iter::{PyEmbedding, PyEmbeddingIterator};
 
 mod similarity;
 use similarity::PyWordSimilarity;
@@ -25,7 +25,6 @@ use vocab::PyVocab;
 fn finalfusion(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyEmbeddings>()?;
     m.add_class::<PyEmbedding>()?;
-    m.add_class::<PyEmbeddingWithNorm>()?;
     m.add_class::<PyWordSimilarity>()?;
     m.add_class::<PyVocab>()?;
     Ok(())
