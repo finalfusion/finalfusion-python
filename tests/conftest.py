@@ -17,20 +17,17 @@ def embeddings_fifu(tests_root):
 
 @pytest.fixture
 def embeddings_text(tests_root):
-    embeds = dict()
-
-    with open(os.path.join(tests_root, "embeddings.txt"), "r", encoding="utf8") as lines:
-        for line in lines:
-            line_list = line.split(' ')
-            embeds[line_list[0]] = numpy.array(
-                [float(c) for c in line_list[1:]])
-
-    yield embeds
+    yield finalfusion.Embeddings.read_text(os.path.join(tests_root, "embeddings.txt"))
 
 
 @pytest.fixture
 def similarity_fifu(tests_root):
     yield finalfusion.Embeddings(os.path.join(tests_root, "similarity.fifu"))
+
+
+@pytest.fixture
+def embeddings_text_dims(tests_root):
+    yield finalfusion.Embeddings.read_text_dims(os.path.join(tests_root, "embeddings.dims.txt"))
 
 
 @pytest.fixture

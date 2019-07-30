@@ -12,13 +12,22 @@ TEST_NORMS = [
 ]
 
 
-def test_embeddings(embeddings_fifu, embeddings_text):
-    for embedding, norm in zip(
-            embeddings_fifu, TEST_NORMS):
-        unnormed_embed = embedding.embedding * embedding.norm
-        test_embed = embeddings_text[embedding.word]
+def test_embeddings(embeddings_fifu, embeddings_text, embeddings_text_dims):
+    # Check that we cover all words from all embedding below.
+    assert len(embeddings_fifu.vocab()) == 7
+    assert len(embeddings_text.vocab()) == 7
+    assert len(embeddings_text_dims.vocab()) == 7
+
+    # Check that the finalfusion embeddings have the correct dimensionality
+    # The correct dimensionality of the other embedding types is asserted
+    # in the pairwise comparisons below.
+    assert embeddings_fifu.matrix_copy().shape == (7, 10)
+    
+    for embedding in embeddings_fifu:
         assert numpy.allclose(
-            unnormed_embed, test_embed), "Embedding from 'iter_with_norm()' fails to match!"
+            embedding.embedding, embeddings_text[embedding.word]), "FiFu and text embedding mismatch"
+        assert numpy.allclose(
+            embedding.embedding, embeddings_text_dims[embedding.word]), "FiFu and textdims embedding mismatch"
 
 
 def test_embeddings_with_norms_oov(embeddings_fifu):
