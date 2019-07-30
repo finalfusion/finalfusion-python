@@ -4,9 +4,12 @@ use std::io::{BufReader, BufWriter};
 use std::rc::Rc;
 
 use failure::Error;
+use finalfusion::io as ffio;
 use finalfusion::metadata::Metadata;
 use finalfusion::prelude::*;
 use finalfusion::similarity::*;
+use finalfusion::text::{ReadText, ReadTextDims};
+use finalfusion::word2vec::ReadWord2Vec;
 use itertools::Itertools;
 use ndarray::Array2;
 use numpy::{IntoPyArray, PyArray1, PyArray2};
@@ -44,9 +47,9 @@ impl PyEmbeddings {
         // First try to load embeddings with viewable storage. If that
         // fails, attempt to load the embeddings as non-viewable
         // storage.
-        let embeddings = match load_embeddings(path, mmap) {
+        let embeddings = match read_embeddings(path, mmap) {
             Ok(e) => Rc::new(RefCell::new(EmbeddingsWrap::View(e))),
-            Err(_) => load_embeddings(path, mmap)
+            Err(_) => read_embeddings(path, mmap)
                 .map(|e| Rc::new(RefCell::new(EmbeddingsWrap::NonView(e))))
                 .map_err(|err| exceptions::IOError::py_err(err.to_string()))?,
         };
@@ -54,6 +57,42 @@ impl PyEmbeddings {
         obj.init(PyEmbeddings { embeddings });
 
         Ok(())
+    }
+
+    /// read_text(path,/)
+    /// --
+    ///
+    /// Read embeddings in text format. This format uses one line per
+    /// embedding. Each line starts with the word in UTF-8, followed
+    /// by its vector components encoded in ASCII. The word and its
+    /// components are separated by spaces.
+    #[staticmethod]
+    fn read_text(path: &str) -> PyResult<PyEmbeddings> {
+        read_non_fifu_embeddings(path, |r| Embeddings::read_text(r))
+    }
+
+    /// read_text_dims(path,/)
+    /// --
+    ///
+    /// Read embeddings in text format with dimensions. In this format,
+    /// the first line states the shape of the embedding matrix. The
+    /// number of rows (words) and columns (embedding dimensionality) is
+    /// separated by a space character. The remainder of the file uses
+    /// one line per embedding. Each line starts with the word in UTF-8,
+    /// followed by its vector components encoded in ASCII. The word and
+    /// its components are separated by spaces.
+    #[staticmethod]
+    fn read_text_dims(path: &str) -> PyResult<PyEmbeddings> {
+        read_non_fifu_embeddings(path, |r| Embeddings::read_text_dims(r))
+    }
+
+    /// read_text_dims(path,/)
+    /// --
+    ///
+    /// Read embeddings in the word2vec binary format.
+    #[staticmethod]
+    fn read_word2vec(path: &str) -> PyResult<PyEmbeddings> {
+        read_non_fifu_embeddings(path, |r| Embeddings::read_word2vec_binary(r))
     }
 
     /// Get the model's vocabulary.
@@ -283,7 +322,7 @@ impl PyIterProtocol for PyEmbeddings {
     }
 }
 
-fn load_embeddings<S>(path: &str, mmap: bool) -> Result<Embeddings<VocabWrap, S>, Error>
+fn read_embeddings<S>(path: &str, mmap: bool) -> Result<Embeddings<VocabWrap, S>, Error>
 where
     Embeddings<VocabWrap, S>: ReadEmbeddings + MmapEmbeddings,
 {
@@ -297,4 +336,28 @@ where
     };
 
     Ok(embeddings)
+}
+
+fn read_non_fifu_embeddings<R>(path: &str, read_embeddings: R) -> PyResult<PyEmbeddings>
+where
+    R: FnOnce(&mut BufReader<File>) -> ffio::Result<Embeddings<SimpleVocab, NdArray>>,
+{
+    let f = File::open(path).map_err(|err| {
+        exceptions::IOError::py_err(format!(
+            "Cannot read text embeddings from '{}': {}'",
+            path, err
+        ))
+    })?;
+    let mut reader = BufReader::new(f);
+
+    let embeddings = read_embeddings(&mut reader).map_err(|err| {
+        exceptions::IOError::py_err(format!(
+            "Cannot read text embeddings from '{}': {}'",
+            path, err
+        ))
+    })?;
+
+    Ok(PyEmbeddings {
+        embeddings: Rc::new(RefCell::new(EmbeddingsWrap::View(embeddings.into()))),
+    })
 }
