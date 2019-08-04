@@ -86,7 +86,7 @@ impl PyEmbeddings {
         read_non_fifu_embeddings(path, |r| Embeddings::read_text_dims(r))
     }
 
-    /// read_text_dims(path,/)
+    /// read_word2vec(path,/)
     /// --
     ///
     /// Read embeddings in the word2vec binary format.
