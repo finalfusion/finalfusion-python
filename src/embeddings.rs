@@ -59,6 +59,15 @@ impl PyEmbeddings {
         Ok(())
     }
 
+    /// read_fasttext(path,/)
+    /// --
+    ///
+    /// Read embeddings in the fasttext format.
+    #[staticmethod]
+    fn read_fasttext(path: &str) -> PyResult<PyEmbeddings> {
+        read_non_fifu_embeddings(path, |r| Embeddings::read_fasttext(r))
+    }
+
     /// read_text(path,/)
     /// --
     ///
@@ -338,9 +347,11 @@ where
     Ok(embeddings)
 }
 
-fn read_non_fifu_embeddings<R>(path: &str, read_embeddings: R) -> PyResult<PyEmbeddings>
+fn read_non_fifu_embeddings<R, V>(path: &str, read_embeddings: R) -> PyResult<PyEmbeddings>
 where
-    R: FnOnce(&mut BufReader<File>) -> ffio::Result<Embeddings<SimpleVocab, NdArray>>,
+    R: FnOnce(&mut BufReader<File>) -> ffio::Result<Embeddings<V, NdArray>>,
+    V: Vocab,
+    Embeddings<VocabWrap, StorageViewWrap>: From<Embeddings<V, NdArray>>,
 {
     let f = File::open(path).map_err(|err| {
         exceptions::IOError::py_err(format!(
