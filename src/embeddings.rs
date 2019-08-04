@@ -4,12 +4,12 @@ use std::io::{BufReader, BufWriter};
 use std::rc::Rc;
 
 use failure::Error;
+use finalfusion::chunks::metadata::Metadata;
+use finalfusion::compat::text::{ReadText, ReadTextDims};
+use finalfusion::compat::word2vec::ReadWord2Vec;
 use finalfusion::io as ffio;
-use finalfusion::metadata::Metadata;
 use finalfusion::prelude::*;
 use finalfusion::similarity::*;
-use finalfusion::text::{ReadText, ReadTextDims};
-use finalfusion::word2vec::ReadWord2Vec;
 use itertools::Itertools;
 use ndarray::Array2;
 use numpy::{IntoPyArray, PyArray1, PyArray2};

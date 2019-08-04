@@ -1,6 +1,6 @@
-use finalfusion::norms::NdNorms;
+use finalfusion::chunks::norms::NdNorms;
+use finalfusion::chunks::storage::CowArray1;
 use finalfusion::prelude::*;
-use finalfusion::storage::CowArray1;
 
 pub enum EmbeddingsWrap {
     NonView(Embeddings<VocabWrap, StorageWrap>),

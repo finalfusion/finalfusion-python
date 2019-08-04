@@ -1,8 +1,8 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
+use finalfusion::chunks::vocab::WordIndex;
 use finalfusion::prelude::*;
-use finalfusion::vocab::WordIndex;
 use pyo3::class::sequence::PySequenceProtocol;
 use pyo3::exceptions;
 use pyo3::prelude::*;
