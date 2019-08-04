@@ -1,2 +1,15 @@
+# Editor files
+.*
+*.orig
+*~
+\#*\#
+
+# Rust
 /target
 **/*.rs.bk
+
+# Python
+__pycache__
+*.egg-info
+
+/result
