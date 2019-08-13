@@ -26,6 +26,11 @@ def similarity_fifu(tests_root):
 
 
 @pytest.fixture
+def subword_fifu(tests_root):
+    yield finalfusion.Embeddings(os.path.join(tests_root, "subword.fifu"))
+
+
+@pytest.fixture
 def embeddings_text_dims(tests_root):
     yield finalfusion.Embeddings.read_text_dims(os.path.join(tests_root, "embeddings.dims.txt"))
 
