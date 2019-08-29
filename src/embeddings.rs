@@ -13,7 +13,7 @@ use finalfusion::prelude::*;
 use finalfusion::similarity::*;
 use itertools::Itertools;
 use ndarray::Array2;
-use numpy::{IntoPyArray, NpyDataType, PyArray1, PyArray2};
+use numpy::{IntoPyArray, NpyDataType, PyArray1, PyArray2, ToPyArray};
 use pyo3::class::iter::PyIterProtocol;
 use pyo3::prelude::*;
 use pyo3::types::{PyAny, PyList, PySet, PyTuple};
@@ -181,11 +181,12 @@ impl PyEmbeddings {
         let embeddings = self.embeddings.borrow();
 
         use EmbeddingsWrap::*;
-        let matrix = match &*embeddings {
-            View(e) => e.storage().view().to_owned(),
+        let gil = pyo3::Python::acquire_gil();
+        let matrix_view = match &*embeddings {
+            View(e) => e.storage().view(),
             NonView(e) => match e.storage() {
-                StorageWrap::MmapArray(mmap) => mmap.view().to_owned(),
-                StorageWrap::NdArray(array) => array.0.to_owned(),
+                StorageWrap::MmapArray(mmap) => mmap.view(),
+                StorageWrap::NdArray(array) => array.0.view(),
                 StorageWrap::QuantizedArray(quantized) => {
                     let (rows, dims) = quantized.shape();
                     let mut array = Array2::<f32>::zeros((rows, dims));
@@ -194,12 +195,11 @@ impl PyEmbeddings {
                             .row_mut(idx)
                             .assign(&quantized.embedding(idx).as_view());
                     }
-                    array
+                    return array.to_pyarray(gil.python()).to_owned();
                 }
             },
         };
-        let gil = pyo3::Python::acquire_gil();
-        matrix.into_pyarray(gil.python()).to_owned()
+        matrix_view.to_pyarray(gil.python()).to_owned()
     }
 
     /// Embeddings metadata.
