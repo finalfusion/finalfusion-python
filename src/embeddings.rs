@@ -60,28 +60,42 @@ impl PyEmbeddings {
         Ok(())
     }
 
-    /// read_fasttext(path,/)
+    /// read_fasttext(path,/ lossy)
     /// --
     ///
     /// Read embeddings in the fasttext format.
+    ///
+    /// Lossy decoding of the words can be toggled through the lossy param.
     #[staticmethod]
-    fn read_fasttext(path: &str) -> PyResult<PyEmbeddings> {
-        read_non_fifu_embeddings(path, |r| Embeddings::read_fasttext(r))
+    #[args(lossy = false)]
+    fn read_fasttext(path: &str, lossy: bool) -> PyResult<PyEmbeddings> {
+        if lossy {
+            read_non_fifu_embeddings(path, |r| Embeddings::read_fasttext_lossy(r))
+        } else {
+            read_non_fifu_embeddings(path, |r| Embeddings::read_fasttext(r))
+        }
     }
 
-    /// read_text(path,/)
+    /// read_text(path,/ lossy)
     /// --
     ///
     /// Read embeddings in text format. This format uses one line per
     /// embedding. Each line starts with the word in UTF-8, followed
     /// by its vector components encoded in ASCII. The word and its
     /// components are separated by spaces.
+    ///
+    /// Lossy decoding of the words can be toggled through the lossy param.
     #[staticmethod]
-    fn read_text(path: &str) -> PyResult<PyEmbeddings> {
-        read_non_fifu_embeddings(path, |r| Embeddings::read_text(r))
+    #[args(lossy = false)]
+    fn read_text(path: &str, lossy: bool) -> PyResult<PyEmbeddings> {
+        if lossy {
+            read_non_fifu_embeddings(path, |r| Embeddings::read_text_lossy(r))
+        } else {
+            read_non_fifu_embeddings(path, |r| Embeddings::read_text(r))
+        }
     }
 
-    /// read_text_dims(path,/)
+    /// read_text_dims(path,/ lossy)
     /// --
     ///
     /// Read embeddings in text format with dimensions. In this format,
@@ -91,18 +105,32 @@ impl PyEmbeddings {
     /// one line per embedding. Each line starts with the word in UTF-8,
     /// followed by its vector components encoded in ASCII. The word and
     /// its components are separated by spaces.
+    ///
+    /// Lossy decoding of the words can be toggled through the lossy param.
     #[staticmethod]
-    fn read_text_dims(path: &str) -> PyResult<PyEmbeddings> {
-        read_non_fifu_embeddings(path, |r| Embeddings::read_text_dims(r))
+    #[args(lossy = false)]
+    fn read_text_dims(path: &str, lossy: bool) -> PyResult<PyEmbeddings> {
+        if lossy {
+            read_non_fifu_embeddings(path, |r| Embeddings::read_text_dims_lossy(r))
+        } else {
+            read_non_fifu_embeddings(path, |r| Embeddings::read_text_dims(r))
+        }
     }
 
-    /// read_word2vec(path,/)
+    /// read_word2vec(path,/ lossy)
     /// --
     ///
     /// Read embeddings in the word2vec binary format.
+    ///
+    /// Lossy decoding of the words can be toggled through the lossy param.
     #[staticmethod]
-    fn read_word2vec(path: &str) -> PyResult<PyEmbeddings> {
-        read_non_fifu_embeddings(path, |r| Embeddings::read_word2vec_binary(r))
+    #[args(lossy = false)]
+    fn read_word2vec(path: &str, lossy: bool) -> PyResult<PyEmbeddings> {
+        if lossy {
+            read_non_fifu_embeddings(path, |r| Embeddings::read_word2vec_binary_lossy(r))
+        } else {
+            read_non_fifu_embeddings(path, |r| Embeddings::read_word2vec_binary(r))
+        }
     }
 
     /// Get the model's vocabulary.
