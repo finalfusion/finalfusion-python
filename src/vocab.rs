@@ -62,7 +62,7 @@ impl PyVocab {
 impl PySequenceProtocol for PyVocab {
     fn __len__(&self) -> PyResult<usize> {
         let embeds = self.embeddings.borrow();
-        Ok(embeds.vocab().len())
+        Ok(embeds.vocab().words_len())
     }
 
     fn __getitem__(&self, idx: isize) -> PyResult<String> {

@@ -120,7 +120,7 @@ rec {
     syn = "0.15.42";
     synstructure = "0.10.2";
   };
-  deps.finalfusion."0.8.0" = {
+  deps.finalfusion."0.9.0" = {
     byteorder = "1.3.2";
     fnv = "1.0.6";
     itertools = "0.8.0";
@@ -135,7 +135,7 @@ rec {
   };
   deps.finalfusion_python."0.4.0" = {
     failure = "0.1.5";
-    finalfusion = "0.8.0";
+    finalfusion = "0.9.0";
     itertools = "0.8.0";
     libc = "0.2.60";
     ndarray = "0.12.1";

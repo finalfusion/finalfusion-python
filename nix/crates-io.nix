@@ -652,58 +652,58 @@ item that gets emitted.
 
 
 # end
-# finalfusion-0.8.0
+# finalfusion-0.9.0
 
-  crates.finalfusion."0.8.0" = deps: { features?(features_."finalfusion"."0.8.0" deps {}) }: buildRustCrate {
+  crates.finalfusion."0.9.0" = deps: { features?(features_."finalfusion"."0.9.0" deps {}) }: buildRustCrate {
     crateName = "finalfusion";
-    version = "0.8.0";
+    version = "0.9.0";
     description = "Reader and writer for common word embedding formats";
     homepage = "https://github.com/finalfusion/finalfusion-rust";
     authors = [ "Daniël de Kok <me@danieldk.eu>" ];
     edition = "2018";
-    sha256 = "1rbm5c95mxyiq07wzir2xzv0h7ryxfkwli3hnbabra8hpq05dj76";
+    sha256 = "05p31mv12h9168cbi62b6grk7spq6v9g8qr87pxgrhpllz93a2zr";
     dependencies = mapFeatures features ([
-      (crates."byteorder"."${deps."finalfusion"."0.8.0"."byteorder"}" deps)
-      (crates."fnv"."${deps."finalfusion"."0.8.0"."fnv"}" deps)
-      (crates."itertools"."${deps."finalfusion"."0.8.0"."itertools"}" deps)
-      (crates."memmap"."${deps."finalfusion"."0.8.0"."memmap"}" deps)
-      (crates."ndarray"."${deps."finalfusion"."0.8.0"."ndarray"}" deps)
-      (crates."ordered_float"."${deps."finalfusion"."0.8.0"."ordered_float"}" deps)
-      (crates."rand"."${deps."finalfusion"."0.8.0"."rand"}" deps)
-      (crates."rand_xorshift"."${deps."finalfusion"."0.8.0"."rand_xorshift"}" deps)
-      (crates."reductive"."${deps."finalfusion"."0.8.0"."reductive"}" deps)
-      (crates."serde"."${deps."finalfusion"."0.8.0"."serde"}" deps)
-      (crates."toml"."${deps."finalfusion"."0.8.0"."toml"}" deps)
+      (crates."byteorder"."${deps."finalfusion"."0.9.0"."byteorder"}" deps)
+      (crates."fnv"."${deps."finalfusion"."0.9.0"."fnv"}" deps)
+      (crates."itertools"."${deps."finalfusion"."0.9.0"."itertools"}" deps)
+      (crates."memmap"."${deps."finalfusion"."0.9.0"."memmap"}" deps)
+      (crates."ndarray"."${deps."finalfusion"."0.9.0"."ndarray"}" deps)
+      (crates."ordered_float"."${deps."finalfusion"."0.9.0"."ordered_float"}" deps)
+      (crates."rand"."${deps."finalfusion"."0.9.0"."rand"}" deps)
+      (crates."rand_xorshift"."${deps."finalfusion"."0.9.0"."rand_xorshift"}" deps)
+      (crates."reductive"."${deps."finalfusion"."0.9.0"."reductive"}" deps)
+      (crates."serde"."${deps."finalfusion"."0.9.0"."serde"}" deps)
+      (crates."toml"."${deps."finalfusion"."0.9.0"."toml"}" deps)
     ]);
   };
-  features_."finalfusion"."0.8.0" = deps: f: updateFeatures f (rec {
-    byteorder."${deps.finalfusion."0.8.0".byteorder}".default = true;
-    finalfusion."0.8.0".default = (f.finalfusion."0.8.0".default or true);
-    fnv."${deps.finalfusion."0.8.0".fnv}".default = true;
-    itertools."${deps.finalfusion."0.8.0".itertools}".default = true;
-    memmap."${deps.finalfusion."0.8.0".memmap}".default = true;
-    ndarray."${deps.finalfusion."0.8.0".ndarray}".default = true;
-    ordered_float."${deps.finalfusion."0.8.0".ordered_float}".default = true;
-    rand."${deps.finalfusion."0.8.0".rand}".default = true;
-    rand_xorshift."${deps.finalfusion."0.8.0".rand_xorshift}".default = true;
-    reductive."${deps.finalfusion."0.8.0".reductive}".default = true;
+  features_."finalfusion"."0.9.0" = deps: f: updateFeatures f (rec {
+    byteorder."${deps.finalfusion."0.9.0".byteorder}".default = true;
+    finalfusion."0.9.0".default = (f.finalfusion."0.9.0".default or true);
+    fnv."${deps.finalfusion."0.9.0".fnv}".default = true;
+    itertools."${deps.finalfusion."0.9.0".itertools}".default = true;
+    memmap."${deps.finalfusion."0.9.0".memmap}".default = true;
+    ndarray."${deps.finalfusion."0.9.0".ndarray}".default = true;
+    ordered_float."${deps.finalfusion."0.9.0".ordered_float}".default = true;
+    rand."${deps.finalfusion."0.9.0".rand}".default = true;
+    rand_xorshift."${deps.finalfusion."0.9.0".rand_xorshift}".default = true;
+    reductive."${deps.finalfusion."0.9.0".reductive}".default = true;
     serde = fold recursiveUpdate {} [
-      { "${deps.finalfusion."0.8.0".serde}"."derive" = true; }
-      { "${deps.finalfusion."0.8.0".serde}".default = true; }
+      { "${deps.finalfusion."0.9.0".serde}"."derive" = true; }
+      { "${deps.finalfusion."0.9.0".serde}".default = true; }
     ];
-    toml."${deps.finalfusion."0.8.0".toml}".default = true;
+    toml."${deps.finalfusion."0.9.0".toml}".default = true;
   }) [
-    (if deps."finalfusion"."0.8.0" ? "byteorder" then features_.byteorder."${deps."finalfusion"."0.8.0"."byteorder" or ""}" deps else {})
-    (if deps."finalfusion"."0.8.0" ? "fnv" then features_.fnv."${deps."finalfusion"."0.8.0"."fnv" or ""}" deps else {})
-    (if deps."finalfusion"."0.8.0" ? "itertools" then features_.itertools."${deps."finalfusion"."0.8.0"."itertools" or ""}" deps else {})
-    (if deps."finalfusion"."0.8.0" ? "memmap" then features_.memmap."${deps."finalfusion"."0.8.0"."memmap" or ""}" deps else {})
-    (if deps."finalfusion"."0.8.0" ? "ndarray" then features_.ndarray."${deps."finalfusion"."0.8.0"."ndarray" or ""}" deps else {})
-    (if deps."finalfusion"."0.8.0" ? "ordered_float" then features_.ordered_float."${deps."finalfusion"."0.8.0"."ordered_float" or ""}" deps else {})
-    (if deps."finalfusion"."0.8.0" ? "rand" then features_.rand."${deps."finalfusion"."0.8.0"."rand" or ""}" deps else {})
-    (if deps."finalfusion"."0.8.0" ? "rand_xorshift" then features_.rand_xorshift."${deps."finalfusion"."0.8.0"."rand_xorshift" or ""}" deps else {})
-    (if deps."finalfusion"."0.8.0" ? "reductive" then features_.reductive."${deps."finalfusion"."0.8.0"."reductive" or ""}" deps else {})
-    (if deps."finalfusion"."0.8.0" ? "serde" then features_.serde."${deps."finalfusion"."0.8.0"."serde" or ""}" deps else {})
-    (if deps."finalfusion"."0.8.0" ? "toml" then features_.toml."${deps."finalfusion"."0.8.0"."toml" or ""}" deps else {})
+    (if deps."finalfusion"."0.9.0" ? "byteorder" then features_.byteorder."${deps."finalfusion"."0.9.0"."byteorder" or ""}" deps else {})
+    (if deps."finalfusion"."0.9.0" ? "fnv" then features_.fnv."${deps."finalfusion"."0.9.0"."fnv" or ""}" deps else {})
+    (if deps."finalfusion"."0.9.0" ? "itertools" then features_.itertools."${deps."finalfusion"."0.9.0"."itertools" or ""}" deps else {})
+    (if deps."finalfusion"."0.9.0" ? "memmap" then features_.memmap."${deps."finalfusion"."0.9.0"."memmap" or ""}" deps else {})
+    (if deps."finalfusion"."0.9.0" ? "ndarray" then features_.ndarray."${deps."finalfusion"."0.9.0"."ndarray" or ""}" deps else {})
+    (if deps."finalfusion"."0.9.0" ? "ordered_float" then features_.ordered_float."${deps."finalfusion"."0.9.0"."ordered_float" or ""}" deps else {})
+    (if deps."finalfusion"."0.9.0" ? "rand" then features_.rand."${deps."finalfusion"."0.9.0"."rand" or ""}" deps else {})
+    (if deps."finalfusion"."0.9.0" ? "rand_xorshift" then features_.rand_xorshift."${deps."finalfusion"."0.9.0"."rand_xorshift" or ""}" deps else {})
+    (if deps."finalfusion"."0.9.0" ? "reductive" then features_.reductive."${deps."finalfusion"."0.9.0"."reductive" or ""}" deps else {})
+    (if deps."finalfusion"."0.9.0" ? "serde" then features_.serde."${deps."finalfusion"."0.9.0"."serde" or ""}" deps else {})
+    (if deps."finalfusion"."0.9.0" ? "toml" then features_.toml."${deps."finalfusion"."0.9.0"."toml" or ""}" deps else {})
   ];
 
 

@@ -34,6 +34,24 @@ pub struct PyEmbeddings {
     embeddings: Rc<RefCell<EmbeddingsWrap>>,
 }
 
+impl PyEmbeddings {
+    /// Copy storage to an array.
+    ///
+    /// This should only be used for storage types that do not provide
+    /// an ndarray view that can be copied trivially, such as quantized
+    /// storage.
+    fn copy_storage_to_array(storage: &Storage) -> Array2<f32> {
+        let (rows, dims) = storage.shape();
+
+        let mut array = Array2::<f32>::zeros((rows, dims));
+        for idx in 0..rows {
+            array.row_mut(idx).assign(&storage.embedding(idx).as_view());
+        }
+
+        array
+    }
+}
+
 #[pymethods]
 impl PyEmbeddings {
     /// Load embeddings from the given `path`.
@@ -216,17 +234,16 @@ impl PyEmbeddings {
                 StorageWrap::MmapArray(mmap) => mmap.view(),
                 StorageWrap::NdArray(array) => array.0.view(),
                 StorageWrap::QuantizedArray(quantized) => {
-                    let (rows, dims) = quantized.shape();
-                    let mut array = Array2::<f32>::zeros((rows, dims));
-                    for idx in 0..rows {
-                        array
-                            .row_mut(idx)
-                            .assign(&quantized.embedding(idx).as_view());
-                    }
+                    let array = Self::copy_storage_to_array(quantized);
+                    return array.to_pyarray(gil.python()).to_owned();
+                }
+                StorageWrap::MmapQuantizedArray(quantized) => {
+                    let array = Self::copy_storage_to_array(quantized);
                     return array.to_pyarray(gil.python()).to_owned();
                 }
             },
         };
+
         matrix_view.to_pyarray(gil.python()).to_owned()
     }
 
