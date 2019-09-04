@@ -21,7 +21,7 @@ features = ["extension-module"]
 [dependencies]
 itertools = "0.8"
 failure = "0.1"
-finalfusion = "0.8.2"
+finalfusion = "0.9"
 libc = "0.2"
 ndarray = "0.12"
 numpy = "0.6"
