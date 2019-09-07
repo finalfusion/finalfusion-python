@@ -16,8 +16,8 @@ use ndarray::Array2;
 use numpy::{IntoPyArray, NpyDataType, PyArray1, PyArray2, ToPyArray};
 use pyo3::class::iter::PyIterProtocol;
 use pyo3::prelude::*;
-use pyo3::types::{PyAny, PyList, PySet, PyTuple};
-use pyo3::{exceptions, PyMappingProtocol, PyTypeInfo};
+use pyo3::types::{PyAny, PyTuple};
+use pyo3::{exceptions, PyMappingProtocol};
 use toml::{self, Value};
 
 use crate::{EmbeddingsWrap, PyEmbeddingIterator, PyVocab, PyWordSimilarity};
@@ -461,24 +461,15 @@ struct Skips<'a>(HashSet<&'a str>);
 
 impl<'a> FromPyObject<'a> for Skips<'a> {
     fn extract(ob: &'a PyAny) -> Result<Self, PyErr> {
-        let mut set = ob
-            .len()
-            .map(|len| HashSet::with_capacity(len))
-            .unwrap_or_default();
-
-        let iter = if <PySet as PyTypeInfo>::is_instance(ob) {
-            ob.iter().unwrap()
-        } else if <PyList as PyTypeInfo>::is_instance(ob) {
-            ob.iter().unwrap()
-        } else {
-            return Err(exceptions::TypeError::py_err("Iterable expected"));
-        };
-
-        for el in iter {
-            set.insert(
-                el?.extract()
-                    .map_err(|_| exceptions::TypeError::py_err("Expected String"))?,
-            );
+        let mut set = ob.len().map(HashSet::with_capacity).unwrap_or_default();
+        for el in ob
+            .iter()
+            .map_err(|_| exceptions::TypeError::py_err("Iterable expected"))?
+        {
+            let el = el?;
+            set.insert(el.extract().map_err(|_| {
+                exceptions::TypeError::py_err(format!("Expected String not: {}", el))
+            })?);
         }
         Ok(Skips(set))
     }
