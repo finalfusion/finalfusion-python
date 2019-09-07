@@ -374,13 +374,13 @@ impl PyEmbeddings {
     ) -> PyResult<Vec<PyObject>> {
         let mut r = Vec::with_capacity(results.len());
         for ws in results {
-            r.push(
+            r.push(IntoPy::into_py(
                 Py::new(
                     py,
                     PyWordSimilarity::new(ws.word.to_owned(), ws.similarity.into_inner()),
-                )?
-                .into_object(py),
-            )
+                )?,
+                py,
+            ))
         }
         Ok(r)
     }
@@ -406,8 +406,10 @@ impl PyIterProtocol for PyEmbeddings {
     fn __iter__(slf: PyRefMut<Self>) -> PyResult<PyObject> {
         let gil = Python::acquire_gil();
         let py = gil.python();
-        let iter =
-            Py::new(py, PyEmbeddingIterator::new(slf.embeddings.clone(), 0))?.into_object(py);
+        let iter = IntoPy::into_py(
+            Py::new(py, PyEmbeddingIterator::new(slf.embeddings.clone(), 0))?,
+            py,
+        );
 
         Ok(iter)
     }
