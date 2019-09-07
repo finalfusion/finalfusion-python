@@ -4,7 +4,7 @@ install:
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
   - "python --version"
   - appveyor DownloadFile https://win.rustup.rs/ -FileName rustup-init.exe
-  - rustup-init -yv --default-toolchain nightly-2019-02-07 --default-host x86_64-pc-windows-msvc
+  - rustup-init -yv --default-toolchain nightly-2019-07-19 --default-host x86_64-pc-windows-msvc
   - set PATH=%PATH%;%USERPROFILE%\.cargo\bin
   - rustc -V
   - cargo -V
