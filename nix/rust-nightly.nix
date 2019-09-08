@@ -8,4 +8,4 @@ let
     sha256 = "18h0nvh55b5an4gmlgfbvwbyqj91bklf1zymis6lbdh75571qaz0";
   };
   mozilla = callPackage "${mozillaOverlay.out}/package-set.nix" {};
-in (mozilla.rustChannelOf { date = "2019-02-07"; channel = "nightly"; }).rust
+in (mozilla.rustChannelOf { date = "2019-07-19"; channel = "nightly"; }).rust

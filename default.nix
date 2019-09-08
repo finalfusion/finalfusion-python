@@ -44,7 +44,6 @@ in ((callPackage ./nix/finalfusion-python.nix {}).finalfusion_python {}).overrid
       '';
 
       installCheckPhase = ''
-        cargo fmt --all -- --check
         pytest
       '';
 

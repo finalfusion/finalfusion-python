@@ -5,38 +5,38 @@ let inherit (lib.lists) fold;
 in
 rec {
 
-# aho-corasick-0.7.4
+# aho-corasick-0.7.6
 
-  crates.aho_corasick."0.7.4" = deps: { features?(features_."aho_corasick"."0.7.4" deps {}) }: buildRustCrate {
+  crates.aho_corasick."0.7.6" = deps: { features?(features_."aho_corasick"."0.7.6" deps {}) }: buildRustCrate {
     crateName = "aho-corasick";
-    version = "0.7.4";
+    version = "0.7.6";
     description = "Fast multiple substring searching.";
     homepage = "https://github.com/BurntSushi/aho-corasick";
     authors = [ "Andrew Gallant <jamslam@gmail.com>" ];
-    sha256 = "1njpvqirz7rpbc7w07a5w5fk294w23zks28d89g46mr57j6pffy5";
+    sha256 = "1srdggg7iawz7rfyb79qfnz6vmzkgl6g6gabyd9ad6pbx7zzj8gz";
     libName = "aho_corasick";
     dependencies = mapFeatures features ([
-      (crates."memchr"."${deps."aho_corasick"."0.7.4"."memchr"}" deps)
+      (crates."memchr"."${deps."aho_corasick"."0.7.6"."memchr"}" deps)
     ]);
-    features = mkFeatures (features."aho_corasick"."0.7.4" or {});
+    features = mkFeatures (features."aho_corasick"."0.7.6" or {});
   };
-  features_."aho_corasick"."0.7.4" = deps: f: updateFeatures f (rec {
+  features_."aho_corasick"."0.7.6" = deps: f: updateFeatures f (rec {
     aho_corasick = fold recursiveUpdate {} [
-      { "0.7.4"."std" =
-        (f.aho_corasick."0.7.4"."std" or false) ||
-        (f.aho_corasick."0.7.4"."default" or false) ||
-        (aho_corasick."0.7.4"."default" or false); }
-      { "0.7.4".default = (f.aho_corasick."0.7.4".default or true); }
+      { "0.7.6"."std" =
+        (f.aho_corasick."0.7.6"."std" or false) ||
+        (f.aho_corasick."0.7.6"."default" or false) ||
+        (aho_corasick."0.7.6"."default" or false); }
+      { "0.7.6".default = (f.aho_corasick."0.7.6".default or true); }
     ];
     memchr = fold recursiveUpdate {} [
-      { "${deps.aho_corasick."0.7.4".memchr}"."use_std" =
-        (f.memchr."${deps.aho_corasick."0.7.4".memchr}"."use_std" or false) ||
-        (aho_corasick."0.7.4"."std" or false) ||
-        (f."aho_corasick"."0.7.4"."std" or false); }
-      { "${deps.aho_corasick."0.7.4".memchr}".default = (f.memchr."${deps.aho_corasick."0.7.4".memchr}".default or false); }
+      { "${deps.aho_corasick."0.7.6".memchr}"."use_std" =
+        (f.memchr."${deps.aho_corasick."0.7.6".memchr}"."use_std" or false) ||
+        (aho_corasick."0.7.6"."std" or false) ||
+        (f."aho_corasick"."0.7.6"."std" or false); }
+      { "${deps.aho_corasick."0.7.6".memchr}".default = (f.memchr."${deps.aho_corasick."0.7.6".memchr}".default or false); }
     ];
   }) [
-    (if deps."aho_corasick"."0.7.4" ? "memchr" then features_.memchr."${deps."aho_corasick"."0.7.4"."memchr" or ""}" deps else {})
+    (if deps."aho_corasick"."0.7.6" ? "memchr" then features_.memchr."${deps."aho_corasick"."0.7.6"."memchr" or ""}" deps else {})
   ];
 
 
@@ -769,59 +769,127 @@ item that gets emitted.
 
 
 # end
-# inventory-0.1.3
+# indoc-0.3.4
 
-  crates.inventory."0.1.3" = deps: { features?(features_."inventory"."0.1.3" deps {}) }: buildRustCrate {
-    crateName = "inventory";
-    version = "0.1.3";
-    description = "Typed distributed plugin registration";
+  crates.indoc."0.3.4" = deps: { features?(features_."indoc"."0.3.4" deps {}) }: buildRustCrate {
+    crateName = "indoc";
+    version = "0.3.4";
+    description = "Indented document literals";
     authors = [ "David Tolnay <dtolnay@gmail.com>" ];
     edition = "2018";
-    sha256 = "011lvdwgcn4jlkcdq1b3spjg9yx3fi6fqmnmv44mqpjni4vqbsg9";
+    sha256 = "0jd2axphh5m8yrpj77rijf6pap43ic9wrph68hiz0lckbnn02z3b";
     dependencies = mapFeatures features ([
-      (crates."ctor"."${deps."inventory"."0.1.3"."ctor"}" deps)
-      (crates."ghost"."${deps."inventory"."0.1.3"."ghost"}" deps)
-      (crates."inventory_impl"."${deps."inventory"."0.1.3"."inventory_impl"}" deps)
+      (crates."indoc_impl"."${deps."indoc"."0.3.4"."indoc_impl"}" deps)
+      (crates."proc_macro_hack"."${deps."indoc"."0.3.4"."proc_macro_hack"}" deps)
     ]);
+    features = mkFeatures (features."indoc"."0.3.4" or {});
   };
-  features_."inventory"."0.1.3" = deps: f: updateFeatures f (rec {
-    ctor."${deps.inventory."0.1.3".ctor}".default = true;
-    ghost."${deps.inventory."0.1.3".ghost}".default = true;
-    inventory."0.1.3".default = (f.inventory."0.1.3".default or true);
-    inventory_impl."${deps.inventory."0.1.3".inventory_impl}".default = true;
+  features_."indoc"."0.3.4" = deps: f: updateFeatures f (rec {
+    indoc."0.3.4".default = (f.indoc."0.3.4".default or true);
+    indoc_impl = fold recursiveUpdate {} [
+      { "${deps.indoc."0.3.4".indoc_impl}"."unstable" =
+        (f.indoc_impl."${deps.indoc."0.3.4".indoc_impl}"."unstable" or false) ||
+        (indoc."0.3.4"."unstable" or false) ||
+        (f."indoc"."0.3.4"."unstable" or false); }
+      { "${deps.indoc."0.3.4".indoc_impl}".default = true; }
+    ];
+    proc_macro_hack."${deps.indoc."0.3.4".proc_macro_hack}".default = true;
   }) [
-    (if deps."inventory"."0.1.3" ? "ctor" then features_.ctor."${deps."inventory"."0.1.3"."ctor" or ""}" deps else {})
-    (if deps."inventory"."0.1.3" ? "ghost" then features_.ghost."${deps."inventory"."0.1.3"."ghost" or ""}" deps else {})
-    (if deps."inventory"."0.1.3" ? "inventory_impl" then features_.inventory_impl."${deps."inventory"."0.1.3"."inventory_impl" or ""}" deps else {})
+    (if deps."indoc"."0.3.4" ? "indoc_impl" then features_.indoc_impl."${deps."indoc"."0.3.4"."indoc_impl" or ""}" deps else {})
+    (if deps."indoc"."0.3.4" ? "proc_macro_hack" then features_.proc_macro_hack."${deps."indoc"."0.3.4"."proc_macro_hack" or ""}" deps else {})
   ];
 
 
 # end
-# inventory-impl-0.1.3
+# indoc-impl-0.3.4
 
-  crates.inventory_impl."0.1.3" = deps: { features?(features_."inventory_impl"."0.1.3" deps {}) }: buildRustCrate {
+  crates.indoc_impl."0.3.4" = deps: { features?(features_."indoc_impl"."0.3.4" deps {}) }: buildRustCrate {
+    crateName = "indoc-impl";
+    version = "0.3.4";
+    description = "Indented document literals";
+    authors = [ "David Tolnay <dtolnay@gmail.com>" ];
+    edition = "2018";
+    sha256 = "1mkjjshsygdd10sn6fyfk3ki4jilygxhza6606s3rcx789nqrdqx";
+    procMacro = true;
+    dependencies = mapFeatures features ([
+      (crates."proc_macro_hack"."${deps."indoc_impl"."0.3.4"."proc_macro_hack"}" deps)
+      (crates."proc_macro2"."${deps."indoc_impl"."0.3.4"."proc_macro2"}" deps)
+      (crates."quote"."${deps."indoc_impl"."0.3.4"."quote"}" deps)
+      (crates."syn"."${deps."indoc_impl"."0.3.4"."syn"}" deps)
+      (crates."unindent"."${deps."indoc_impl"."0.3.4"."unindent"}" deps)
+    ]);
+    features = mkFeatures (features."indoc_impl"."0.3.4" or {});
+  };
+  features_."indoc_impl"."0.3.4" = deps: f: updateFeatures f (rec {
+    indoc_impl."0.3.4".default = (f.indoc_impl."0.3.4".default or true);
+    proc_macro2."${deps.indoc_impl."0.3.4".proc_macro2}".default = true;
+    proc_macro_hack."${deps.indoc_impl."0.3.4".proc_macro_hack}".default = true;
+    quote."${deps.indoc_impl."0.3.4".quote}".default = true;
+    syn."${deps.indoc_impl."0.3.4".syn}".default = true;
+    unindent."${deps.indoc_impl."0.3.4".unindent}".default = true;
+  }) [
+    (if deps."indoc_impl"."0.3.4" ? "proc_macro_hack" then features_.proc_macro_hack."${deps."indoc_impl"."0.3.4"."proc_macro_hack" or ""}" deps else {})
+    (if deps."indoc_impl"."0.3.4" ? "proc_macro2" then features_.proc_macro2."${deps."indoc_impl"."0.3.4"."proc_macro2" or ""}" deps else {})
+    (if deps."indoc_impl"."0.3.4" ? "quote" then features_.quote."${deps."indoc_impl"."0.3.4"."quote" or ""}" deps else {})
+    (if deps."indoc_impl"."0.3.4" ? "syn" then features_.syn."${deps."indoc_impl"."0.3.4"."syn" or ""}" deps else {})
+    (if deps."indoc_impl"."0.3.4" ? "unindent" then features_.unindent."${deps."indoc_impl"."0.3.4"."unindent" or ""}" deps else {})
+  ];
+
+
+# end
+# inventory-0.1.4
+
+  crates.inventory."0.1.4" = deps: { features?(features_."inventory"."0.1.4" deps {}) }: buildRustCrate {
+    crateName = "inventory";
+    version = "0.1.4";
+    description = "Typed distributed plugin registration";
+    authors = [ "David Tolnay <dtolnay@gmail.com>" ];
+    edition = "2018";
+    sha256 = "0a7yndzhxjfkk2baf6zb0ix886lwcsbm45zg05ci272wbjcyz3zh";
+    dependencies = mapFeatures features ([
+      (crates."ctor"."${deps."inventory"."0.1.4"."ctor"}" deps)
+      (crates."ghost"."${deps."inventory"."0.1.4"."ghost"}" deps)
+      (crates."inventory_impl"."${deps."inventory"."0.1.4"."inventory_impl"}" deps)
+    ]);
+  };
+  features_."inventory"."0.1.4" = deps: f: updateFeatures f (rec {
+    ctor."${deps.inventory."0.1.4".ctor}".default = true;
+    ghost."${deps.inventory."0.1.4".ghost}".default = true;
+    inventory."0.1.4".default = (f.inventory."0.1.4".default or true);
+    inventory_impl."${deps.inventory."0.1.4".inventory_impl}".default = true;
+  }) [
+    (if deps."inventory"."0.1.4" ? "ctor" then features_.ctor."${deps."inventory"."0.1.4"."ctor" or ""}" deps else {})
+    (if deps."inventory"."0.1.4" ? "ghost" then features_.ghost."${deps."inventory"."0.1.4"."ghost" or ""}" deps else {})
+    (if deps."inventory"."0.1.4" ? "inventory_impl" then features_.inventory_impl."${deps."inventory"."0.1.4"."inventory_impl" or ""}" deps else {})
+  ];
+
+
+# end
+# inventory-impl-0.1.4
+
+  crates.inventory_impl."0.1.4" = deps: { features?(features_."inventory_impl"."0.1.4" deps {}) }: buildRustCrate {
     crateName = "inventory-impl";
-    version = "0.1.3";
+    version = "0.1.4";
     description = "Implementation of macros for the `inventory` crate";
     authors = [ "David Tolnay <dtolnay@gmail.com>" ];
     edition = "2018";
-    sha256 = "03895n64bh0ihs1m0m7l4nqmfb9dc487grp7x92plwq61ywf3v55";
+    sha256 = "07y47wbk367y207qfw9lx2wypz3wp2247vbq3vmypbapixdpv4c1";
     procMacro = true;
     dependencies = mapFeatures features ([
-      (crates."proc_macro2"."${deps."inventory_impl"."0.1.3"."proc_macro2"}" deps)
-      (crates."quote"."${deps."inventory_impl"."0.1.3"."quote"}" deps)
-      (crates."syn"."${deps."inventory_impl"."0.1.3"."syn"}" deps)
+      (crates."proc_macro2"."${deps."inventory_impl"."0.1.4"."proc_macro2"}" deps)
+      (crates."quote"."${deps."inventory_impl"."0.1.4"."quote"}" deps)
+      (crates."syn"."${deps."inventory_impl"."0.1.4"."syn"}" deps)
     ]);
   };
-  features_."inventory_impl"."0.1.3" = deps: f: updateFeatures f (rec {
-    inventory_impl."0.1.3".default = (f.inventory_impl."0.1.3".default or true);
-    proc_macro2."${deps.inventory_impl."0.1.3".proc_macro2}".default = true;
-    quote."${deps.inventory_impl."0.1.3".quote}".default = true;
-    syn."${deps.inventory_impl."0.1.3".syn}".default = true;
+  features_."inventory_impl"."0.1.4" = deps: f: updateFeatures f (rec {
+    inventory_impl."0.1.4".default = (f.inventory_impl."0.1.4".default or true);
+    proc_macro2."${deps.inventory_impl."0.1.4".proc_macro2}".default = true;
+    quote."${deps.inventory_impl."0.1.4".quote}".default = true;
+    syn."${deps.inventory_impl."0.1.4".syn}".default = true;
   }) [
-    (if deps."inventory_impl"."0.1.3" ? "proc_macro2" then features_.proc_macro2."${deps."inventory_impl"."0.1.3"."proc_macro2" or ""}" deps else {})
-    (if deps."inventory_impl"."0.1.3" ? "quote" then features_.quote."${deps."inventory_impl"."0.1.3"."quote" or ""}" deps else {})
-    (if deps."inventory_impl"."0.1.3" ? "syn" then features_.syn."${deps."inventory_impl"."0.1.3"."syn" or ""}" deps else {})
+    (if deps."inventory_impl"."0.1.4" ? "proc_macro2" then features_.proc_macro2."${deps."inventory_impl"."0.1.4"."proc_macro2" or ""}" deps else {})
+    (if deps."inventory_impl"."0.1.4" ? "quote" then features_.quote."${deps."inventory_impl"."0.1.4"."quote" or ""}" deps else {})
+    (if deps."inventory_impl"."0.1.4" ? "syn" then features_.syn."${deps."inventory_impl"."0.1.4"."syn" or ""}" deps else {})
   ];
 
 
@@ -882,6 +950,28 @@ item that gets emitted.
 
 
 # end
+# itoa-0.4.4
+
+  crates.itoa."0.4.4" = deps: { features?(features_."itoa"."0.4.4" deps {}) }: buildRustCrate {
+    crateName = "itoa";
+    version = "0.4.4";
+    description = "Fast functions for printing integer primitives to an io::Write";
+    authors = [ "David Tolnay <dtolnay@gmail.com>" ];
+    sha256 = "1fqc34xzzl2spfdawxd9awhzl0fwf1y6y4i94l8bq8rfrzd90awl";
+    features = mkFeatures (features."itoa"."0.4.4" or {});
+  };
+  features_."itoa"."0.4.4" = deps: f: updateFeatures f (rec {
+    itoa = fold recursiveUpdate {} [
+      { "0.4.4"."std" =
+        (f.itoa."0.4.4"."std" or false) ||
+        (f.itoa."0.4.4"."default" or false) ||
+        (itoa."0.4.4"."default" or false); }
+      { "0.4.4".default = (f.itoa."0.4.4".default or true); }
+    ];
+  }) [];
+
+
+# end
 # lazy_static-1.3.0
 
   crates.lazy_static."1.3.0" = deps: { features?(features_."lazy_static"."1.3.0" deps {}) }: buildRustCrate {
@@ -906,38 +996,38 @@ item that gets emitted.
 
 
 # end
-# libc-0.2.60
+# libc-0.2.62
 
-  crates.libc."0.2.60" = deps: { features?(features_."libc"."0.2.60" deps {}) }: buildRustCrate {
+  crates.libc."0.2.62" = deps: { features?(features_."libc"."0.2.62" deps {}) }: buildRustCrate {
     crateName = "libc";
-    version = "0.2.60";
+    version = "0.2.62";
     description = "Raw FFI bindings to platform libraries like libc.
 ";
     homepage = "https://github.com/rust-lang/libc";
     authors = [ "The Rust Project Developers" ];
-    sha256 = "1zklw10b6lwz6ldamxvdxr8gsxbqhphxhn8n5n5dndl7avafx49b";
+    sha256 = "1vsb4pyn6gl6sri6cv5hin5wjfgk7lk2bshzmxb1xnkckjhz4gbx";
     build = "build.rs";
     dependencies = mapFeatures features ([
 ]);
-    features = mkFeatures (features."libc"."0.2.60" or {});
+    features = mkFeatures (features."libc"."0.2.62" or {});
   };
-  features_."libc"."0.2.60" = deps: f: updateFeatures f (rec {
+  features_."libc"."0.2.62" = deps: f: updateFeatures f (rec {
     libc = fold recursiveUpdate {} [
-      { "0.2.60"."align" =
-        (f.libc."0.2.60"."align" or false) ||
-        (f.libc."0.2.60"."rustc-dep-of-std" or false) ||
-        (libc."0.2.60"."rustc-dep-of-std" or false); }
-      { "0.2.60"."rustc-std-workspace-core" =
-        (f.libc."0.2.60"."rustc-std-workspace-core" or false) ||
-        (f.libc."0.2.60"."rustc-dep-of-std" or false) ||
-        (libc."0.2.60"."rustc-dep-of-std" or false); }
-      { "0.2.60"."std" =
-        (f.libc."0.2.60"."std" or false) ||
-        (f.libc."0.2.60"."default" or false) ||
-        (libc."0.2.60"."default" or false) ||
-        (f.libc."0.2.60"."use_std" or false) ||
-        (libc."0.2.60"."use_std" or false); }
-      { "0.2.60".default = (f.libc."0.2.60".default or true); }
+      { "0.2.62"."align" =
+        (f.libc."0.2.62"."align" or false) ||
+        (f.libc."0.2.62"."rustc-dep-of-std" or false) ||
+        (libc."0.2.62"."rustc-dep-of-std" or false); }
+      { "0.2.62"."rustc-std-workspace-core" =
+        (f.libc."0.2.62"."rustc-std-workspace-core" or false) ||
+        (f.libc."0.2.62"."rustc-dep-of-std" or false) ||
+        (libc."0.2.62"."rustc-dep-of-std" or false); }
+      { "0.2.62"."std" =
+        (f.libc."0.2.62"."std" or false) ||
+        (f.libc."0.2.62"."default" or false) ||
+        (libc."0.2.62"."default" or false) ||
+        (f.libc."0.2.62"."use_std" or false) ||
+        (libc."0.2.62"."use_std" or false); }
+      { "0.2.62".default = (f.libc."0.2.62".default or true); }
     ];
   }) [];
 
@@ -963,55 +1053,6 @@ item that gets emitted.
     log."0.4.7".default = (f.log."0.4.7".default or true);
   }) [
     (if deps."log"."0.4.7" ? "cfg_if" then features_.cfg_if."${deps."log"."0.4.7"."cfg_if" or ""}" deps else {})
-  ];
-
-
-# end
-# mashup-0.1.9
-
-  crates.mashup."0.1.9" = deps: { features?(features_."mashup"."0.1.9" deps {}) }: buildRustCrate {
-    crateName = "mashup";
-    version = "0.1.9";
-    description = "Concatenate identifiers in a macro invocation";
-    authors = [ "David Tolnay <dtolnay@gmail.com>" ];
-    sha256 = "17skgsfbzppxhzkb4y68jdd7d62df05fx3g3iij8rlz3xmwdibb1";
-    dependencies = mapFeatures features ([
-      (crates."mashup_impl"."${deps."mashup"."0.1.9"."mashup_impl"}" deps)
-      (crates."proc_macro_hack"."${deps."mashup"."0.1.9"."proc_macro_hack"}" deps)
-    ]);
-  };
-  features_."mashup"."0.1.9" = deps: f: updateFeatures f (rec {
-    mashup."0.1.9".default = (f.mashup."0.1.9".default or true);
-    mashup_impl."${deps.mashup."0.1.9".mashup_impl}".default = true;
-    proc_macro_hack."${deps.mashup."0.1.9".proc_macro_hack}".default = true;
-  }) [
-    (if deps."mashup"."0.1.9" ? "mashup_impl" then features_.mashup_impl."${deps."mashup"."0.1.9"."mashup_impl" or ""}" deps else {})
-    (if deps."mashup"."0.1.9" ? "proc_macro_hack" then features_.proc_macro_hack."${deps."mashup"."0.1.9"."proc_macro_hack" or ""}" deps else {})
-  ];
-
-
-# end
-# mashup-impl-0.1.9
-
-  crates.mashup_impl."0.1.9" = deps: { features?(features_."mashup_impl"."0.1.9" deps {}) }: buildRustCrate {
-    crateName = "mashup-impl";
-    version = "0.1.9";
-    description = "Concatenate identifiers in a macro invocation";
-    authors = [ "David Tolnay <dtolnay@gmail.com>" ];
-    sha256 = "00inqg6rpm733pnqbl0inhcl1zrbbl7r9ggxij4cr1c2g8k6c5dw";
-    procMacro = true;
-    dependencies = mapFeatures features ([
-      (crates."proc_macro_hack"."${deps."mashup_impl"."0.1.9"."proc_macro_hack"}" deps)
-      (crates."proc_macro2"."${deps."mashup_impl"."0.1.9"."proc_macro2"}" deps)
-    ]);
-  };
-  features_."mashup_impl"."0.1.9" = deps: f: updateFeatures f (rec {
-    mashup_impl."0.1.9".default = (f.mashup_impl."0.1.9".default or true);
-    proc_macro2."${deps.mashup_impl."0.1.9".proc_macro2}".default = true;
-    proc_macro_hack."${deps.mashup_impl."0.1.9".proc_macro_hack}".default = true;
-  }) [
-    (if deps."mashup_impl"."0.1.9" ? "proc_macro_hack" then features_.proc_macro_hack."${deps."mashup_impl"."0.1.9"."proc_macro_hack" or ""}" deps else {})
-    (if deps."mashup_impl"."0.1.9" ? "proc_macro2" then features_.proc_macro2."${deps."mashup_impl"."0.1.9"."proc_macro2" or ""}" deps else {})
   ];
 
 
@@ -1324,45 +1365,46 @@ item that gets emitted.
 
 
 # end
-# numpy-0.6.0
+# numpy-0.7.0
 
-  crates.numpy."0.6.0" = deps: { features?(features_."numpy"."0.6.0" deps {}) }: buildRustCrate {
+  crates.numpy."0.7.0" = deps: { features?(features_."numpy"."0.7.0" deps {}) }: buildRustCrate {
     crateName = "numpy";
-    version = "0.6.0";
+    version = "0.7.0";
     description = "Rust binding of NumPy C-API";
     authors = [ "Toshiki Teramura <toshiki.teramura@gmail.com>" "Yuji Kanagawa <yuji.kngw.80s.revive@gmail.com>" ];
-    sha256 = "06q4gh1f3w11l9lbbc3x4r88k8zfdydi1aq3prnccdgb334jimms";
+    edition = "2018";
+    sha256 = "1qa5dkidxwmiha42l847pnpqmqhvcfkxbc90qvfb7m1yn5bca7q3";
     dependencies = mapFeatures features ([
-      (crates."cfg_if"."${deps."numpy"."0.6.0"."cfg_if"}" deps)
-      (crates."libc"."${deps."numpy"."0.6.0"."libc"}" deps)
-      (crates."ndarray"."${deps."numpy"."0.6.0"."ndarray"}" deps)
-      (crates."num_complex"."${deps."numpy"."0.6.0"."num_complex"}" deps)
-      (crates."num_traits"."${deps."numpy"."0.6.0"."num_traits"}" deps)
-      (crates."pyo3"."${deps."numpy"."0.6.0"."pyo3"}" deps)
+      (crates."cfg_if"."${deps."numpy"."0.7.0"."cfg_if"}" deps)
+      (crates."libc"."${deps."numpy"."0.7.0"."libc"}" deps)
+      (crates."ndarray"."${deps."numpy"."0.7.0"."ndarray"}" deps)
+      (crates."num_complex"."${deps."numpy"."0.7.0"."num_complex"}" deps)
+      (crates."num_traits"."${deps."numpy"."0.7.0"."num_traits"}" deps)
+      (crates."pyo3"."${deps."numpy"."0.7.0"."pyo3"}" deps)
     ]);
-    features = mkFeatures (features."numpy"."0.6.0" or {});
+    features = mkFeatures (features."numpy"."0.7.0" or {});
   };
-  features_."numpy"."0.6.0" = deps: f: updateFeatures f (rec {
-    cfg_if."${deps.numpy."0.6.0".cfg_if}".default = true;
-    libc."${deps.numpy."0.6.0".libc}".default = true;
-    ndarray."${deps.numpy."0.6.0".ndarray}".default = true;
-    num_complex."${deps.numpy."0.6.0".num_complex}".default = true;
-    num_traits."${deps.numpy."0.6.0".num_traits}".default = true;
-    numpy."0.6.0".default = (f.numpy."0.6.0".default or true);
+  features_."numpy"."0.7.0" = deps: f: updateFeatures f (rec {
+    cfg_if."${deps.numpy."0.7.0".cfg_if}".default = true;
+    libc."${deps.numpy."0.7.0".libc}".default = true;
+    ndarray."${deps.numpy."0.7.0".ndarray}".default = true;
+    num_complex."${deps.numpy."0.7.0".num_complex}".default = true;
+    num_traits."${deps.numpy."0.7.0".num_traits}".default = true;
+    numpy."0.7.0".default = (f.numpy."0.7.0".default or true);
     pyo3 = fold recursiveUpdate {} [
-      { "${deps.numpy."0.6.0".pyo3}"."python3" =
-        (f.pyo3."${deps.numpy."0.6.0".pyo3}"."python3" or false) ||
-        (numpy."0.6.0"."python3" or false) ||
-        (f."numpy"."0.6.0"."python3" or false); }
-      { "${deps.numpy."0.6.0".pyo3}".default = true; }
+      { "${deps.numpy."0.7.0".pyo3}"."python3" =
+        (f.pyo3."${deps.numpy."0.7.0".pyo3}"."python3" or false) ||
+        (numpy."0.7.0"."python3" or false) ||
+        (f."numpy"."0.7.0"."python3" or false); }
+      { "${deps.numpy."0.7.0".pyo3}".default = true; }
     ];
   }) [
-    (if deps."numpy"."0.6.0" ? "cfg_if" then features_.cfg_if."${deps."numpy"."0.6.0"."cfg_if" or ""}" deps else {})
-    (if deps."numpy"."0.6.0" ? "libc" then features_.libc."${deps."numpy"."0.6.0"."libc" or ""}" deps else {})
-    (if deps."numpy"."0.6.0" ? "ndarray" then features_.ndarray."${deps."numpy"."0.6.0"."ndarray" or ""}" deps else {})
-    (if deps."numpy"."0.6.0" ? "num_complex" then features_.num_complex."${deps."numpy"."0.6.0"."num_complex" or ""}" deps else {})
-    (if deps."numpy"."0.6.0" ? "num_traits" then features_.num_traits."${deps."numpy"."0.6.0"."num_traits" or ""}" deps else {})
-    (if deps."numpy"."0.6.0" ? "pyo3" then features_.pyo3."${deps."numpy"."0.6.0"."pyo3" or ""}" deps else {})
+    (if deps."numpy"."0.7.0" ? "cfg_if" then features_.cfg_if."${deps."numpy"."0.7.0"."cfg_if" or ""}" deps else {})
+    (if deps."numpy"."0.7.0" ? "libc" then features_.libc."${deps."numpy"."0.7.0"."libc" or ""}" deps else {})
+    (if deps."numpy"."0.7.0" ? "ndarray" then features_.ndarray."${deps."numpy"."0.7.0"."ndarray" or ""}" deps else {})
+    (if deps."numpy"."0.7.0" ? "num_complex" then features_.num_complex."${deps."numpy"."0.7.0"."num_complex" or ""}" deps else {})
+    (if deps."numpy"."0.7.0" ? "num_traits" then features_.num_traits."${deps."numpy"."0.7.0"."num_traits" or ""}" deps else {})
+    (if deps."numpy"."0.7.0" ? "pyo3" then features_.pyo3."${deps."numpy"."0.7.0"."pyo3" or ""}" deps else {})
   ];
 
 
@@ -1401,40 +1443,88 @@ item that gets emitted.
 
 
 # end
-# proc-macro-hack-0.4.2
+# paste-0.1.6
 
-  crates.proc_macro_hack."0.4.2" = deps: { features?(features_."proc_macro_hack"."0.4.2" deps {}) }: buildRustCrate {
-    crateName = "proc-macro-hack";
-    version = "0.4.2";
-    description = "Procedural functionlike!() macros using only Macros 1.1";
+  crates.paste."0.1.6" = deps: { features?(features_."paste"."0.1.6" deps {}) }: buildRustCrate {
+    crateName = "paste";
+    version = "0.1.6";
+    description = "Macros for all your token pasting needs";
     authors = [ "David Tolnay <dtolnay@gmail.com>" ];
-    sha256 = "1vcyabm9lgbna4zbb6s1in8l3bcg3lmpmygbjzcgy2vgacy18xnn";
+    edition = "2018";
+    sha256 = "1xi423qww4w5i9qli1c4jw6lz1jy1wv66achns96llyckbrpmn58";
     dependencies = mapFeatures features ([
-      (crates."proc_macro_hack_impl"."${deps."proc_macro_hack"."0.4.2"."proc_macro_hack_impl"}" deps)
+      (crates."paste_impl"."${deps."paste"."0.1.6"."paste_impl"}" deps)
+      (crates."proc_macro_hack"."${deps."paste"."0.1.6"."proc_macro_hack"}" deps)
     ]);
   };
-  features_."proc_macro_hack"."0.4.2" = deps: f: updateFeatures f (rec {
-    proc_macro_hack."0.4.2".default = (f.proc_macro_hack."0.4.2".default or true);
-    proc_macro_hack_impl."${deps.proc_macro_hack."0.4.2".proc_macro_hack_impl}".default = true;
+  features_."paste"."0.1.6" = deps: f: updateFeatures f (rec {
+    paste."0.1.6".default = (f.paste."0.1.6".default or true);
+    paste_impl."${deps.paste."0.1.6".paste_impl}".default = true;
+    proc_macro_hack."${deps.paste."0.1.6".proc_macro_hack}".default = true;
   }) [
-    (if deps."proc_macro_hack"."0.4.2" ? "proc_macro_hack_impl" then features_.proc_macro_hack_impl."${deps."proc_macro_hack"."0.4.2"."proc_macro_hack_impl" or ""}" deps else {})
+    (if deps."paste"."0.1.6" ? "paste_impl" then features_.paste_impl."${deps."paste"."0.1.6"."paste_impl" or ""}" deps else {})
+    (if deps."paste"."0.1.6" ? "proc_macro_hack" then features_.proc_macro_hack."${deps."paste"."0.1.6"."proc_macro_hack" or ""}" deps else {})
   ];
 
 
 # end
-# proc-macro-hack-impl-0.4.2
+# paste-impl-0.1.6
 
-  crates.proc_macro_hack_impl."0.4.2" = deps: { features?(features_."proc_macro_hack_impl"."0.4.2" deps {}) }: buildRustCrate {
-    crateName = "proc-macro-hack-impl";
-    version = "0.4.2";
-    description = "Procedural functionlike!() macros using only Macros 1.1";
+  crates.paste_impl."0.1.6" = deps: { features?(features_."paste_impl"."0.1.6" deps {}) }: buildRustCrate {
+    crateName = "paste-impl";
+    version = "0.1.6";
+    description = "Implementation detail of the `paste` crate";
     authors = [ "David Tolnay <dtolnay@gmail.com>" ];
-    sha256 = "016k2q0b00l9gj4ji28a3pzcvcwvpp3ss1m0q5sj9v5icj489bjp";
+    edition = "2018";
+    sha256 = "05g0fp8h257gic2iji15h9sf241752x2804c0z50s2ifp0w7jyc6";
     procMacro = true;
+    dependencies = mapFeatures features ([
+      (crates."proc_macro_hack"."${deps."paste_impl"."0.1.6"."proc_macro_hack"}" deps)
+      (crates."proc_macro2"."${deps."paste_impl"."0.1.6"."proc_macro2"}" deps)
+      (crates."quote"."${deps."paste_impl"."0.1.6"."quote"}" deps)
+      (crates."syn"."${deps."paste_impl"."0.1.6"."syn"}" deps)
+    ]);
   };
-  features_."proc_macro_hack_impl"."0.4.2" = deps: f: updateFeatures f (rec {
-    proc_macro_hack_impl."0.4.2".default = (f.proc_macro_hack_impl."0.4.2".default or true);
-  }) [];
+  features_."paste_impl"."0.1.6" = deps: f: updateFeatures f (rec {
+    paste_impl."0.1.6".default = (f.paste_impl."0.1.6".default or true);
+    proc_macro2."${deps.paste_impl."0.1.6".proc_macro2}".default = true;
+    proc_macro_hack."${deps.paste_impl."0.1.6".proc_macro_hack}".default = true;
+    quote."${deps.paste_impl."0.1.6".quote}".default = true;
+    syn."${deps.paste_impl."0.1.6".syn}".default = true;
+  }) [
+    (if deps."paste_impl"."0.1.6" ? "proc_macro_hack" then features_.proc_macro_hack."${deps."paste_impl"."0.1.6"."proc_macro_hack" or ""}" deps else {})
+    (if deps."paste_impl"."0.1.6" ? "proc_macro2" then features_.proc_macro2."${deps."paste_impl"."0.1.6"."proc_macro2" or ""}" deps else {})
+    (if deps."paste_impl"."0.1.6" ? "quote" then features_.quote."${deps."paste_impl"."0.1.6"."quote" or ""}" deps else {})
+    (if deps."paste_impl"."0.1.6" ? "syn" then features_.syn."${deps."paste_impl"."0.1.6"."syn" or ""}" deps else {})
+  ];
+
+
+# end
+# proc-macro-hack-0.5.9
+
+  crates.proc_macro_hack."0.5.9" = deps: { features?(features_."proc_macro_hack"."0.5.9" deps {}) }: buildRustCrate {
+    crateName = "proc-macro-hack";
+    version = "0.5.9";
+    description = "Procedural macros in expression position";
+    authors = [ "David Tolnay <dtolnay@gmail.com>" ];
+    sha256 = "1w99ilwdwl0xdg6bxv6i8z9zlr00n8i28npcf7f212s07jphagig";
+    procMacro = true;
+    dependencies = mapFeatures features ([
+      (crates."proc_macro2"."${deps."proc_macro_hack"."0.5.9"."proc_macro2"}" deps)
+      (crates."quote"."${deps."proc_macro_hack"."0.5.9"."quote"}" deps)
+      (crates."syn"."${deps."proc_macro_hack"."0.5.9"."syn"}" deps)
+    ]);
+  };
+  features_."proc_macro_hack"."0.5.9" = deps: f: updateFeatures f (rec {
+    proc_macro2."${deps.proc_macro_hack."0.5.9".proc_macro2}".default = true;
+    proc_macro_hack."0.5.9".default = (f.proc_macro_hack."0.5.9".default or true);
+    quote."${deps.proc_macro_hack."0.5.9".quote}".default = true;
+    syn."${deps.proc_macro_hack."0.5.9".syn}".default = true;
+  }) [
+    (if deps."proc_macro_hack"."0.5.9" ? "proc_macro2" then features_.proc_macro2."${deps."proc_macro_hack"."0.5.9"."proc_macro2" or ""}" deps else {})
+    (if deps."proc_macro_hack"."0.5.9" ? "quote" then features_.quote."${deps."proc_macro_hack"."0.5.9"."quote" or ""}" deps else {})
+    (if deps."proc_macro_hack"."0.5.9" ? "syn" then features_.syn."${deps."proc_macro_hack"."0.5.9"."syn" or ""}" deps else {})
+  ];
 
 
 # end
@@ -1471,121 +1561,184 @@ unstable API.
 
 
 # end
-# pyo3-0.7.0
+# proc-macro2-1.0.3
 
-  crates.pyo3."0.7.0" = deps: { features?(features_."pyo3"."0.7.0" deps {}) }: buildRustCrate {
+  crates.proc_macro2."1.0.3" = deps: { features?(features_."proc_macro2"."1.0.3" deps {}) }: buildRustCrate {
+    crateName = "proc-macro2";
+    version = "1.0.3";
+    description = "A stable implementation of the upcoming new `proc_macro` API. Comes with an
+option, off by default, to also reimplement itself in terms of the upstream
+unstable API.
+";
+    homepage = "https://github.com/alexcrichton/proc-macro2";
+    authors = [ "Alex Crichton <alex@alexcrichton.com>" ];
+    edition = "2018";
+    sha256 = "0qv29h6pz6n0b4qi8w240l3xppsw26bk5ga2vcjk3nhji0nsplwk";
+    libName = "proc_macro2";
+    dependencies = mapFeatures features ([
+      (crates."unicode_xid"."${deps."proc_macro2"."1.0.3"."unicode_xid"}" deps)
+    ]);
+    features = mkFeatures (features."proc_macro2"."1.0.3" or {});
+  };
+  features_."proc_macro2"."1.0.3" = deps: f: updateFeatures f (rec {
+    proc_macro2 = fold recursiveUpdate {} [
+      { "1.0.3"."proc-macro" =
+        (f.proc_macro2."1.0.3"."proc-macro" or false) ||
+        (f.proc_macro2."1.0.3"."default" or false) ||
+        (proc_macro2."1.0.3"."default" or false); }
+      { "1.0.3".default = (f.proc_macro2."1.0.3".default or true); }
+    ];
+    unicode_xid."${deps.proc_macro2."1.0.3".unicode_xid}".default = true;
+  }) [
+    (if deps."proc_macro2"."1.0.3" ? "unicode_xid" then features_.unicode_xid."${deps."proc_macro2"."1.0.3"."unicode_xid" or ""}" deps else {})
+  ];
+
+
+# end
+# pyo3-0.8.0
+
+  crates.pyo3."0.8.0" = deps: { features?(features_."pyo3"."0.8.0" deps {}) }: buildRustCrate {
     crateName = "pyo3";
-    version = "0.7.0";
+    version = "0.8.0";
     description = "Bindings to Python interpreter";
     homepage = "https://github.com/pyo3/pyo3";
     authors = [ "PyO3 Project and Contributors <https://github.com/PyO3>" ];
     edition = "2018";
-    sha256 = "1d3h4an1b9dwk831425zy71g2x08dz0gxl90j897v7pf9x0hdygz";
+    sha256 = "06lyk9kznsw391f2w777p0ipigrxssijmiklhxdj34kn7kygrwd6";
     build = "build.rs";
     dependencies = mapFeatures features ([
-      (crates."inventory"."${deps."pyo3"."0.7.0"."inventory"}" deps)
-      (crates."libc"."${deps."pyo3"."0.7.0"."libc"}" deps)
-      (crates."mashup"."${deps."pyo3"."0.7.0"."mashup"}" deps)
-      (crates."num_traits"."${deps."pyo3"."0.7.0"."num_traits"}" deps)
-      (crates."pyo3cls"."${deps."pyo3"."0.7.0"."pyo3cls"}" deps)
-      (crates."spin"."${deps."pyo3"."0.7.0"."spin"}" deps)
+      (crates."indoc"."${deps."pyo3"."0.8.0"."indoc"}" deps)
+      (crates."inventory"."${deps."pyo3"."0.8.0"."inventory"}" deps)
+      (crates."libc"."${deps."pyo3"."0.8.0"."libc"}" deps)
+      (crates."num_traits"."${deps."pyo3"."0.8.0"."num_traits"}" deps)
+      (crates."paste"."${deps."pyo3"."0.8.0"."paste"}" deps)
+      (crates."pyo3cls"."${deps."pyo3"."0.8.0"."pyo3cls"}" deps)
+      (crates."spin"."${deps."pyo3"."0.8.0"."spin"}" deps)
+      (crates."unindent"."${deps."pyo3"."0.8.0"."unindent"}" deps)
     ]);
 
     buildDependencies = mapFeatures features ([
-      (crates."regex"."${deps."pyo3"."0.7.0"."regex"}" deps)
-      (crates."version_check"."${deps."pyo3"."0.7.0"."version_check"}" deps)
+      (crates."regex"."${deps."pyo3"."0.8.0"."regex"}" deps)
+      (crates."serde"."${deps."pyo3"."0.8.0"."serde"}" deps)
+      (crates."serde_json"."${deps."pyo3"."0.8.0"."serde_json"}" deps)
+      (crates."version_check"."${deps."pyo3"."0.8.0"."version_check"}" deps)
     ]);
-    features = mkFeatures (features."pyo3"."0.7.0" or {});
+    features = mkFeatures (features."pyo3"."0.8.0" or {});
   };
-  features_."pyo3"."0.7.0" = deps: f: updateFeatures f (rec {
-    inventory."${deps.pyo3."0.7.0".inventory}".default = true;
-    libc."${deps.pyo3."0.7.0".libc}".default = true;
-    mashup."${deps.pyo3."0.7.0".mashup}".default = true;
-    num_traits."${deps.pyo3."0.7.0".num_traits}".default = true;
-    pyo3."0.7.0".default = (f.pyo3."0.7.0".default or true);
-    pyo3cls."${deps.pyo3."0.7.0".pyo3cls}".default = true;
-    regex."${deps.pyo3."0.7.0".regex}".default = true;
-    spin."${deps.pyo3."0.7.0".spin}".default = true;
-    version_check."${deps.pyo3."0.7.0".version_check}".default = true;
+  features_."pyo3"."0.8.0" = deps: f: updateFeatures f (rec {
+    indoc."${deps.pyo3."0.8.0".indoc}".default = true;
+    inventory."${deps.pyo3."0.8.0".inventory}".default = true;
+    libc."${deps.pyo3."0.8.0".libc}".default = true;
+    num_traits."${deps.pyo3."0.8.0".num_traits}".default = true;
+    paste."${deps.pyo3."0.8.0".paste}".default = true;
+    pyo3."0.8.0".default = (f.pyo3."0.8.0".default or true);
+    pyo3cls = fold recursiveUpdate {} [
+      { "${deps.pyo3."0.8.0".pyo3cls}"."unsound-subclass" =
+        (f.pyo3cls."${deps.pyo3."0.8.0".pyo3cls}"."unsound-subclass" or false) ||
+        (pyo3."0.8.0"."unsound-subclass" or false) ||
+        (f."pyo3"."0.8.0"."unsound-subclass" or false); }
+      { "${deps.pyo3."0.8.0".pyo3cls}".default = true; }
+    ];
+    regex."${deps.pyo3."0.8.0".regex}".default = true;
+    serde = fold recursiveUpdate {} [
+      { "${deps.pyo3."0.8.0".serde}"."derive" = true; }
+      { "${deps.pyo3."0.8.0".serde}".default = true; }
+    ];
+    serde_json."${deps.pyo3."0.8.0".serde_json}".default = true;
+    spin."${deps.pyo3."0.8.0".spin}".default = true;
+    unindent."${deps.pyo3."0.8.0".unindent}".default = true;
+    version_check."${deps.pyo3."0.8.0".version_check}".default = true;
   }) [
-    (if deps."pyo3"."0.7.0" ? "inventory" then features_.inventory."${deps."pyo3"."0.7.0"."inventory" or ""}" deps else {})
-    (if deps."pyo3"."0.7.0" ? "libc" then features_.libc."${deps."pyo3"."0.7.0"."libc" or ""}" deps else {})
-    (if deps."pyo3"."0.7.0" ? "mashup" then features_.mashup."${deps."pyo3"."0.7.0"."mashup" or ""}" deps else {})
-    (if deps."pyo3"."0.7.0" ? "num_traits" then features_.num_traits."${deps."pyo3"."0.7.0"."num_traits" or ""}" deps else {})
-    (if deps."pyo3"."0.7.0" ? "pyo3cls" then features_.pyo3cls."${deps."pyo3"."0.7.0"."pyo3cls" or ""}" deps else {})
-    (if deps."pyo3"."0.7.0" ? "spin" then features_.spin."${deps."pyo3"."0.7.0"."spin" or ""}" deps else {})
-    (if deps."pyo3"."0.7.0" ? "regex" then features_.regex."${deps."pyo3"."0.7.0"."regex" or ""}" deps else {})
-    (if deps."pyo3"."0.7.0" ? "version_check" then features_.version_check."${deps."pyo3"."0.7.0"."version_check" or ""}" deps else {})
+    (if deps."pyo3"."0.8.0" ? "indoc" then features_.indoc."${deps."pyo3"."0.8.0"."indoc" or ""}" deps else {})
+    (if deps."pyo3"."0.8.0" ? "inventory" then features_.inventory."${deps."pyo3"."0.8.0"."inventory" or ""}" deps else {})
+    (if deps."pyo3"."0.8.0" ? "libc" then features_.libc."${deps."pyo3"."0.8.0"."libc" or ""}" deps else {})
+    (if deps."pyo3"."0.8.0" ? "num_traits" then features_.num_traits."${deps."pyo3"."0.8.0"."num_traits" or ""}" deps else {})
+    (if deps."pyo3"."0.8.0" ? "paste" then features_.paste."${deps."pyo3"."0.8.0"."paste" or ""}" deps else {})
+    (if deps."pyo3"."0.8.0" ? "pyo3cls" then features_.pyo3cls."${deps."pyo3"."0.8.0"."pyo3cls" or ""}" deps else {})
+    (if deps."pyo3"."0.8.0" ? "spin" then features_.spin."${deps."pyo3"."0.8.0"."spin" or ""}" deps else {})
+    (if deps."pyo3"."0.8.0" ? "unindent" then features_.unindent."${deps."pyo3"."0.8.0"."unindent" or ""}" deps else {})
+    (if deps."pyo3"."0.8.0" ? "regex" then features_.regex."${deps."pyo3"."0.8.0"."regex" or ""}" deps else {})
+    (if deps."pyo3"."0.8.0" ? "serde" then features_.serde."${deps."pyo3"."0.8.0"."serde" or ""}" deps else {})
+    (if deps."pyo3"."0.8.0" ? "serde_json" then features_.serde_json."${deps."pyo3"."0.8.0"."serde_json" or ""}" deps else {})
+    (if deps."pyo3"."0.8.0" ? "version_check" then features_.version_check."${deps."pyo3"."0.8.0"."version_check" or ""}" deps else {})
   ];
 
 
 # end
-# pyo3-derive-backend-0.7.0
+# pyo3-derive-backend-0.8.0
 
-  crates.pyo3_derive_backend."0.7.0" = deps: { features?(features_."pyo3_derive_backend"."0.7.0" deps {}) }: buildRustCrate {
+  crates.pyo3_derive_backend."0.8.0" = deps: { features?(features_."pyo3_derive_backend"."0.8.0" deps {}) }: buildRustCrate {
     crateName = "pyo3-derive-backend";
-    version = "0.7.0";
+    version = "0.8.0";
     description = "Code generation for PyO3 package";
     homepage = "https://github.com/pyo3/pyo3";
     authors = [ "PyO3 Project and Contributors <https://github.com/PyO3>" ];
     edition = "2018";
-    sha256 = "0b3rbnwh54lhx95vcq7j4wrfwznrhribmakszr7p0dql4vry1j66";
+    sha256 = "1b37ksxsk6dflfhr542wxrcxrd22gpz8rxhxvdl0aym8infg1av0";
     dependencies = mapFeatures features ([
-      (crates."proc_macro2"."${deps."pyo3_derive_backend"."0.7.0"."proc_macro2"}" deps)
-      (crates."quote"."${deps."pyo3_derive_backend"."0.7.0"."quote"}" deps)
-      (crates."syn"."${deps."pyo3_derive_backend"."0.7.0"."syn"}" deps)
+      (crates."proc_macro2"."${deps."pyo3_derive_backend"."0.8.0"."proc_macro2"}" deps)
+      (crates."quote"."${deps."pyo3_derive_backend"."0.8.0"."quote"}" deps)
+      (crates."syn"."${deps."pyo3_derive_backend"."0.8.0"."syn"}" deps)
     ]);
+    features = mkFeatures (features."pyo3_derive_backend"."0.8.0" or {});
   };
-  features_."pyo3_derive_backend"."0.7.0" = deps: f: updateFeatures f (rec {
-    proc_macro2."${deps.pyo3_derive_backend."0.7.0".proc_macro2}".default = true;
-    pyo3_derive_backend."0.7.0".default = (f.pyo3_derive_backend."0.7.0".default or true);
-    quote."${deps.pyo3_derive_backend."0.7.0".quote}".default = true;
+  features_."pyo3_derive_backend"."0.8.0" = deps: f: updateFeatures f (rec {
+    proc_macro2."${deps.pyo3_derive_backend."0.8.0".proc_macro2}".default = true;
+    pyo3_derive_backend."0.8.0".default = (f.pyo3_derive_backend."0.8.0".default or true);
+    quote."${deps.pyo3_derive_backend."0.8.0".quote}".default = true;
     syn = fold recursiveUpdate {} [
-      { "${deps.pyo3_derive_backend."0.7.0".syn}"."extra-traits" = true; }
-      { "${deps.pyo3_derive_backend."0.7.0".syn}"."full" = true; }
-      { "${deps.pyo3_derive_backend."0.7.0".syn}".default = true; }
+      { "${deps.pyo3_derive_backend."0.8.0".syn}"."extra-traits" = true; }
+      { "${deps.pyo3_derive_backend."0.8.0".syn}"."full" = true; }
+      { "${deps.pyo3_derive_backend."0.8.0".syn}".default = true; }
     ];
   }) [
-    (if deps."pyo3_derive_backend"."0.7.0" ? "proc_macro2" then features_.proc_macro2."${deps."pyo3_derive_backend"."0.7.0"."proc_macro2" or ""}" deps else {})
-    (if deps."pyo3_derive_backend"."0.7.0" ? "quote" then features_.quote."${deps."pyo3_derive_backend"."0.7.0"."quote" or ""}" deps else {})
-    (if deps."pyo3_derive_backend"."0.7.0" ? "syn" then features_.syn."${deps."pyo3_derive_backend"."0.7.0"."syn" or ""}" deps else {})
+    (if deps."pyo3_derive_backend"."0.8.0" ? "proc_macro2" then features_.proc_macro2."${deps."pyo3_derive_backend"."0.8.0"."proc_macro2" or ""}" deps else {})
+    (if deps."pyo3_derive_backend"."0.8.0" ? "quote" then features_.quote."${deps."pyo3_derive_backend"."0.8.0"."quote" or ""}" deps else {})
+    (if deps."pyo3_derive_backend"."0.8.0" ? "syn" then features_.syn."${deps."pyo3_derive_backend"."0.8.0"."syn" or ""}" deps else {})
   ];
 
 
 # end
-# pyo3cls-0.7.0
+# pyo3cls-0.8.0
 
-  crates.pyo3cls."0.7.0" = deps: { features?(features_."pyo3cls"."0.7.0" deps {}) }: buildRustCrate {
+  crates.pyo3cls."0.8.0" = deps: { features?(features_."pyo3cls"."0.8.0" deps {}) }: buildRustCrate {
     crateName = "pyo3cls";
-    version = "0.7.0";
+    version = "0.8.0";
     description = "Proc macros for PyO3 package";
     homepage = "https://github.com/pyo3/pyo3";
     authors = [ "PyO3 Project and Contributors <https://github.com/PyO3>" ];
     edition = "2018";
-    sha256 = "1nmmssmkca2r1qxy3lgn6bffbylc9b4n51ck8b4wylwpzqwflm29";
+    sha256 = "0zf0jcg102ixhjffjcn8l205zpd6qqqpqiidkq26nmji3ffn8n18";
     procMacro = true;
     dependencies = mapFeatures features ([
-      (crates."proc_macro2"."${deps."pyo3cls"."0.7.0"."proc_macro2"}" deps)
-      (crates."pyo3_derive_backend"."${deps."pyo3cls"."0.7.0"."pyo3_derive_backend"}" deps)
-      (crates."quote"."${deps."pyo3cls"."0.7.0"."quote"}" deps)
-      (crates."syn"."${deps."pyo3cls"."0.7.0"."syn"}" deps)
+      (crates."proc_macro2"."${deps."pyo3cls"."0.8.0"."proc_macro2"}" deps)
+      (crates."pyo3_derive_backend"."${deps."pyo3cls"."0.8.0"."pyo3_derive_backend"}" deps)
+      (crates."quote"."${deps."pyo3cls"."0.8.0"."quote"}" deps)
+      (crates."syn"."${deps."pyo3cls"."0.8.0"."syn"}" deps)
     ]);
+    features = mkFeatures (features."pyo3cls"."0.8.0" or {});
   };
-  features_."pyo3cls"."0.7.0" = deps: f: updateFeatures f (rec {
-    proc_macro2."${deps.pyo3cls."0.7.0".proc_macro2}".default = true;
-    pyo3_derive_backend."${deps.pyo3cls."0.7.0".pyo3_derive_backend}".default = true;
-    pyo3cls."0.7.0".default = (f.pyo3cls."0.7.0".default or true);
-    quote."${deps.pyo3cls."0.7.0".quote}".default = true;
+  features_."pyo3cls"."0.8.0" = deps: f: updateFeatures f (rec {
+    proc_macro2."${deps.pyo3cls."0.8.0".proc_macro2}".default = true;
+    pyo3_derive_backend = fold recursiveUpdate {} [
+      { "${deps.pyo3cls."0.8.0".pyo3_derive_backend}"."unsound-subclass" =
+        (f.pyo3_derive_backend."${deps.pyo3cls."0.8.0".pyo3_derive_backend}"."unsound-subclass" or false) ||
+        (pyo3cls."0.8.0"."unsound-subclass" or false) ||
+        (f."pyo3cls"."0.8.0"."unsound-subclass" or false); }
+      { "${deps.pyo3cls."0.8.0".pyo3_derive_backend}".default = true; }
+    ];
+    pyo3cls."0.8.0".default = (f.pyo3cls."0.8.0".default or true);
+    quote."${deps.pyo3cls."0.8.0".quote}".default = true;
     syn = fold recursiveUpdate {} [
-      { "${deps.pyo3cls."0.7.0".syn}"."extra-traits" = true; }
-      { "${deps.pyo3cls."0.7.0".syn}"."full" = true; }
-      { "${deps.pyo3cls."0.7.0".syn}".default = true; }
+      { "${deps.pyo3cls."0.8.0".syn}"."extra-traits" = true; }
+      { "${deps.pyo3cls."0.8.0".syn}"."full" = true; }
+      { "${deps.pyo3cls."0.8.0".syn}".default = true; }
     ];
   }) [
-    (if deps."pyo3cls"."0.7.0" ? "proc_macro2" then features_.proc_macro2."${deps."pyo3cls"."0.7.0"."proc_macro2" or ""}" deps else {})
-    (if deps."pyo3cls"."0.7.0" ? "pyo3_derive_backend" then features_.pyo3_derive_backend."${deps."pyo3cls"."0.7.0"."pyo3_derive_backend" or ""}" deps else {})
-    (if deps."pyo3cls"."0.7.0" ? "quote" then features_.quote."${deps."pyo3cls"."0.7.0"."quote" or ""}" deps else {})
-    (if deps."pyo3cls"."0.7.0" ? "syn" then features_.syn."${deps."pyo3cls"."0.7.0"."syn" or ""}" deps else {})
+    (if deps."pyo3cls"."0.8.0" ? "proc_macro2" then features_.proc_macro2."${deps."pyo3cls"."0.8.0"."proc_macro2" or ""}" deps else {})
+    (if deps."pyo3cls"."0.8.0" ? "pyo3_derive_backend" then features_.pyo3_derive_backend."${deps."pyo3cls"."0.8.0"."pyo3_derive_backend" or ""}" deps else {})
+    (if deps."pyo3cls"."0.8.0" ? "quote" then features_.quote."${deps."pyo3cls"."0.8.0"."quote" or ""}" deps else {})
+    (if deps."pyo3cls"."0.8.0" ? "syn" then features_.syn."${deps."pyo3cls"."0.8.0"."syn" or ""}" deps else {})
   ];
 
 
@@ -1620,6 +1773,41 @@ unstable API.
     ];
   }) [
     (if deps."quote"."0.6.13" ? "proc_macro2" then features_.proc_macro2."${deps."quote"."0.6.13"."proc_macro2" or ""}" deps else {})
+  ];
+
+
+# end
+# quote-1.0.2
+
+  crates.quote."1.0.2" = deps: { features?(features_."quote"."1.0.2" deps {}) }: buildRustCrate {
+    crateName = "quote";
+    version = "1.0.2";
+    description = "Quasi-quoting macro quote!(...)";
+    authors = [ "David Tolnay <dtolnay@gmail.com>" ];
+    edition = "2018";
+    sha256 = "0r7030w7dymarn92gjgm02hsm04fwsfs6f1l20wdqiyrm9z8rs5q";
+    dependencies = mapFeatures features ([
+      (crates."proc_macro2"."${deps."quote"."1.0.2"."proc_macro2"}" deps)
+    ]);
+    features = mkFeatures (features."quote"."1.0.2" or {});
+  };
+  features_."quote"."1.0.2" = deps: f: updateFeatures f (rec {
+    proc_macro2 = fold recursiveUpdate {} [
+      { "${deps.quote."1.0.2".proc_macro2}"."proc-macro" =
+        (f.proc_macro2."${deps.quote."1.0.2".proc_macro2}"."proc-macro" or false) ||
+        (quote."1.0.2"."proc-macro" or false) ||
+        (f."quote"."1.0.2"."proc-macro" or false); }
+      { "${deps.quote."1.0.2".proc_macro2}".default = (f.proc_macro2."${deps.quote."1.0.2".proc_macro2}".default or false); }
+    ];
+    quote = fold recursiveUpdate {} [
+      { "1.0.2"."proc-macro" =
+        (f.quote."1.0.2"."proc-macro" or false) ||
+        (f.quote."1.0.2"."default" or false) ||
+        (quote."1.0.2"."default" or false); }
+      { "1.0.2".default = (f.quote."1.0.2".default or true); }
+    ];
+  }) [
+    (if deps."quote"."1.0.2" ? "proc_macro2" then features_.proc_macro2."${deps."quote"."1.0.2"."proc_macro2" or ""}" deps else {})
   ];
 
 
@@ -2259,72 +2447,194 @@ For example `.post_inc()` and `.pre_dec()` (c.f. `ptr++` and `--ptr`) and
 
 
 # end
-# regex-1.2.0
+# regex-1.3.1
 
-  crates.regex."1.2.0" = deps: { features?(features_."regex"."1.2.0" deps {}) }: buildRustCrate {
+  crates.regex."1.3.1" = deps: { features?(features_."regex"."1.3.1" deps {}) }: buildRustCrate {
     crateName = "regex";
-    version = "1.2.0";
+    version = "1.3.1";
     description = "An implementation of regular expressions for Rust. This implementation uses
 finite automata and guarantees linear time matching on all inputs.
 ";
     homepage = "https://github.com/rust-lang/regex";
     authors = [ "The Rust Project Developers" ];
-    sha256 = "0wwxd69p7rs4hm3jmb7awwasbkwzsphdgn83l9cml16m3k3zf1qj";
+    sha256 = "0508b01q7iwky5gzp1cc3lpz6al1qam8skgcvkfgxr67nikiz7jn";
     dependencies = mapFeatures features ([
-      (crates."aho_corasick"."${deps."regex"."1.2.0"."aho_corasick"}" deps)
-      (crates."memchr"."${deps."regex"."1.2.0"."memchr"}" deps)
-      (crates."regex_syntax"."${deps."regex"."1.2.0"."regex_syntax"}" deps)
-      (crates."thread_local"."${deps."regex"."1.2.0"."thread_local"}" deps)
-      (crates."utf8_ranges"."${deps."regex"."1.2.0"."utf8_ranges"}" deps)
-    ]);
-    features = mkFeatures (features."regex"."1.2.0" or {});
+      (crates."regex_syntax"."${deps."regex"."1.3.1"."regex_syntax"}" deps)
+    ]
+      ++ (if features.regex."1.3.1".aho-corasick or false then [ (crates.aho_corasick."${deps."regex"."1.3.1".aho_corasick}" deps) ] else [])
+      ++ (if features.regex."1.3.1".memchr or false then [ (crates.memchr."${deps."regex"."1.3.1".memchr}" deps) ] else [])
+      ++ (if features.regex."1.3.1".thread_local or false then [ (crates.thread_local."${deps."regex"."1.3.1".thread_local}" deps) ] else []));
+    features = mkFeatures (features."regex"."1.3.1" or {});
   };
-  features_."regex"."1.2.0" = deps: f: updateFeatures f (rec {
-    aho_corasick."${deps.regex."1.2.0".aho_corasick}".default = true;
-    memchr."${deps.regex."1.2.0".memchr}".default = true;
+  features_."regex"."1.3.1" = deps: f: updateFeatures f (rec {
     regex = fold recursiveUpdate {} [
-      { "1.2.0"."pattern" =
-        (f.regex."1.2.0"."pattern" or false) ||
-        (f.regex."1.2.0"."unstable" or false) ||
-        (regex."1.2.0"."unstable" or false); }
-      { "1.2.0"."use_std" =
-        (f.regex."1.2.0"."use_std" or false) ||
-        (f.regex."1.2.0"."default" or false) ||
-        (regex."1.2.0"."default" or false); }
-      { "1.2.0".default = (f.regex."1.2.0".default or true); }
+      { "1.3.1"."aho-corasick" =
+        (f.regex."1.3.1"."aho-corasick" or false) ||
+        (f.regex."1.3.1"."perf-literal" or false) ||
+        (regex."1.3.1"."perf-literal" or false); }
+      { "1.3.1"."memchr" =
+        (f.regex."1.3.1"."memchr" or false) ||
+        (f.regex."1.3.1"."perf-literal" or false) ||
+        (regex."1.3.1"."perf-literal" or false); }
+      { "1.3.1"."pattern" =
+        (f.regex."1.3.1"."pattern" or false) ||
+        (f.regex."1.3.1"."unstable" or false) ||
+        (regex."1.3.1"."unstable" or false); }
+      { "1.3.1"."perf" =
+        (f.regex."1.3.1"."perf" or false) ||
+        (f.regex."1.3.1"."default" or false) ||
+        (regex."1.3.1"."default" or false); }
+      { "1.3.1"."perf-cache" =
+        (f.regex."1.3.1"."perf-cache" or false) ||
+        (f.regex."1.3.1"."perf" or false) ||
+        (regex."1.3.1"."perf" or false); }
+      { "1.3.1"."perf-dfa" =
+        (f.regex."1.3.1"."perf-dfa" or false) ||
+        (f.regex."1.3.1"."perf" or false) ||
+        (regex."1.3.1"."perf" or false); }
+      { "1.3.1"."perf-inline" =
+        (f.regex."1.3.1"."perf-inline" or false) ||
+        (f.regex."1.3.1"."perf" or false) ||
+        (regex."1.3.1"."perf" or false); }
+      { "1.3.1"."perf-literal" =
+        (f.regex."1.3.1"."perf-literal" or false) ||
+        (f.regex."1.3.1"."perf" or false) ||
+        (regex."1.3.1"."perf" or false); }
+      { "1.3.1"."std" =
+        (f.regex."1.3.1"."std" or false) ||
+        (f.regex."1.3.1"."default" or false) ||
+        (regex."1.3.1"."default" or false) ||
+        (f.regex."1.3.1"."use_std" or false) ||
+        (regex."1.3.1"."use_std" or false); }
+      { "1.3.1"."thread_local" =
+        (f.regex."1.3.1"."thread_local" or false) ||
+        (f.regex."1.3.1"."perf-cache" or false) ||
+        (regex."1.3.1"."perf-cache" or false); }
+      { "1.3.1"."unicode" =
+        (f.regex."1.3.1"."unicode" or false) ||
+        (f.regex."1.3.1"."default" or false) ||
+        (regex."1.3.1"."default" or false); }
+      { "1.3.1"."unicode-age" =
+        (f.regex."1.3.1"."unicode-age" or false) ||
+        (f.regex."1.3.1"."unicode" or false) ||
+        (regex."1.3.1"."unicode" or false); }
+      { "1.3.1"."unicode-bool" =
+        (f.regex."1.3.1"."unicode-bool" or false) ||
+        (f.regex."1.3.1"."unicode" or false) ||
+        (regex."1.3.1"."unicode" or false); }
+      { "1.3.1"."unicode-case" =
+        (f.regex."1.3.1"."unicode-case" or false) ||
+        (f.regex."1.3.1"."unicode" or false) ||
+        (regex."1.3.1"."unicode" or false); }
+      { "1.3.1"."unicode-gencat" =
+        (f.regex."1.3.1"."unicode-gencat" or false) ||
+        (f.regex."1.3.1"."unicode" or false) ||
+        (regex."1.3.1"."unicode" or false); }
+      { "1.3.1"."unicode-perl" =
+        (f.regex."1.3.1"."unicode-perl" or false) ||
+        (f.regex."1.3.1"."unicode" or false) ||
+        (regex."1.3.1"."unicode" or false); }
+      { "1.3.1"."unicode-script" =
+        (f.regex."1.3.1"."unicode-script" or false) ||
+        (f.regex."1.3.1"."unicode" or false) ||
+        (regex."1.3.1"."unicode" or false); }
+      { "1.3.1"."unicode-segment" =
+        (f.regex."1.3.1"."unicode-segment" or false) ||
+        (f.regex."1.3.1"."unicode" or false) ||
+        (regex."1.3.1"."unicode" or false); }
+      { "1.3.1".default = (f.regex."1.3.1".default or true); }
     ];
-    regex_syntax."${deps.regex."1.2.0".regex_syntax}".default = true;
-    thread_local."${deps.regex."1.2.0".thread_local}".default = true;
-    utf8_ranges."${deps.regex."1.2.0".utf8_ranges}".default = true;
+    regex_syntax = fold recursiveUpdate {} [
+      { "${deps.regex."1.3.1".regex_syntax}"."unicode-age" =
+        (f.regex_syntax."${deps.regex."1.3.1".regex_syntax}"."unicode-age" or false) ||
+        (regex."1.3.1"."unicode-age" or false) ||
+        (f."regex"."1.3.1"."unicode-age" or false); }
+      { "${deps.regex."1.3.1".regex_syntax}"."unicode-bool" =
+        (f.regex_syntax."${deps.regex."1.3.1".regex_syntax}"."unicode-bool" or false) ||
+        (regex."1.3.1"."unicode-bool" or false) ||
+        (f."regex"."1.3.1"."unicode-bool" or false); }
+      { "${deps.regex."1.3.1".regex_syntax}"."unicode-case" =
+        (f.regex_syntax."${deps.regex."1.3.1".regex_syntax}"."unicode-case" or false) ||
+        (regex."1.3.1"."unicode-case" or false) ||
+        (f."regex"."1.3.1"."unicode-case" or false); }
+      { "${deps.regex."1.3.1".regex_syntax}"."unicode-gencat" =
+        (f.regex_syntax."${deps.regex."1.3.1".regex_syntax}"."unicode-gencat" or false) ||
+        (regex."1.3.1"."unicode-gencat" or false) ||
+        (f."regex"."1.3.1"."unicode-gencat" or false); }
+      { "${deps.regex."1.3.1".regex_syntax}"."unicode-perl" =
+        (f.regex_syntax."${deps.regex."1.3.1".regex_syntax}"."unicode-perl" or false) ||
+        (regex."1.3.1"."unicode-perl" or false) ||
+        (f."regex"."1.3.1"."unicode-perl" or false); }
+      { "${deps.regex."1.3.1".regex_syntax}"."unicode-script" =
+        (f.regex_syntax."${deps.regex."1.3.1".regex_syntax}"."unicode-script" or false) ||
+        (regex."1.3.1"."unicode-script" or false) ||
+        (f."regex"."1.3.1"."unicode-script" or false); }
+      { "${deps.regex."1.3.1".regex_syntax}"."unicode-segment" =
+        (f.regex_syntax."${deps.regex."1.3.1".regex_syntax}"."unicode-segment" or false) ||
+        (regex."1.3.1"."unicode-segment" or false) ||
+        (f."regex"."1.3.1"."unicode-segment" or false); }
+      { "${deps.regex."1.3.1".regex_syntax}".default = (f.regex_syntax."${deps.regex."1.3.1".regex_syntax}".default or false); }
+    ];
   }) [
-    (if deps."regex"."1.2.0" ? "aho_corasick" then features_.aho_corasick."${deps."regex"."1.2.0"."aho_corasick" or ""}" deps else {})
-    (if deps."regex"."1.2.0" ? "memchr" then features_.memchr."${deps."regex"."1.2.0"."memchr" or ""}" deps else {})
-    (if deps."regex"."1.2.0" ? "regex_syntax" then features_.regex_syntax."${deps."regex"."1.2.0"."regex_syntax" or ""}" deps else {})
-    (if deps."regex"."1.2.0" ? "thread_local" then features_.thread_local."${deps."regex"."1.2.0"."thread_local" or ""}" deps else {})
-    (if deps."regex"."1.2.0" ? "utf8_ranges" then features_.utf8_ranges."${deps."regex"."1.2.0"."utf8_ranges" or ""}" deps else {})
+    (f: if deps."regex"."1.3.1" ? "aho_corasick" then recursiveUpdate f { aho_corasick."${deps."regex"."1.3.1"."aho_corasick"}"."default" = true; } else f)
+    (f: if deps."regex"."1.3.1" ? "memchr" then recursiveUpdate f { memchr."${deps."regex"."1.3.1"."memchr"}"."default" = true; } else f)
+    (f: if deps."regex"."1.3.1" ? "thread_local" then recursiveUpdate f { thread_local."${deps."regex"."1.3.1"."thread_local"}"."default" = true; } else f)
+    (if deps."regex"."1.3.1" ? "aho_corasick" then features_.aho_corasick."${deps."regex"."1.3.1"."aho_corasick" or ""}" deps else {})
+    (if deps."regex"."1.3.1" ? "memchr" then features_.memchr."${deps."regex"."1.3.1"."memchr" or ""}" deps else {})
+    (if deps."regex"."1.3.1" ? "regex_syntax" then features_.regex_syntax."${deps."regex"."1.3.1"."regex_syntax" or ""}" deps else {})
+    (if deps."regex"."1.3.1" ? "thread_local" then features_.thread_local."${deps."regex"."1.3.1"."thread_local" or ""}" deps else {})
   ];
 
 
 # end
-# regex-syntax-0.6.10
+# regex-syntax-0.6.12
 
-  crates.regex_syntax."0.6.10" = deps: { features?(features_."regex_syntax"."0.6.10" deps {}) }: buildRustCrate {
+  crates.regex_syntax."0.6.12" = deps: { features?(features_."regex_syntax"."0.6.12" deps {}) }: buildRustCrate {
     crateName = "regex-syntax";
-    version = "0.6.10";
+    version = "0.6.12";
     description = "A regular expression parser.";
     homepage = "https://github.com/rust-lang/regex";
     authors = [ "The Rust Project Developers" ];
-    sha256 = "09k42z3lbm5c96mvbrc9jwasynahzr7w41zrs0r2hh5fw9dzjd9v";
-    dependencies = mapFeatures features ([
-      (crates."ucd_util"."${deps."regex_syntax"."0.6.10"."ucd_util"}" deps)
-    ]);
+    sha256 = "1lqhddhwzpgq8zfkxhm241n7g4m3yc11fb4098dkgawbxvybr53v";
+    features = mkFeatures (features."regex_syntax"."0.6.12" or {});
   };
-  features_."regex_syntax"."0.6.10" = deps: f: updateFeatures f (rec {
-    regex_syntax."0.6.10".default = (f.regex_syntax."0.6.10".default or true);
-    ucd_util."${deps.regex_syntax."0.6.10".ucd_util}".default = true;
-  }) [
-    (if deps."regex_syntax"."0.6.10" ? "ucd_util" then features_.ucd_util."${deps."regex_syntax"."0.6.10"."ucd_util" or ""}" deps else {})
-  ];
+  features_."regex_syntax"."0.6.12" = deps: f: updateFeatures f (rec {
+    regex_syntax = fold recursiveUpdate {} [
+      { "0.6.12"."unicode" =
+        (f.regex_syntax."0.6.12"."unicode" or false) ||
+        (f.regex_syntax."0.6.12"."default" or false) ||
+        (regex_syntax."0.6.12"."default" or false); }
+      { "0.6.12"."unicode-age" =
+        (f.regex_syntax."0.6.12"."unicode-age" or false) ||
+        (f.regex_syntax."0.6.12"."unicode" or false) ||
+        (regex_syntax."0.6.12"."unicode" or false); }
+      { "0.6.12"."unicode-bool" =
+        (f.regex_syntax."0.6.12"."unicode-bool" or false) ||
+        (f.regex_syntax."0.6.12"."unicode" or false) ||
+        (regex_syntax."0.6.12"."unicode" or false); }
+      { "0.6.12"."unicode-case" =
+        (f.regex_syntax."0.6.12"."unicode-case" or false) ||
+        (f.regex_syntax."0.6.12"."unicode" or false) ||
+        (regex_syntax."0.6.12"."unicode" or false); }
+      { "0.6.12"."unicode-gencat" =
+        (f.regex_syntax."0.6.12"."unicode-gencat" or false) ||
+        (f.regex_syntax."0.6.12"."unicode" or false) ||
+        (regex_syntax."0.6.12"."unicode" or false); }
+      { "0.6.12"."unicode-perl" =
+        (f.regex_syntax."0.6.12"."unicode-perl" or false) ||
+        (f.regex_syntax."0.6.12"."unicode" or false) ||
+        (regex_syntax."0.6.12"."unicode" or false); }
+      { "0.6.12"."unicode-script" =
+        (f.regex_syntax."0.6.12"."unicode-script" or false) ||
+        (f.regex_syntax."0.6.12"."unicode" or false) ||
+        (regex_syntax."0.6.12"."unicode" or false); }
+      { "0.6.12"."unicode-segment" =
+        (f.regex_syntax."0.6.12"."unicode-segment" or false) ||
+        (f.regex_syntax."0.6.12"."unicode" or false) ||
+        (regex_syntax."0.6.12"."unicode" or false); }
+      { "0.6.12".default = (f.regex_syntax."0.6.12".default or true); }
+    ];
+  }) [];
 
 
 # end
@@ -2358,6 +2668,25 @@ finite automata and guarantees linear time matching on all inputs.
 
 
 # end
+# ryu-1.0.0
+
+  crates.ryu."1.0.0" = deps: { features?(features_."ryu"."1.0.0" deps {}) }: buildRustCrate {
+    crateName = "ryu";
+    version = "1.0.0";
+    description = "Fast floating point to string conversion";
+    authors = [ "David Tolnay <dtolnay@gmail.com>" ];
+    sha256 = "0hysqba7hi31xw1jka8jh7qb4m9fx5l6vik55wpc3rpsg46cwgbf";
+    build = "build.rs";
+    dependencies = mapFeatures features ([
+]);
+    features = mkFeatures (features."ryu"."1.0.0" or {});
+  };
+  features_."ryu"."1.0.0" = deps: f: updateFeatures f (rec {
+    ryu."1.0.0".default = (f.ryu."1.0.0".default or true);
+  }) [];
+
+
+# end
 # scopeguard-0.3.3
 
   crates.scopeguard."0.3.3" = deps: { features?(features_."scopeguard"."0.3.3" deps {}) }: buildRustCrate {
@@ -2385,40 +2714,36 @@ if the scope is extited through unwinding on panic.
 
 
 # end
-# serde-1.0.91
+# serde-1.0.99
 
-  crates.serde."1.0.91" = deps: { features?(features_."serde"."1.0.91" deps {}) }: buildRustCrate {
+  crates.serde."1.0.99" = deps: { features?(features_."serde"."1.0.99" deps {}) }: buildRustCrate {
     crateName = "serde";
-    version = "1.0.91";
+    version = "1.0.99";
     description = "A generic serialization/deserialization framework";
     homepage = "https://serde.rs";
     authors = [ "Erick Tryzelaar <erick.tryzelaar@gmail.com>" "David Tolnay <dtolnay@gmail.com>" ];
-    sha256 = "0pv2awcqq2y99hw15nsrkghzlcar8i5wg77w636zg9d10n6db5gf";
+    sha256 = "1wwj6rv8h7k1sc0s8b8jcwcr54ayg46zjfv8z9a59hgnzg17nr86";
     build = "build.rs";
     dependencies = mapFeatures features ([
     ]
-      ++ (if features.serde."1.0.91".serde_derive or false then [ (crates.serde_derive."${deps."serde"."1.0.91".serde_derive}" deps) ] else []));
-    features = mkFeatures (features."serde"."1.0.91" or {});
+      ++ (if features.serde."1.0.99".serde_derive or false then [ (crates.serde_derive."${deps."serde"."1.0.99".serde_derive}" deps) ] else []));
+    features = mkFeatures (features."serde"."1.0.99" or {});
   };
-  features_."serde"."1.0.91" = deps: f: updateFeatures f (rec {
+  features_."serde"."1.0.99" = deps: f: updateFeatures f (rec {
     serde = fold recursiveUpdate {} [
-      { "1.0.91"."serde_derive" =
-        (f.serde."1.0.91"."serde_derive" or false) ||
-        (f.serde."1.0.91"."derive" or false) ||
-        (serde."1.0.91"."derive" or false); }
-      { "1.0.91"."std" =
-        (f.serde."1.0.91"."std" or false) ||
-        (f.serde."1.0.91"."default" or false) ||
-        (serde."1.0.91"."default" or false); }
-      { "1.0.91"."unstable" =
-        (f.serde."1.0.91"."unstable" or false) ||
-        (f.serde."1.0.91"."alloc" or false) ||
-        (serde."1.0.91"."alloc" or false); }
-      { "1.0.91".default = (f.serde."1.0.91".default or true); }
+      { "1.0.99"."serde_derive" =
+        (f.serde."1.0.99"."serde_derive" or false) ||
+        (f.serde."1.0.99"."derive" or false) ||
+        (serde."1.0.99"."derive" or false); }
+      { "1.0.99"."std" =
+        (f.serde."1.0.99"."std" or false) ||
+        (f.serde."1.0.99"."default" or false) ||
+        (serde."1.0.99"."default" or false); }
+      { "1.0.99".default = (f.serde."1.0.99".default or true); }
     ];
   }) [
-    (f: if deps."serde"."1.0.91" ? "serde_derive" then recursiveUpdate f { serde_derive."${deps."serde"."1.0.91"."serde_derive"}"."default" = true; } else f)
-    (if deps."serde"."1.0.91" ? "serde_derive" then features_.serde_derive."${deps."serde"."1.0.91"."serde_derive" or ""}" deps else {})
+    (f: if deps."serde"."1.0.99" ? "serde_derive" then recursiveUpdate f { serde_derive."${deps."serde"."1.0.99"."serde_derive"}"."default" = true; } else f)
+    (if deps."serde"."1.0.99" ? "serde_derive" then features_.serde_derive."${deps."serde"."1.0.99"."serde_derive" or ""}" deps else {})
   ];
 
 
@@ -2456,20 +2781,54 @@ if the scope is extited through unwinding on panic.
 
 
 # end
-# spin-0.5.0
+# serde_json-1.0.40
 
-  crates.spin."0.5.0" = deps: { features?(features_."spin"."0.5.0" deps {}) }: buildRustCrate {
+  crates.serde_json."1.0.40" = deps: { features?(features_."serde_json"."1.0.40" deps {}) }: buildRustCrate {
+    crateName = "serde_json";
+    version = "1.0.40";
+    description = "A JSON serialization file format";
+    authors = [ "Erick Tryzelaar <erick.tryzelaar@gmail.com>" "David Tolnay <dtolnay@gmail.com>" ];
+    sha256 = "1wf8lkisjvyg4ghp2fwm3ysymjy66l030l8d7p6033wiayfzpyh3";
+    dependencies = mapFeatures features ([
+      (crates."itoa"."${deps."serde_json"."1.0.40"."itoa"}" deps)
+      (crates."ryu"."${deps."serde_json"."1.0.40"."ryu"}" deps)
+      (crates."serde"."${deps."serde_json"."1.0.40"."serde"}" deps)
+    ]);
+    features = mkFeatures (features."serde_json"."1.0.40" or {});
+  };
+  features_."serde_json"."1.0.40" = deps: f: updateFeatures f (rec {
+    itoa."${deps.serde_json."1.0.40".itoa}".default = true;
+    ryu."${deps.serde_json."1.0.40".ryu}".default = true;
+    serde."${deps.serde_json."1.0.40".serde}".default = true;
+    serde_json = fold recursiveUpdate {} [
+      { "1.0.40"."indexmap" =
+        (f.serde_json."1.0.40"."indexmap" or false) ||
+        (f.serde_json."1.0.40"."preserve_order" or false) ||
+        (serde_json."1.0.40"."preserve_order" or false); }
+      { "1.0.40".default = (f.serde_json."1.0.40".default or true); }
+    ];
+  }) [
+    (if deps."serde_json"."1.0.40" ? "itoa" then features_.itoa."${deps."serde_json"."1.0.40"."itoa" or ""}" deps else {})
+    (if deps."serde_json"."1.0.40" ? "ryu" then features_.ryu."${deps."serde_json"."1.0.40"."ryu" or ""}" deps else {})
+    (if deps."serde_json"."1.0.40" ? "serde" then features_.serde."${deps."serde_json"."1.0.40"."serde" or ""}" deps else {})
+  ];
+
+
+# end
+# spin-0.5.2
+
+  crates.spin."0.5.2" = deps: { features?(features_."spin"."0.5.2" deps {}) }: buildRustCrate {
     crateName = "spin";
-    version = "0.5.0";
+    version = "0.5.2";
     description = "Synchronization primitives based on spinning.
 They may contain data, are usable without `std`,
 and static initializers are available.
 ";
     authors = [ "Mathijs van de Nes <git@mathijs.vd-nes.nl>" "John Ericson <git@JohnEricson.me>" ];
-    sha256 = "1yln8vy2z7nkwn7s7fdzmqrwk77cwmfgcp89kzxm2ljdrf5vccar";
+    sha256 = "1x0mfk6jfxknrp833xq97kzqxidlryndn0v3xkwf4pd7l9hr5k4h";
   };
-  features_."spin"."0.5.0" = deps: f: updateFeatures f (rec {
-    spin."0.5.0".default = (f.spin."0.5.0".default or true);
+  features_."spin"."0.5.2" = deps: f: updateFeatures f (rec {
+    spin."0.5.2".default = (f.spin."0.5.2".default or true);
   }) [];
 
 
@@ -2534,6 +2893,71 @@ and static initializers are available.
     (if deps."syn"."0.15.42" ? "proc_macro2" then features_.proc_macro2."${deps."syn"."0.15.42"."proc_macro2" or ""}" deps else {})
     (if deps."syn"."0.15.42" ? "quote" then features_.quote."${deps."syn"."0.15.42"."quote" or ""}" deps else {})
     (if deps."syn"."0.15.42" ? "unicode_xid" then features_.unicode_xid."${deps."syn"."0.15.42"."unicode_xid" or ""}" deps else {})
+  ];
+
+
+# end
+# syn-1.0.5
+
+  crates.syn."1.0.5" = deps: { features?(features_."syn"."1.0.5" deps {}) }: buildRustCrate {
+    crateName = "syn";
+    version = "1.0.5";
+    description = "Parser for Rust source code";
+    authors = [ "David Tolnay <dtolnay@gmail.com>" ];
+    edition = "2018";
+    sha256 = "08qbk425r8c4q4rrpq1q9wkd3v3bji8nlfaxj8v4l7lkpjkh0xgs";
+    dependencies = mapFeatures features ([
+      (crates."proc_macro2"."${deps."syn"."1.0.5"."proc_macro2"}" deps)
+      (crates."unicode_xid"."${deps."syn"."1.0.5"."unicode_xid"}" deps)
+    ]
+      ++ (if features.syn."1.0.5".quote or false then [ (crates.quote."${deps."syn"."1.0.5".quote}" deps) ] else []));
+    features = mkFeatures (features."syn"."1.0.5" or {});
+  };
+  features_."syn"."1.0.5" = deps: f: updateFeatures f (rec {
+    proc_macro2 = fold recursiveUpdate {} [
+      { "${deps.syn."1.0.5".proc_macro2}"."proc-macro" =
+        (f.proc_macro2."${deps.syn."1.0.5".proc_macro2}"."proc-macro" or false) ||
+        (syn."1.0.5"."proc-macro" or false) ||
+        (f."syn"."1.0.5"."proc-macro" or false); }
+      { "${deps.syn."1.0.5".proc_macro2}".default = (f.proc_macro2."${deps.syn."1.0.5".proc_macro2}".default or false); }
+    ];
+    quote."${deps.syn."1.0.5".quote}"."proc-macro" =
+        (f.quote."${deps.syn."1.0.5".quote}"."proc-macro" or false) ||
+        (syn."1.0.5"."proc-macro" or false) ||
+        (f."syn"."1.0.5"."proc-macro" or false);
+    syn = fold recursiveUpdate {} [
+      { "1.0.5"."clone-impls" =
+        (f.syn."1.0.5"."clone-impls" or false) ||
+        (f.syn."1.0.5"."default" or false) ||
+        (syn."1.0.5"."default" or false); }
+      { "1.0.5"."derive" =
+        (f.syn."1.0.5"."derive" or false) ||
+        (f.syn."1.0.5"."default" or false) ||
+        (syn."1.0.5"."default" or false); }
+      { "1.0.5"."parsing" =
+        (f.syn."1.0.5"."parsing" or false) ||
+        (f.syn."1.0.5"."default" or false) ||
+        (syn."1.0.5"."default" or false); }
+      { "1.0.5"."printing" =
+        (f.syn."1.0.5"."printing" or false) ||
+        (f.syn."1.0.5"."default" or false) ||
+        (syn."1.0.5"."default" or false); }
+      { "1.0.5"."proc-macro" =
+        (f.syn."1.0.5"."proc-macro" or false) ||
+        (f.syn."1.0.5"."default" or false) ||
+        (syn."1.0.5"."default" or false); }
+      { "1.0.5"."quote" =
+        (f.syn."1.0.5"."quote" or false) ||
+        (f.syn."1.0.5"."printing" or false) ||
+        (syn."1.0.5"."printing" or false); }
+      { "1.0.5".default = (f.syn."1.0.5".default or true); }
+    ];
+    unicode_xid."${deps.syn."1.0.5".unicode_xid}".default = true;
+  }) [
+    (f: if deps."syn"."1.0.5" ? "quote" then recursiveUpdate f { quote."${deps."syn"."1.0.5"."quote"}"."default" = false; } else f)
+    (if deps."syn"."1.0.5" ? "proc_macro2" then features_.proc_macro2."${deps."syn"."1.0.5"."proc_macro2" or ""}" deps else {})
+    (if deps."syn"."1.0.5" ? "quote" then features_.quote."${deps."syn"."1.0.5"."quote" or ""}" deps else {})
+    (if deps."syn"."1.0.5" ? "unicode_xid" then features_.unicode_xid."${deps."syn"."1.0.5"."unicode_xid" or ""}" deps else {})
   ];
 
 
@@ -2627,23 +3051,6 @@ facilitate deserializing and serializing Rust structures.
 
 
 # end
-# ucd-util-0.1.5
-
-  crates.ucd_util."0.1.5" = deps: { features?(features_."ucd_util"."0.1.5" deps {}) }: buildRustCrate {
-    crateName = "ucd-util";
-    version = "0.1.5";
-    description = "A small utility library for working with the Unicode character database.
-";
-    homepage = "https://github.com/BurntSushi/ucd-generate";
-    authors = [ "Andrew Gallant <jamslam@gmail.com>" ];
-    sha256 = "0c2lxv2b382n3pw1vnx4plnp371qplhfaag6w67qs11cmfflxhl6";
-  };
-  features_."ucd_util"."0.1.5" = deps: f: updateFeatures f (rec {
-    ucd_util."0.1.5".default = (f.ucd_util."0.1.5".default or true);
-  }) [];
-
-
-# end
 # unicode-xid-0.1.0
 
   crates.unicode_xid."0.1.0" = deps: { features?(features_."unicode_xid"."0.1.0" deps {}) }: buildRustCrate {
@@ -2664,33 +3071,53 @@ Unicode Standard Annex #31.
 
 
 # end
-# utf8-ranges-1.0.3
+# unicode-xid-0.2.0
 
-  crates.utf8_ranges."1.0.3" = deps: { features?(features_."utf8_ranges"."1.0.3" deps {}) }: buildRustCrate {
-    crateName = "utf8-ranges";
-    version = "1.0.3";
-    description = "Convert ranges of Unicode codepoints to UTF-8 byte ranges.";
-    homepage = "https://github.com/BurntSushi/utf8-ranges";
-    authors = [ "Andrew Gallant <jamslam@gmail.com>" ];
-    sha256 = "0nkh73y241czrxagm77qz20qcfn3h54a6v9cpvc7wjzwkaaqkswp";
+  crates.unicode_xid."0.2.0" = deps: { features?(features_."unicode_xid"."0.2.0" deps {}) }: buildRustCrate {
+    crateName = "unicode-xid";
+    version = "0.2.0";
+    description = "Determine whether characters have the XID_Start
+or XID_Continue properties according to
+Unicode Standard Annex #31.
+";
+    homepage = "https://github.com/unicode-rs/unicode-xid";
+    authors = [ "erick.tryzelaar <erick.tryzelaar@gmail.com>" "kwantam <kwantam@gmail.com>" ];
+    sha256 = "1c85gb3p3qhbjvfyjb31m06la4f024jx319k10ig7n47dz2fk8v7";
+    features = mkFeatures (features."unicode_xid"."0.2.0" or {});
   };
-  features_."utf8_ranges"."1.0.3" = deps: f: updateFeatures f (rec {
-    utf8_ranges."1.0.3".default = (f.utf8_ranges."1.0.3".default or true);
+  features_."unicode_xid"."0.2.0" = deps: f: updateFeatures f (rec {
+    unicode_xid."0.2.0".default = (f.unicode_xid."0.2.0".default or true);
   }) [];
 
 
 # end
-# version_check-0.1.5
+# unindent-0.1.4
 
-  crates.version_check."0.1.5" = deps: { features?(features_."version_check"."0.1.5" deps {}) }: buildRustCrate {
+  crates.unindent."0.1.4" = deps: { features?(features_."unindent"."0.1.4" deps {}) }: buildRustCrate {
+    crateName = "unindent";
+    version = "0.1.4";
+    description = "Remove a column of leading whitespace from a string";
+    authors = [ "David Tolnay <dtolnay@gmail.com>" ];
+    edition = "2018";
+    sha256 = "0sjmwba80xydjpr9adhnsay7fbfrw406kkxln710ihrasxsk8889";
+  };
+  features_."unindent"."0.1.4" = deps: f: updateFeatures f (rec {
+    unindent."0.1.4".default = (f.unindent."0.1.4".default or true);
+  }) [];
+
+
+# end
+# version_check-0.9.1
+
+  crates.version_check."0.9.1" = deps: { features?(features_."version_check"."0.9.1" deps {}) }: buildRustCrate {
     crateName = "version_check";
-    version = "0.1.5";
+    version = "0.9.1";
     description = "Tiny crate to check the version of the installed/running rustc.";
     authors = [ "Sergio Benitez <sb@sergio.bz>" ];
-    sha256 = "1yrx9xblmwbafw2firxyqbj8f771kkzfd24n3q7xgwiqyhi0y8qd";
+    sha256 = "00aywbaicdi81gcxpqdz6g0l96885bz4bml5c9xfna5p01vrh4li";
   };
-  features_."version_check"."0.1.5" = deps: f: updateFeatures f (rec {
-    version_check."0.1.5".default = (f.version_check."0.1.5".default or true);
+  features_."version_check"."0.9.1" = deps: f: updateFeatures f (rec {
+    version_check."0.9.1".default = (f.version_check."0.9.1".default or true);
   }) [];
 
 
