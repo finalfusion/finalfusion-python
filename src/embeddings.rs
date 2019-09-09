@@ -40,7 +40,7 @@ impl PyEmbeddings {
     /// This should only be used for storage types that do not provide
     /// an ndarray view that can be copied trivially, such as quantized
     /// storage.
-    fn copy_storage_to_array(storage: &Storage) -> Array2<f32> {
+    fn copy_storage_to_array(storage: &dyn Storage) -> Array2<f32> {
         let (rows, dims) = storage.shape();
 
         let mut array = Array2::<f32>::zeros((rows, dims));
