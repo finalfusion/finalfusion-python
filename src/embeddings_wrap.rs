@@ -8,7 +8,7 @@ pub enum EmbeddingsWrap {
 }
 
 impl EmbeddingsWrap {
-    pub fn storage(&self) -> &Storage {
+    pub fn storage(&self) -> &dyn Storage {
         use EmbeddingsWrap::*;
         match self {
             NonView(e) => e.storage(),
