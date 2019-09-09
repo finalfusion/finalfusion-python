@@ -8,8 +8,8 @@ addons:
     packages:
       - python3.5-dev
       - python3.6-dev
-      - python3.6-venv
       - python3.7-dev
+      - python3.7-venv
 
 matrix:
   fast_finish: true
@@ -33,11 +33,10 @@ install:
     fi
   - |
     if [ "$TRAVIS_OS_NAME" == "linux" ]; then
-      python3.6 -m venv venv
+      python3.7 -m venv venv
       source venv/bin/activate
       pip install cffi virtualenv pytest numpy
     fi
-  - cargo install --git https://github.com/PyO3/pyo3-pack.git --tag v0.6.1 pyo3-pack
   - rustup default nightly-2019-07-19
   - rustup component add rustfmt
   - rustup component add clippy
@@ -45,19 +44,17 @@ install:
 script:
   - cargo fmt --all -- --check
   - cargo clippy -- -D warnings
-  - pyo3-pack develop
-  - pytest
   - |
-    if [ -n "$TRAVIS_TAG" ]; then
-      pyo3-pack build --release
+    if [ "$TRAVIS_OS_NAME" == "osx" ]; then
+      cargo build
+      cp target/debug/libfinalfusion.dylib target/debug/finalfusion.so
+    else
+      # The order is important, since the venv is created for Python 3.7.
+      for pyVersion in 3.5 3.6 3.7; do
+        echo "🐍 Testing compilation with Python ${pyVersion}"
+        PYTHON_SYS_EXECUTABLE=python${pyVersion} cargo build
+      done
+      cp target/debug/libfinalfusion.so target/debug/finalfusion.so
     fi
-deploy:
-  provider: releases
-  api_key:
-    secure: KtDkbm9l+Jc91RDLE4HF6m8Eni2AGKVhLGSokroASkKvbaMUeBz9kxoSQAbJB6z2MJtq1TytlC+6VQgLPabibh5yzhaqN/Optc3k3lhBAiaPGsbSyZqpuntRu0JnulZe3Dz0Iisdprw606+58N3Nu9SdsZPaAJtyFYw23yKsEaq4bEbRYSwdELGgXBITVNHwxFDhURiR0kw3WSq/XO0yNn2bLoGYdJVzUarmnb1Q0XJEl+vr3wJ7B1BM9Z/o4d4AuoYyuS67k7LJGbdzg2RTJL1BH7TlQfYklUFuH2/Bn68gCf03P6moDeTK9JzAz4kXv64F6KMzuB+iR69tNRQ7gZqBYOJ5G/n8QrfJ0YjzECV0d6UMJt7cJB3ssZMLRtMnXNcJedS0M0IuZa2yO37foe2D2sI3sqchFHxNSFMTT5LHla4KpCe0UIdGCkfDClqgHp0Ra499rmjdTT7bzl0dsIdWPvE1QFcegKvaviugoweD7D0O8BjTkxMw2Dd+gVqhFtKJ3eBNWTS3eFaA8DbDwJqYm6cOINDakb5+M26+OkUePizPowqnfqBHNnewSl8VuZ2LJVqMT9pEoUT027kTUQyq3j13AJ7TK8R6MTEVyq+uru5G9t/BHFIVYeQ43rqEUOxbhGvlSoT0qqDtFwLRxDnLQy/raRKgpGYxDVc6osI=
-  file_glob: true
-  file: target/wheels/*.whl
-  skip_cleanup: true
-  on:
-    repo: finalfusion/finalfusion-python
-    tags: true
+  - export PYTHONPATH="$PWD/target/debug:$PYTHONPATH"
+  - pytest
