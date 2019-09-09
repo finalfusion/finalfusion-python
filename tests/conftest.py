@@ -26,6 +26,16 @@ def similarity_fifu(tests_root):
 
 
 @pytest.fixture
+def similarity_pq(tests_root):
+    yield finalfusion.Embeddings(os.path.join(tests_root, "similarity-pq.fifu"))
+
+
+@pytest.fixture
+def similarity_pq_mmap(tests_root):
+    yield finalfusion.Embeddings(os.path.join(tests_root, "similarity-pq.fifu"), mmap=True)
+
+
+@pytest.fixture
 def subword_fifu(tests_root):
     yield finalfusion.Embeddings(os.path.join(tests_root, "subword.fifu"))
 

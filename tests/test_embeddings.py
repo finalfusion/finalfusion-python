@@ -30,6 +30,20 @@ def test_embeddings(embeddings_fifu, embeddings_text, embeddings_text_dims):
             embedding.embedding, embeddings_text_dims[embedding.word]), "FiFu and textdims embedding mismatch"
 
 
+def test_embeddings_pq(similarity_fifu, similarity_pq):
+    for embedding in similarity_fifu:
+        embedding_pq = similarity_pq.embedding("Berlin")
+        assert numpy.allclose(embedding.embedding, embedding_pq,
+                              atol=0.3), "Embedding and quantized embedding mismatch"
+
+
+def test_embeddings_pq_mmap(similarity_fifu, similarity_pq_mmap):
+    for embedding in similarity_fifu:
+        embedding_pq = similarity_pq_mmap.embedding("Berlin")
+        assert numpy.allclose(embedding.embedding, embedding_pq,
+                              atol=0.3), "Embedding and quantized embedding mismatch"
+
+
 def test_embeddings_with_norms_oov(embeddings_fifu):
     assert embeddings_fifu.embedding_with_norm(
         "Something out of vocabulary") is None
