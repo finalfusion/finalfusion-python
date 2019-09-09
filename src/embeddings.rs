@@ -310,12 +310,12 @@ impl PyEmbeddings {
     }
 
     /// Perform a similarity query based on a query embedding.
-    #[args(limit = 10, skip = "None")]
+    #[args(limit = 10, skip = "Skips(HashSet::new())")]
     fn embedding_similarity(
         &self,
         py: Python,
         embedding: PyEmbedding,
-        skip: Option<Option<Skips>>,
+        skip: Skips,
         limit: usize,
     ) -> PyResult<Vec<PyObject>> {
         let embeddings = self.embeddings.borrow();
@@ -336,11 +336,7 @@ impl PyEmbeddings {
             )));
         }
 
-        let results = if let Some(Some(skip)) = skip {
-            embeddings.embedding_similarity_masked(embedding, limit, &skip.0)
-        } else {
-            embeddings.embedding_similarity(embedding, limit)
-        };
+        let results = embeddings.embedding_similarity_masked(embedding, limit, &skip.0);
 
         Self::similarity_results(
             py,
@@ -462,6 +458,9 @@ struct Skips<'a>(HashSet<&'a str>);
 impl<'a> FromPyObject<'a> for Skips<'a> {
     fn extract(ob: &'a PyAny) -> Result<Self, PyErr> {
         let mut set = ob.len().map(HashSet::with_capacity).unwrap_or_default();
+        if ob.is_none() {
+            return Ok(Skips(set));
+        }
         for el in ob
             .iter()
             .map_err(|_| exceptions::TypeError::py_err("Iterable expected"))?
