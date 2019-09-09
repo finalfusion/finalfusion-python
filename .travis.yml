@@ -40,9 +40,11 @@ install:
   - cargo install --git https://github.com/PyO3/pyo3-pack.git --tag v0.6.1 pyo3-pack
   - rustup default nightly-2019-07-19
   - rustup component add rustfmt
+  - rustup component add clippy
 
 script:
   - cargo fmt --all -- --check
+  - cargo clippy -- -D warnings
   - pyo3-pack develop
   - pytest
   - |
