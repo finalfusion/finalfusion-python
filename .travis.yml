@@ -40,8 +40,6 @@ install:
   - rustup default nightly-2019-07-19
   - rustup component add rustfmt
   - rustup component add clippy
-  - cargo fmt --all -- --check
-  - cargo clippy -- -D warnings
   - |
     if [ "$TRAVIS_OS_NAME" == "osx" ]; then
       travis_retry wget https://github.com/PyO3/maturin/releases/download/v0.7.2/maturin-v0.7.2-x86_64-apple-darwin.tar.gz
