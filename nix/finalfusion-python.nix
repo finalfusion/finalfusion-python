@@ -8,11 +8,11 @@ let inherit (lib.lists) fold;
 in
 rec {
   crates = cratesIO // rec {
-# finalfusion-python-0.4.0
+# finalfusion-python-0.5.0
 
-    crates.finalfusion_python."0.4.0" = deps: { features?(features_."finalfusion_python"."0.4.0" deps {}) }: buildRustCrate {
+    crates.finalfusion_python."0.5.0" = deps: { features?(features_."finalfusion_python"."0.5.0" deps {}) }: buildRustCrate {
       crateName = "finalfusion-python";
-      version = "0.4.0";
+      version = "0.5.0";
       description = "Finalfusion Python module";
       homepage = "https://finalfusion.github.io/";
       authors = [ "Daniël de Kok <me@danieldk.eu>" ];
@@ -21,38 +21,38 @@ rec {
       libName = "finalfusion";
       type = [ "cdylib" ];
       dependencies = mapFeatures features ([
-        (cratesIO.crates."failure"."${deps."finalfusion_python"."0.4.0"."failure"}" deps)
-        (cratesIO.crates."finalfusion"."${deps."finalfusion_python"."0.4.0"."finalfusion"}" deps)
-        (cratesIO.crates."itertools"."${deps."finalfusion_python"."0.4.0"."itertools"}" deps)
-        (cratesIO.crates."libc"."${deps."finalfusion_python"."0.4.0"."libc"}" deps)
-        (cratesIO.crates."ndarray"."${deps."finalfusion_python"."0.4.0"."ndarray"}" deps)
-        (cratesIO.crates."numpy"."${deps."finalfusion_python"."0.4.0"."numpy"}" deps)
-        (cratesIO.crates."pyo3"."${deps."finalfusion_python"."0.4.0"."pyo3"}" deps)
-        (cratesIO.crates."toml"."${deps."finalfusion_python"."0.4.0"."toml"}" deps)
+        (cratesIO.crates."failure"."${deps."finalfusion_python"."0.5.0"."failure"}" deps)
+        (cratesIO.crates."finalfusion"."${deps."finalfusion_python"."0.5.0"."finalfusion"}" deps)
+        (cratesIO.crates."itertools"."${deps."finalfusion_python"."0.5.0"."itertools"}" deps)
+        (cratesIO.crates."libc"."${deps."finalfusion_python"."0.5.0"."libc"}" deps)
+        (cratesIO.crates."ndarray"."${deps."finalfusion_python"."0.5.0"."ndarray"}" deps)
+        (cratesIO.crates."numpy"."${deps."finalfusion_python"."0.5.0"."numpy"}" deps)
+        (cratesIO.crates."pyo3"."${deps."finalfusion_python"."0.5.0"."pyo3"}" deps)
+        (cratesIO.crates."toml"."${deps."finalfusion_python"."0.5.0"."toml"}" deps)
       ]);
     };
-    features_."finalfusion_python"."0.4.0" = deps: f: updateFeatures f (rec {
-      failure."${deps.finalfusion_python."0.4.0".failure}".default = true;
-      finalfusion."${deps.finalfusion_python."0.4.0".finalfusion}".default = true;
-      finalfusion_python."0.4.0".default = (f.finalfusion_python."0.4.0".default or true);
-      itertools."${deps.finalfusion_python."0.4.0".itertools}".default = true;
-      libc."${deps.finalfusion_python."0.4.0".libc}".default = true;
-      ndarray."${deps.finalfusion_python."0.4.0".ndarray}".default = true;
-      numpy."${deps.finalfusion_python."0.4.0".numpy}".default = true;
+    features_."finalfusion_python"."0.5.0" = deps: f: updateFeatures f (rec {
+      failure."${deps.finalfusion_python."0.5.0".failure}".default = true;
+      finalfusion."${deps.finalfusion_python."0.5.0".finalfusion}".default = true;
+      finalfusion_python."0.5.0".default = (f.finalfusion_python."0.5.0".default or true);
+      itertools."${deps.finalfusion_python."0.5.0".itertools}".default = true;
+      libc."${deps.finalfusion_python."0.5.0".libc}".default = true;
+      ndarray."${deps.finalfusion_python."0.5.0".ndarray}".default = true;
+      numpy."${deps.finalfusion_python."0.5.0".numpy}".default = true;
       pyo3 = fold recursiveUpdate {} [
-        { "${deps.finalfusion_python."0.4.0".pyo3}"."extension-module" = true; }
-        { "${deps.finalfusion_python."0.4.0".pyo3}".default = true; }
+        { "${deps.finalfusion_python."0.5.0".pyo3}"."extension-module" = true; }
+        { "${deps.finalfusion_python."0.5.0".pyo3}".default = true; }
       ];
-      toml."${deps.finalfusion_python."0.4.0".toml}".default = true;
+      toml."${deps.finalfusion_python."0.5.0".toml}".default = true;
     }) [
-      (if deps."finalfusion_python"."0.4.0" ? "failure" then cratesIO.features_.failure."${deps."finalfusion_python"."0.4.0"."failure" or ""}" deps else {})
-      (if deps."finalfusion_python"."0.4.0" ? "finalfusion" then cratesIO.features_.finalfusion."${deps."finalfusion_python"."0.4.0"."finalfusion" or ""}" deps else {})
-      (if deps."finalfusion_python"."0.4.0" ? "itertools" then cratesIO.features_.itertools."${deps."finalfusion_python"."0.4.0"."itertools" or ""}" deps else {})
-      (if deps."finalfusion_python"."0.4.0" ? "libc" then cratesIO.features_.libc."${deps."finalfusion_python"."0.4.0"."libc" or ""}" deps else {})
-      (if deps."finalfusion_python"."0.4.0" ? "ndarray" then cratesIO.features_.ndarray."${deps."finalfusion_python"."0.4.0"."ndarray" or ""}" deps else {})
-      (if deps."finalfusion_python"."0.4.0" ? "numpy" then cratesIO.features_.numpy."${deps."finalfusion_python"."0.4.0"."numpy" or ""}" deps else {})
-      (if deps."finalfusion_python"."0.4.0" ? "pyo3" then cratesIO.features_.pyo3."${deps."finalfusion_python"."0.4.0"."pyo3" or ""}" deps else {})
-      (if deps."finalfusion_python"."0.4.0" ? "toml" then cratesIO.features_.toml."${deps."finalfusion_python"."0.4.0"."toml" or ""}" deps else {})
+      (if deps."finalfusion_python"."0.5.0" ? "failure" then cratesIO.features_.failure."${deps."finalfusion_python"."0.5.0"."failure" or ""}" deps else {})
+      (if deps."finalfusion_python"."0.5.0" ? "finalfusion" then cratesIO.features_.finalfusion."${deps."finalfusion_python"."0.5.0"."finalfusion" or ""}" deps else {})
+      (if deps."finalfusion_python"."0.5.0" ? "itertools" then cratesIO.features_.itertools."${deps."finalfusion_python"."0.5.0"."itertools" or ""}" deps else {})
+      (if deps."finalfusion_python"."0.5.0" ? "libc" then cratesIO.features_.libc."${deps."finalfusion_python"."0.5.0"."libc" or ""}" deps else {})
+      (if deps."finalfusion_python"."0.5.0" ? "ndarray" then cratesIO.features_.ndarray."${deps."finalfusion_python"."0.5.0"."ndarray" or ""}" deps else {})
+      (if deps."finalfusion_python"."0.5.0" ? "numpy" then cratesIO.features_.numpy."${deps."finalfusion_python"."0.5.0"."numpy" or ""}" deps else {})
+      (if deps."finalfusion_python"."0.5.0" ? "pyo3" then cratesIO.features_.pyo3."${deps."finalfusion_python"."0.5.0"."pyo3" or ""}" deps else {})
+      (if deps."finalfusion_python"."0.5.0" ? "toml" then cratesIO.features_.toml."${deps."finalfusion_python"."0.5.0"."toml" or ""}" deps else {})
     ];
 
 
@@ -60,7 +60,7 @@ rec {
 
   };
 
-  finalfusion_python = crates.crates.finalfusion_python."0.4.0" deps;
+  finalfusion_python = crates.crates.finalfusion_python."0.5.0" deps;
   __all = [ (finalfusion_python {}) ];
   deps.aho_corasick."0.7.6" = {
     memchr = "2.2.1";
@@ -133,7 +133,7 @@ rec {
     serde = "1.0.99";
     toml = "0.5.1";
   };
-  deps.finalfusion_python."0.4.0" = {
+  deps.finalfusion_python."0.5.0" = {
     failure = "0.1.5";
     finalfusion = "0.9.0";
     itertools = "0.8.0";
