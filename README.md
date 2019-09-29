@@ -139,5 +139,5 @@ directory.
 ## Where to go from here
 
   * [finalfrontier](https://finalfusion.github.io/finalfrontier)
-  * [finalfusion](https://finalfusion.io/)
+  * [finalfusion](https://finalfusion.github.io/)
   * [pretrained embeddings](https://finalfusion.github.io/pretrained)
