@@ -36,10 +36,10 @@ $ pip install --upgrade finalfusion
 ## Building from source
 
 finalfusion can also be built from source. This requires a Rust toolchain
-that is installed through rustup. First, you need `pyo3-pack`:
+that is installed through rustup. First, you need `maturin`:
 
 ~~~shell
-$ cargo install pyo3-pack
+$ cargo install maturin
 ~~~
 
 finalfusion currently requires a nightly version of Rust. You can use rustup
@@ -51,10 +51,10 @@ $ rustup override set nightly
 ~~~
 
 Now you can build finalfusion-python wheels for Python versions that are
-detected by `pyo3-pack`:
+detected by `maturin`:
 
 ~~~shell
-$ pyo3-pack build --release
+$ maturin build --release
 ~~~
 
 The wheels are then in the `target/wheels` directory.
