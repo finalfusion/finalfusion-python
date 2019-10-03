@@ -75,4 +75,16 @@ impl PySequenceProtocol for PyVocab {
             Ok(words[idx as usize].clone())
         }
     }
+
+    fn __contains__(&self, word: String) -> PyResult<bool> {
+        let embeds = self.embeddings.borrow();
+        Ok(embeds
+            .vocab()
+            .idx(&word)
+            .map(|word_idx| match word_idx {
+                WordIndex::Word(_) => true,
+                WordIndex::Subword(_) => false,
+            })
+            .unwrap_or(false))
+    }
 }
