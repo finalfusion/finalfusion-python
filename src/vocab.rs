@@ -9,6 +9,8 @@ use pyo3::prelude::*;
 
 use crate::EmbeddingsWrap;
 
+type NGramIndex = (String, Option<usize>);
+
 /// finalfusion vocab.
 #[pyclass(name=Vocab)]
 pub struct PyVocab {
@@ -35,15 +37,18 @@ impl PyVocab {
         })
     }
 
-    fn ngram_indices(&self, word: &str) -> PyResult<Option<Vec<(String, usize)>>> {
+    fn ngram_indices(&self, word: &str) -> PyResult<Option<Vec<NGramIndex>>> {
         let embeds = self.embeddings.borrow();
-        match embeds.vocab() {
-            VocabWrap::FastTextSubwordVocab(inner) => Ok(inner.ngram_indices(word)),
-            VocabWrap::FinalfusionSubwordVocab(inner) => Ok(inner.ngram_indices(word)),
-            VocabWrap::SimpleVocab(_) => Err(exceptions::ValueError::py_err(
-                "querying n-gram indices is not supported for this vocabulary",
-            )),
-        }
+        Ok(match embeds.vocab() {
+            VocabWrap::FastTextSubwordVocab(inner) => inner.ngram_indices(word),
+            VocabWrap::FinalfusionSubwordVocab(inner) => inner.ngram_indices(word),
+            VocabWrap::FinalfusionNGramVocab(inner) => inner.ngram_indices(word),
+            VocabWrap::SimpleVocab(_) => {
+                return Err(exceptions::ValueError::py_err(
+                    "querying n-gram indices is not supported for this vocabulary",
+                ))
+            }
+        })
     }
 
     fn subword_indices(&self, word: &str) -> PyResult<Option<Vec<usize>>> {
@@ -51,6 +56,7 @@ impl PyVocab {
         match embeds.vocab() {
             VocabWrap::FastTextSubwordVocab(inner) => Ok(inner.subword_indices(word)),
             VocabWrap::FinalfusionSubwordVocab(inner) => Ok(inner.subword_indices(word)),
+            VocabWrap::FinalfusionNGramVocab(inner) => Ok(inner.subword_indices(word)),
             VocabWrap::SimpleVocab(_) => Err(exceptions::ValueError::py_err(
                 "querying subwords' indices is not supported for this vocabulary",
             )),
@@ -81,10 +87,7 @@ impl PySequenceProtocol for PyVocab {
         Ok(embeds
             .vocab()
             .idx(&word)
-            .map(|word_idx| match word_idx {
-                WordIndex::Word(_) => true,
-                WordIndex::Subword(_) => false,
-            })
-            .unwrap_or(false))
+            .and_then(|word_idx| word_idx.word())
+            .is_some())
     }
 }

@@ -232,9 +232,9 @@ impl PyEmbeddings {
             View(e) => e.storage().view(),
             NonView(e) => match e.storage() {
                 StorageWrap::MmapArray(mmap) => mmap.view(),
-                StorageWrap::NdArray(array) => array.0.view(),
+                StorageWrap::NdArray(array) => array.view(),
                 StorageWrap::QuantizedArray(quantized) => {
-                    let array = Self::copy_storage_to_array(quantized);
+                    let array = Self::copy_storage_to_array(quantized.as_ref());
                     return array.to_pyarray(gil.python()).to_owned();
                 }
                 StorageWrap::MmapQuantizedArray(quantized) => {
