@@ -62,6 +62,12 @@ impl PyVocab {
             )),
         }
     }
+
+    /// Get the total length of this vocabulary, including possible subwords.
+    fn full_len(&self) -> usize {
+        let embeds = self.embeddings.borrow();
+        embeds.vocab().vocab_len()
+    }
 }
 
 #[pyproto]
