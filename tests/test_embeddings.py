@@ -17,17 +17,19 @@ def test_embeddings(embeddings_fifu, embeddings_text, embeddings_text_dims):
     assert len(embeddings_fifu.vocab()) == 7
     assert len(embeddings_text.vocab()) == 7
     assert len(embeddings_text_dims.vocab()) == 7
-
+    fifu_storage = embeddings_fifu.storage()
     # Check that the finalfusion embeddings have the correct dimensionality
     # The correct dimensionality of the other embedding types is asserted
     # in the pairwise comparisons below.
-    assert embeddings_fifu.matrix_copy().shape == (7, 10)
+    assert fifu_storage.shape() == (7, 10)
     
-    for embedding in embeddings_fifu:
+    for embedding, storage_row in zip(embeddings_fifu, fifu_storage):
         assert numpy.allclose(
             embedding.embedding, embeddings_text[embedding.word]), "FiFu and text embedding mismatch"
         assert numpy.allclose(
             embedding.embedding, embeddings_text_dims[embedding.word]), "FiFu and textdims embedding mismatch"
+        assert numpy.allclose(
+            embedding.embedding, storage_row), "FiFu and storage row  mismatch"
 
 
 def test_embeddings_pq(similarity_fifu, similarity_pq):

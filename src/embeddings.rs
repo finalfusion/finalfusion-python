@@ -12,14 +12,14 @@ use finalfusion::io as ffio;
 use finalfusion::prelude::*;
 use finalfusion::similarity::*;
 use itertools::Itertools;
-use ndarray::Array2;
-use numpy::{IntoPyArray, NpyDataType, PyArray1, PyArray2, ToPyArray};
+use numpy::{IntoPyArray, NpyDataType, PyArray1};
 use pyo3::class::iter::PyIterProtocol;
 use pyo3::prelude::*;
 use pyo3::types::{PyAny, PyTuple};
 use pyo3::{exceptions, PyMappingProtocol};
 use toml::{self, Value};
 
+use crate::storage::PyStorage;
 use crate::{EmbeddingsWrap, PyEmbeddingIterator, PyVocab, PyWordSimilarity};
 
 /// finalfusion embeddings.
@@ -32,24 +32,6 @@ pub struct PyEmbeddings {
     //    to its method scope.
     // 3. None of the methods returns borrowed embeddings.
     embeddings: Rc<RefCell<EmbeddingsWrap>>,
-}
-
-impl PyEmbeddings {
-    /// Copy storage to an array.
-    ///
-    /// This should only be used for storage types that do not provide
-    /// an ndarray view that can be copied trivially, such as quantized
-    /// storage.
-    fn copy_storage_to_array(storage: &dyn Storage) -> Array2<f32> {
-        let (rows, dims) = storage.shape();
-
-        let mut array = Array2::<f32>::zeros((rows, dims));
-        for idx in 0..rows {
-            array.row_mut(idx).assign(&storage.embedding(idx).as_view());
-        }
-
-        array
-    }
 }
 
 #[pymethods]
@@ -156,6 +138,11 @@ impl PyEmbeddings {
         Ok(PyVocab::new(self.embeddings.clone()))
     }
 
+    /// Get the model's storage.
+    fn storage(&self) -> PyStorage {
+        PyStorage::new(self.embeddings.clone())
+    }
+
     /// Perform an anology query.
     ///
     /// This returns words for the analogy query *w1* is to *w2*
@@ -220,31 +207,6 @@ impl PyEmbeddings {
             let embedding = e.embedding.into_owned().into_pyarray(gil.python());
             (embedding, e.norm).into_py(gil.python())
         })
-    }
-
-    /// Copy the entire embeddings matrix.
-    fn matrix_copy(&self) -> Py<PyArray2<f32>> {
-        let embeddings = self.embeddings.borrow();
-
-        use EmbeddingsWrap::*;
-        let gil = pyo3::Python::acquire_gil();
-        let matrix_view = match &*embeddings {
-            View(e) => e.storage().view(),
-            NonView(e) => match e.storage() {
-                StorageWrap::MmapArray(mmap) => mmap.view(),
-                StorageWrap::NdArray(array) => array.view(),
-                StorageWrap::QuantizedArray(quantized) => {
-                    let array = Self::copy_storage_to_array(quantized.as_ref());
-                    return array.to_pyarray(gil.python()).to_owned();
-                }
-                StorageWrap::MmapQuantizedArray(quantized) => {
-                    let array = Self::copy_storage_to_array(quantized);
-                    return array.to_pyarray(gil.python()).to_owned();
-                }
-            },
-        };
-
-        matrix_view.to_pyarray(gil.python()).to_owned()
     }
 
     /// Embeddings metadata.
