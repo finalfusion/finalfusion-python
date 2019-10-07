@@ -10,7 +10,7 @@ use pyo3::prelude::*;
 
 use crate::EmbeddingsWrap;
 
-/// finalfusion vocab.
+/// finalfusion storage.
 #[pyclass(name=Storage)]
 pub struct PyStorage {
     embeddings: Rc<RefCell<EmbeddingsWrap>>,
