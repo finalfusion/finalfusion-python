@@ -87,10 +87,10 @@ embeds = finalfusion.Embeddings("myembeddings.fifu")
 embeds = finalfusion.Embeddings("myembeddings.fifu", mmap=True)
 
 # fastText format
-embeds = finalfusion.read_fasttext("myembeddings.bin")
+embeds = finalfusion.Embeddings.read_fasttext("myembeddings.bin")
 
 # word2vec format
-embeds = finalfusion.read_word2vec("myembeddings.w2v")
+embeds = finalfusion.Embeddings.read_word2vec("myembeddings.w2v")
 ~~~
 
 You can then compute an embedding, perform similarity queries, or analogy
