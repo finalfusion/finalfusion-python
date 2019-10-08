@@ -4,7 +4,6 @@ use std::fs::File;
 use std::io::{BufReader, BufWriter};
 use std::rc::Rc;
 
-use failure::Error;
 use finalfusion::chunks::metadata::Metadata;
 use finalfusion::compat::text::{ReadText, ReadTextDims};
 use finalfusion::compat::word2vec::ReadWord2Vec;
@@ -373,11 +372,12 @@ impl PyIterProtocol for PyEmbeddings {
     }
 }
 
-fn read_embeddings<S>(path: &str, mmap: bool) -> Result<Embeddings<VocabWrap, S>, Error>
+fn read_embeddings<S>(path: &str, mmap: bool) -> Result<Embeddings<VocabWrap, S>, ffio::Error>
 where
     Embeddings<VocabWrap, S>: ReadEmbeddings + MmapEmbeddings,
 {
-    let f = File::open(path)?;
+    let f = File::open(path)
+        .map_err(|e| ffio::ErrorKind::io_error("Cannot open embeddings file for reading", e))?;
     let mut reader = BufReader::new(f);
 
     let embeddings = if mmap {
