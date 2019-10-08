@@ -22,7 +22,7 @@ def test_embeddings(embeddings_fifu, embeddings_text, embeddings_text_dims):
     # The correct dimensionality of the other embedding types is asserted
     # in the pairwise comparisons below.
     assert fifu_storage.shape() == (7, 10)
-    
+
     for embedding, storage_row in zip(embeddings_fifu, fifu_storage):
         assert numpy.allclose(
             embedding.embedding, embeddings_text[embedding.word]), "FiFu and text embedding mismatch"
@@ -30,6 +30,32 @@ def test_embeddings(embeddings_fifu, embeddings_text, embeddings_text_dims):
             embedding.embedding, embeddings_text_dims[embedding.word]), "FiFu and textdims embedding mismatch"
         assert numpy.allclose(
             embedding.embedding, storage_row), "FiFu and storage row  mismatch"
+
+
+def test_unknown_embeddings(embeddings_fifu):
+    assert embeddings_fifu.embedding("OOV") is None, "Unknown lookup with no default failed"
+    assert embeddings_fifu.embedding(
+        "OOV", default=None) is None, "Unknown lookup with 'None' default failed"
+    assert numpy.allclose(embeddings_fifu.embedding(
+        "OOV", default=[10]*10), numpy.array([10.]*10)), "Unknown lookup with 'list' default failed"
+    assert numpy.allclose(embeddings_fifu.embedding("OOV", default=numpy.array(
+        [10.]*10)), numpy.array([10.]*10)), "Unknown lookup with array default failed"
+    assert numpy.allclose(embeddings_fifu.embedding(
+        "OOV", default=10), numpy.array([10.]*10)), "Unknown lookup with 'int' scalar default failed"
+    assert numpy.allclose(embeddings_fifu.embedding(
+        "OOV", default=10.), numpy.array([10.]*10)), "Unknown lookup with 'float' scalar default failed"
+    with pytest.raises(TypeError):
+        embeddings_fifu.embedding(
+            "OOV", default="not working"), "Unknown lookup with 'str' default succeeded"
+    with pytest.raises(ValueError):
+        embeddings_fifu.embedding(
+            "OOV", default=[10.]*5), "Unknown lookup with incorrectly shaped 'list' default succeeded"
+    with pytest.raises(ValueError):
+        embeddings_fifu.embedding(
+            "OOV", default=numpy.array([10.]*5)), "Unknown lookup with incorrectly shaped array default succeeded"
+    with pytest.raises(ValueError):
+        embeddings_fifu.embedding(
+            "OOV", default=range(7)), "Unknown lookup with iterable default with incorrect number succeeded"
 
 
 def test_embeddings_pq(similarity_fifu, similarity_pq):
