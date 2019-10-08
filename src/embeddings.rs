@@ -11,10 +11,11 @@ use finalfusion::io as ffio;
 use finalfusion::prelude::*;
 use finalfusion::similarity::*;
 use itertools::Itertools;
+use ndarray::Array1;
 use numpy::{IntoPyArray, NpyDataType, PyArray1};
 use pyo3::class::iter::PyIterProtocol;
 use pyo3::prelude::*;
-use pyo3::types::{PyAny, PyTuple};
+use pyo3::types::{PyAny, PyIterator, PyTuple};
 use pyo3::{exceptions, PyMappingProtocol};
 use toml::{self, Value};
 
@@ -22,7 +23,7 @@ use crate::storage::PyStorage;
 use crate::{EmbeddingsWrap, PyEmbeddingIterator, PyVocab, PyWordSimilarity};
 
 /// finalfusion embeddings.
-#[pyclass(name=Embeddings)]
+#[pyclass(name = Embeddings)]
 pub struct PyEmbeddings {
     // The use of Rc + RefCell should be safe in this crate:
     //
@@ -179,17 +180,49 @@ impl PyEmbeddings {
         Self::similarity_results(py, results)
     }
 
+    /// embedding(word,/, default)
+    /// --
+    ///
     /// Get the embedding for the given word.
     ///
     /// If the word is not known, its representation is approximated
-    /// using subword units.
-    fn embedding(&self, word: &str) -> Option<Py<PyArray1<f32>>> {
+    /// using subword units. #
+    ///
+    /// If no representation can be calculated:
+    ///  - `None` if `default` is `None`
+    ///  - an array filled with `default` if `default` is a scalar
+    ///  - an array if `default` is a 1-d array
+    ///  - an array filled with values from `default` if it is an iterator over floats.
+    #[args(default = "PyEmbeddingDefault::default()")]
+    fn embedding(
+        &self,
+        word: &str,
+        default: PyEmbeddingDefault,
+    ) -> PyResult<Option<Py<PyArray1<f32>>>> {
         let embeddings = self.embeddings.borrow();
+        let gil = pyo3::Python::acquire_gil();
+        if let PyEmbeddingDefault::Embedding(array) = &default {
+            if array.as_ref(gil.python()).shape()[0] != embeddings.storage().shape().1 {
+                return Err(exceptions::ValueError::py_err(format!(
+                    "Invalid shape of default embedding: {}",
+                    array.as_ref(gil.python()).shape()[0]
+                )));
+            }
+        }
 
-        embeddings.embedding(word).map(|e| {
-            let gil = pyo3::Python::acquire_gil();
-            e.into_owned().into_pyarray(gil.python()).to_owned()
-        })
+        if let Some(embedding) = embeddings.embedding(word) {
+            return Ok(Some(
+                embedding.into_owned().into_pyarray(gil.python()).to_owned(),
+            ));
+        };
+        match default {
+            PyEmbeddingDefault::Constant(constant) => {
+                let nd_arr = Array1::from_elem([embeddings.storage().shape().1], constant);
+                Ok(Some(nd_arr.into_pyarray(gil.python()).to_owned()))
+            }
+            PyEmbeddingDefault::Embedding(array) => Ok(Some(array)),
+            PyEmbeddingDefault::None => Ok(None),
+        }
     }
 
     fn embedding_with_norm(&self, word: &str) -> Option<Py<PyTuple>> {
@@ -413,6 +446,58 @@ where
     Ok(PyEmbeddings {
         embeddings: Rc::new(RefCell::new(EmbeddingsWrap::View(embeddings.into()))),
     })
+}
+
+pub enum PyEmbeddingDefault {
+    Embedding(Py<PyArray1<f32>>),
+    Constant(f32),
+    None,
+}
+
+impl<'a> Default for PyEmbeddingDefault {
+    fn default() -> Self {
+        PyEmbeddingDefault::None
+    }
+}
+
+impl<'a> FromPyObject<'a> for PyEmbeddingDefault {
+    fn extract(ob: &'a PyAny) -> Result<Self, PyErr> {
+        if ob.is_none() {
+            return Ok(PyEmbeddingDefault::None);
+        }
+        if let Ok(emb) = ob
+            .extract()
+            .map(|e: &PyArray1<f32>| PyEmbeddingDefault::Embedding(e.to_owned()))
+        {
+            return Ok(emb);
+        }
+
+        if let Ok(constant) = ob.extract().map(PyEmbeddingDefault::Constant) {
+            return Ok(constant);
+        }
+        if let Ok(embed) = ob
+            .iter()
+            .and_then(|iter| collect_array_from_py_iter(iter, ob.len().ok()))
+            .map(PyEmbeddingDefault::Embedding)
+        {
+            return Ok(embed);
+        }
+
+        Err(exceptions::TypeError::py_err(
+            "failed to construct default value.",
+        ))
+    }
+}
+
+fn collect_array_from_py_iter(iter: PyIterator, len: Option<usize>) -> PyResult<Py<PyArray1<f32>>> {
+    let mut embed_vec = len.map(Vec::with_capacity).unwrap_or_default();
+    for item in iter {
+        let item = item.and_then(|item| item.extract())?;
+        embed_vec.push(item);
+    }
+    let gil = Python::acquire_gil();
+    let embed = PyArray1::from_vec(gil.python(), embed_vec).to_owned();
+    Ok(embed)
 }
 
 struct Skips<'a>(HashSet<&'a str>);
