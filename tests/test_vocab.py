@@ -1,3 +1,5 @@
+import pytest
+
 TEST_NGRAM_INDICES = [
     ('tüb',
      14),
@@ -53,9 +55,19 @@ TEST_NGRAM_INDICES = [
      1007)]
 
 
-def test_embeddings_with_norms_oov(embeddings_fifu):
+def test_get(embeddings_text_dims):
+    vocab = embeddings_text_dims.vocab()
+    assert vocab.get("one") is 0
+
+
+def test_get_oov(embeddings_fifu):
     vocab = embeddings_fifu.vocab()
-    assert vocab.item_to_indices("Something out of vocabulary") is None
+    assert vocab.get("Something out of vocabulary") is None
+
+
+def test_get_oov_with_default(embeddings_fifu):
+    vocab = embeddings_fifu.vocab()
+    assert vocab.get("Something out of vocabulary", default=-1) == -1
 
 
 def test_ngram_indices(subword_fifu):
@@ -72,3 +84,41 @@ def test_subword_indices(subword_fifu):
     for subword_index, test_ngram_index in zip(
             subword_indices, TEST_NGRAM_INDICES):
         assert subword_index == test_ngram_index[1]
+
+
+def test_int_idx(embeddings_text_dims):
+    vocab = embeddings_text_dims.vocab()
+    assert vocab[0] == "one"
+
+
+def test_int_idx_out_of_range(embeddings_text_dims):
+    vocab = embeddings_text_dims.vocab()
+    with pytest.raises(IndexError):
+        _ = vocab[42]
+
+
+def test_negative_int_idx(embeddings_text_dims):
+    vocab = embeddings_text_dims.vocab()
+    assert vocab[-1] == "seven"
+
+
+def test_negative_int_idx_out_of_range(embeddings_text_dims):
+    vocab = embeddings_text_dims.vocab()
+    with pytest.raises(IndexError):
+        _ = vocab[-42]
+
+
+def test_string_idx(embeddings_text_dims):
+    vocab = embeddings_text_dims.vocab()
+    assert vocab["one"] == 0
+
+
+def test_string_oov(embeddings_text_dims):
+    vocab = embeddings_text_dims.vocab()
+    with pytest.raises(KeyError):
+        vocab["definitely in vocab"]
+
+
+def test_string_oov_subwords(subword_fifu):
+    vocab = subword_fifu.vocab()
+    assert sorted(vocab["tübingen"]) == [x[1] for x in TEST_NGRAM_INDICES]
