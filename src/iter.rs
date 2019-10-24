@@ -80,3 +80,37 @@ impl PyEmbedding {
         self.norm
     }
 }
+
+#[pyclass(name=VocabIterator)]
+pub struct PyVocabIterator {
+    embeddings: Rc<RefCell<EmbeddingsWrap>>,
+    idx: usize,
+}
+
+impl PyVocabIterator {
+    pub fn new(embeddings: Rc<RefCell<EmbeddingsWrap>>, idx: usize) -> Self {
+        PyVocabIterator { embeddings, idx }
+    }
+}
+
+#[pyproto]
+impl PyIterProtocol for PyVocabIterator {
+    fn __iter__(slf: PyRefMut<Self>) -> PyResult<Py<PyVocabIterator>> {
+        Ok(slf.into())
+    }
+
+    fn __next__(mut slf: PyRefMut<Self>) -> PyResult<Option<String>> {
+        let slf = &mut *slf;
+
+        let embeddings = slf.embeddings.borrow();
+        let vocab = embeddings.vocab();
+
+        if slf.idx < vocab.words_len() {
+            let word = vocab.words()[slf.idx].to_string();
+            slf.idx += 1;
+            Ok(Some(word))
+        } else {
+            Ok(None)
+        }
+    }
+}
