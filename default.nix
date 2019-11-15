@@ -14,7 +14,8 @@
 
 let
   rustNightly = callPackage ./nix/rust-nightly.nix {};
-in ((callPackage ./nix/finalfusion-python.nix {}).finalfusion_python {}).override {
+  cargo_nix = callPackage ./nix/Cargo.nix {};
+in cargo_nix.rootCrate.build.override {
   release = releaseBuild;
   rust = rustNightly;
 
@@ -22,6 +23,8 @@ in ((callPackage ./nix/finalfusion-python.nix {}).finalfusion_python {}).overrid
     finalfusion-python = attr: rec {
       pname = "finalfusion-python";
       name = "${pname}-${attr.version}";
+
+      type = [ "cdylib" ];
 
       src = nix-gitignore.gitignoreSource [ ".git/" "*.nix" "/nix" ] ./.;
 
@@ -38,7 +41,7 @@ in ((callPackage ./nix/finalfusion-python.nix {}).finalfusion_python {}).overrid
         sharedLibrary = stdenv.hostPlatform.extensions.sharedLibrary;
       in ''
         mkdir -p "$out/${sitePackages}"
-        cp target/lib/libfinalfusion-*${sharedLibrary} \
+        cp target/lib/libfinalfusion_python*${sharedLibrary} \
           "$out/${sitePackages}/finalfusion.so"
         export PYTHONPATH="$out/${sitePackages}:$PYTHONPATH"
       '';
