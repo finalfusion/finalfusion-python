@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use finalfusion::prelude::*;
+use finalfusion::vocab::Vocab;
 use numpy::{IntoPyArray, PyArray1};
 use pyo3::class::iter::PyIterProtocol;
 use pyo3::prelude::*;
@@ -35,7 +35,7 @@ impl PyIterProtocol for PyEmbeddingIterator {
         if slf.idx < vocab.words_len() {
             let word = vocab.words()[slf.idx].to_string();
             let embed = embeddings.storage().embedding(slf.idx);
-            let norm = embeddings.norms().map(|n| n.0[slf.idx]).unwrap_or(1.);
+            let norm = embeddings.norms().map(|n| n[slf.idx]).unwrap_or(1.);
 
             slf.idx += 1;
 

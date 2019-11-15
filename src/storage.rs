@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use finalfusion::prelude::{Storage, StorageView, StorageWrap};
+use finalfusion::storage::{Storage, StorageView, StorageWrap};
 use ndarray::Array2;
 use numpy::{PyArray1, PyArray2, ToPyArray};
 use pyo3::class::sequence::PySequenceProtocol;
@@ -30,7 +30,7 @@ impl PyStorage {
 
         let mut array = Array2::<f32>::zeros((rows, dims));
         for idx in 0..rows {
-            array.row_mut(idx).assign(&storage.embedding(idx).as_view());
+            array.row_mut(idx).assign(&storage.embedding(idx).view());
         }
 
         array
