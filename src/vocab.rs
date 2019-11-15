@@ -1,8 +1,7 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use finalfusion::chunks::vocab::{NGramIndices, SubwordIndices, VocabWrap, WordIndex};
-use finalfusion::prelude::*;
+use finalfusion::vocab::{NGramIndices, SubwordIndices, Vocab, VocabWrap, WordIndex};
 use pyo3::class::sequence::PySequenceProtocol;
 use pyo3::exceptions::{IndexError, KeyError, ValueError};
 use pyo3::prelude::*;
@@ -45,8 +44,8 @@ impl PyVocab {
         let embeds = self.embeddings.borrow();
         Ok(match embeds.vocab() {
             VocabWrap::FastTextSubwordVocab(inner) => inner.ngram_indices(word),
-            VocabWrap::FinalfusionSubwordVocab(inner) => inner.ngram_indices(word),
-            VocabWrap::FinalfusionNGramVocab(inner) => inner.ngram_indices(word),
+            VocabWrap::BucketSubwordVocab(inner) => inner.ngram_indices(word),
+            VocabWrap::ExplicitSubwordVocab(inner) => inner.ngram_indices(word),
             VocabWrap::SimpleVocab(_) => {
                 return Err(ValueError::py_err(
                     "querying n-gram indices is not supported for this vocabulary",
@@ -59,8 +58,8 @@ impl PyVocab {
         let embeds = self.embeddings.borrow();
         match embeds.vocab() {
             VocabWrap::FastTextSubwordVocab(inner) => Ok(inner.subword_indices(word)),
-            VocabWrap::FinalfusionSubwordVocab(inner) => Ok(inner.subword_indices(word)),
-            VocabWrap::FinalfusionNGramVocab(inner) => Ok(inner.subword_indices(word)),
+            VocabWrap::BucketSubwordVocab(inner) => Ok(inner.subword_indices(word)),
+            VocabWrap::ExplicitSubwordVocab(inner) => Ok(inner.subword_indices(word)),
             VocabWrap::SimpleVocab(_) => Err(ValueError::py_err(
                 "querying subwords' indices is not supported for this vocabulary",
             )),

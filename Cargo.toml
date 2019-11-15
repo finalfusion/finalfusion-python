@@ -20,7 +20,7 @@ features = ["extension-module"]
 
 [dependencies]
 itertools = "0.8"
-finalfusion = { git = "https://github.com/finalfusion/finalfusion-rust", rev = "66388fe0e46c45d009ffdb8342c76fcb8c9c64d3"}
-ndarray = "0.12"
+finalfusion = "0.11"
+ndarray = "0.13"
 numpy = "0.7"
 toml = "0.5"

@@ -4,12 +4,14 @@ use std::fs::File;
 use std::io::{BufReader, BufWriter};
 use std::rc::Rc;
 
-use finalfusion::chunks::metadata::Metadata;
 use finalfusion::compat::text::{ReadText, ReadTextDims};
 use finalfusion::compat::word2vec::ReadWord2Vec;
-use finalfusion::io as ffio;
+use finalfusion::io::{self as ffio, WriteEmbeddings};
+use finalfusion::metadata::Metadata;
 use finalfusion::prelude::*;
 use finalfusion::similarity::*;
+use finalfusion::storage::{NdArray, Storage};
+use finalfusion::vocab::Vocab;
 use itertools::Itertools;
 use ndarray::Array1;
 use numpy::{IntoPyArray, NpyDataType, PyArray1};
@@ -252,7 +254,7 @@ impl PyEmbeddings {
             NonView(e) => e.metadata(),
         };
 
-        match metadata.map(|v| toml::ser::to_string_pretty(&v.0)) {
+        match metadata.map(|v| toml::ser::to_string_pretty(&**v)) {
             Some(Ok(toml)) => Ok(Some(toml)),
             Some(Err(err)) => Err(exceptions::IOError::py_err(format!(
                 "Metadata is invalid TOML: {}",
@@ -278,8 +280,8 @@ impl PyEmbeddings {
 
         use EmbeddingsWrap::*;
         match &mut *embeddings {
-            View(e) => e.set_metadata(Some(Metadata(value))),
-            NonView(e) => e.set_metadata(Some(Metadata(value))),
+            View(e) => e.set_metadata(Some(Metadata::new(value))),
+            NonView(e) => e.set_metadata(Some(Metadata::new(value))),
         };
 
         Ok(())
