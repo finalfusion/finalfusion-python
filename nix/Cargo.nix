@@ -19,12 +19,12 @@ rec {
   #
 
   rootCrate = {
-    packageId = "finalfusion-python 0.5.0 (path+file:///home/daniel/git/finalfusion-python)";
+    packageId = "finalfusion-python 0.6.0 (path+file:///home/daniel/git/finalfusion-python)";
 
     # Use this attribute to refer to the derivation building your root crate package.
     # You can override the features with rootCrate.build.override { features = [ "default" "feature1" ... ]; }.
     build = buildRustCrateWithFeatures {
-      packageId = "finalfusion-python 0.5.0 (path+file:///home/daniel/git/finalfusion-python)";
+      packageId = "finalfusion-python 0.6.0 (path+file:///home/daniel/git/finalfusion-python)";
       features = rootFeatures;
     };
   };
@@ -35,9 +35,9 @@ rec {
   # workspaceMembers."${crateName}".build.override { features = [ "default" "feature1" ... ]; }.
   workspaceMembers = {
     "finalfusion-python" = {
-      packageId = "finalfusion-python 0.5.0 (path+file:///home/daniel/git/finalfusion-python)";
+      packageId = "finalfusion-python 0.6.0 (path+file:///home/daniel/git/finalfusion-python)";
       build = buildRustCrateWithFeatures {
-        packageId = "finalfusion-python 0.5.0 (path+file:///home/daniel/git/finalfusion-python)";
+        packageId = "finalfusion-python 0.6.0 (path+file:///home/daniel/git/finalfusion-python)";
         features = rootFeatures;
       };
     };
@@ -343,10 +343,10 @@ rec {
         features = {
         };
       };
-    "finalfusion-python 0.5.0 (path+file:///home/daniel/git/finalfusion-python)"
+    "finalfusion-python 0.6.0 (path+file:///home/daniel/git/finalfusion-python)"
       = rec {
         crateName = "finalfusion-python";
-        version = "0.5.0";
+        version = "0.6.0";
         edition = "2018";
         src = (builtins.filterSource sourceFilter ./.);
         authors = [
