@@ -99,7 +99,7 @@ impl PyMappingProtocol for PyVocab {
         let gil = Python::acquire_gil();
         if let Ok(idx) = query.extract::<isize>(gil.python()) {
             let idx = self.validate_and_convert_isize_idx(idx)?;
-            return Ok(vocab.words()[idx].clone().into_py(gil.python()));
+            return Ok((&vocab.words()[idx]).into_py(gil.python()));
         }
 
         if let Ok(query) = query.extract::<String>(gil.python()) {
