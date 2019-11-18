@@ -167,8 +167,10 @@ impl PyEmbeddings {
             )
         })?;
 
-        let results = embeddings
-            .analogy_masked([word1, word2, word3], [mask.0, mask.1, mask.2], limit)
+        let results = py
+            .allow_threads(|| {
+                embeddings.analogy_masked([word1, word2, word3], [mask.0, mask.1, mask.2], limit)
+            })
             .map_err(|lookup| {
                 let failed = [word1, word2, word3]
                     .iter()
@@ -298,8 +300,8 @@ impl PyEmbeddings {
             )
         })?;
 
-        let results = embeddings
-            .word_similarity(word, limit)
+        let results = py
+            .allow_threads(|| embeddings.word_similarity(word, limit))
             .ok_or_else(|| exceptions::KeyError::py_err("Unknown word and n-grams"))?;
 
         Self::similarity_results(py, results)
@@ -332,12 +334,11 @@ impl PyEmbeddings {
             )));
         }
 
-        let results = embeddings.embedding_similarity_masked(embedding, limit, &skip.0);
+        let results = py
+            .allow_threads(|| embeddings.embedding_similarity_masked(embedding, limit, &skip.0))
+            .ok_or_else(|| exceptions::KeyError::py_err("Unknown word and n-grams"))?;
 
-        Self::similarity_results(
-            py,
-            results.ok_or_else(|| exceptions::KeyError::py_err("Unknown word and n-grams"))?,
-        )
+        Self::similarity_results(py, results)
     }
 
     /// Write the embeddings to a finalfusion file.
