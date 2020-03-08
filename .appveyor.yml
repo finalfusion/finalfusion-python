@@ -4,15 +4,15 @@ install:
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
   - "python --version"
   - appveyor DownloadFile https://win.rustup.rs/ -FileName rustup-init.exe
-  - rustup-init -yv --default-toolchain nightly-2019-07-19 --default-host x86_64-pc-windows-msvc
+  - rustup-init -yv --default-toolchain nightly-2020-01-23 --default-host x86_64-pc-windows-msvc
   - set PATH=%PATH%;%USERPROFILE%\.cargo\bin
   - rustc -V
   - cargo -V
-  - cargo install --git https://github.com/PyO3/pyo3-pack.git --tag v0.6.1 pyo3-pack
+  - cargo install --git https://github.com/PyO3/maturin.git --tag v0.7.9 maturin
 
 build_script:
 - sed -i '/^name =/ s/finalfusion-python/finalfusion/' Cargo.toml
-- pyo3-pack build --release
+- maturin build --release
 
 artifacts:
   - path: '**/*.whl'
