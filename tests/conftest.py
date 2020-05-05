@@ -1,7 +1,8 @@
+import os
 import pathlib
 
+import numpy as np
 import pytest
-import os
 
 import finalfusion.vocab
 
@@ -14,3 +15,16 @@ def tests_root():
 @pytest.fixture
 def simple_vocab_fifu(tests_root):
     yield finalfusion.vocab.load_vocab(tests_root / "data/simple_vocab.fifu")
+
+
+@pytest.fixture
+def vocab_array_tuple(tests_root):
+    with open(tests_root / "data" / "embeddings.txt") as f:
+        lines = f.readlines()
+        v = []
+        m = []
+        for line in lines:
+            line = line.split()
+            v.append(line[0])
+            m.append([float(p) for p in line[1:]])
+    yield v, np.array(m, dtype=np.float32)
