@@ -7,7 +7,8 @@ from typing import IO, Tuple
 
 import numpy as np
 
-from finalfusion.io import ChunkIdentifier, TypeId, FinalfusionFormatError, find_chunk
+from finalfusion.io import ChunkIdentifier, TypeId, FinalfusionFormatError, find_chunk, \
+    _pad_float32
 from finalfusion.storage.storage import Storage
 
 
@@ -90,12 +91,12 @@ class NdArray(np.ndarray, Storage):
         if TypeId.f32 != type_id:
             raise FinalfusionFormatError(
                 f"Invalid Type, expected {TypeId.f32}, got {type_id}")
-        file.seek(Storage._pad_float32(file.tell()), 1)
+        file.seek(_pad_float32(file.tell()), 1)
         return rows, cols
 
     def write_chunk(self, file: IO[bytes]):
         Storage._write_binary(file, "<I", int(self.chunk_identifier()))
-        padding = Storage._pad_float32(file.tell())
+        padding = _pad_float32(file.tell())
         chunk_len = struct.calcsize("<QII") + padding + struct.calcsize(
             f'<{self.size}f')
         # pylint: disable=unpacking-non-sequence

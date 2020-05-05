@@ -3,7 +3,6 @@ Storage
 """
 
 import abc
-import struct
 from typing import Tuple, IO
 
 from finalfusion.io import Chunk
@@ -74,20 +73,3 @@ class Storage(Chunk):
         ValueError
             If the file did not contain a storage.
         """
-    @staticmethod
-    def _pad_float32(pos):
-        """
-        Helper method to pad to the next page boundary from a given position.
-
-        Parameters
-        ----------
-        pos : int
-            Current offset
-
-        Returns
-        -------
-        padding : int
-            Required padding in bytes.
-        """
-        float_size = struct.calcsize('<f')
-        return float_size - (pos % float_size)

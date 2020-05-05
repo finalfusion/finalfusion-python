@@ -277,3 +277,21 @@ class FinalfusionFormatError(Exception):
     """
     Exception to specify that the format of a finalfusion file was incorrect.
     """
+
+
+def _pad_float32(pos):
+    """
+    Helper method to pad to the next page boundary from a given position.
+
+    Parameters
+    ----------
+    pos : int
+        Current offset
+
+    Returns
+    -------
+    padding : int
+        Required padding in bytes.
+    """
+    float_size = struct.calcsize('<f')
+    return float_size - (pos % float_size)
