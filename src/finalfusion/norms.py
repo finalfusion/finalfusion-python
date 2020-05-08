@@ -3,11 +3,13 @@ Norms module.
 """
 
 import struct
+from os import PathLike
+from typing import BinaryIO, Union
 
 import numpy as np
 
-from finalfusion.io import Chunk, ChunkIdentifier, find_chunk, TypeId, FinalfusionFormatError,\
-    _pad_float32
+from finalfusion.io import Chunk, ChunkIdentifier, find_chunk, TypeId, FinalfusionFormatError, \
+    _pad_float32, _write_binary, _read_binary
 
 
 class Norms(np.ndarray, Chunk):
@@ -44,8 +46,8 @@ class Norms(np.ndarray, Chunk):
         return ChunkIdentifier.NdNorms
 
     @staticmethod
-    def read_chunk(file) -> 'Norms':
-        n_norms, dtype = Norms._read_binary(file, "<QI")
+    def read_chunk(file: BinaryIO) -> 'Norms':
+        n_norms, dtype = _read_binary(file, "<QI")
         type_id = TypeId(dtype)
         if TypeId.f32 != type_id:
             raise FinalfusionFormatError(
@@ -56,13 +58,13 @@ class Norms(np.ndarray, Chunk):
         array = np.ndarray(buffer=array, shape=(n_norms, ), dtype=np.float32)
         return Norms(array)
 
-    def write_chunk(self, file):
-        Norms._write_binary(file, "<I", int(self.chunk_identifier()))
+    def write_chunk(self, file: BinaryIO):
+        _write_binary(file, "<I", int(self.chunk_identifier()))
         padding = _pad_float32(file.tell())
         chunk_len = struct.calcsize("QI") + padding + struct.calcsize(
             f"<{self.size}f")
-        Norms._write_binary(file, f"<QQI{padding}x", chunk_len, self.size,
-                            int(TypeId.f32))
+        _write_binary(file, f"<QQI{padding}x", chunk_len, self.size,
+                      int(TypeId.f32))
         self.tofile(file)
 
     def __getitem__(self, key):
@@ -71,7 +73,7 @@ class Norms(np.ndarray, Chunk):
         return super().__getitem__(key)
 
 
-def load_norms(path: str):
+def load_norms(file: Union[str, bytes, int, PathLike]):
     """
     Load Norms from a finalfusion file.
 
@@ -79,7 +81,7 @@ def load_norms(path: str):
 
     Parameters
     ----------
-    path : str
+    file: str, bytes, int, PathLike
         Path to finalfusion file containing a Norms chunk.
 
     Returns
@@ -92,10 +94,10 @@ def load_norms(path: str):
     ValueError
         If the file did not contain norms.
     """
-    with open(path, "rb") as file:
-        chunk = find_chunk(file, [ChunkIdentifier.NdNorms])
+    with open(file, "rb") as inf:
+        chunk = find_chunk(inf, [ChunkIdentifier.NdNorms])
         if chunk is None:
             raise ValueError('File did not contain norms.')
         if chunk == ChunkIdentifier.NdNorms:
-            return Norms.read_chunk(file)
+            return Norms.read_chunk(inf)
         raise ValueError(f"Unexpected chunk: {str(chunk)}")

@@ -2,9 +2,9 @@
 Finalfusion Vocabulary interface
 """
 import abc
-from typing import List, Optional, Dict, Tuple, IO, Iterable, Any, Union
+from typing import List, Optional, Dict, Tuple, BinaryIO, Iterable, Any, Union
 
-from finalfusion.io import Chunk
+from finalfusion.io import Chunk, _read_binary, _write_binary
 
 
 class Vocab(Chunk):
@@ -97,23 +97,23 @@ class Vocab(Chunk):
         return True
 
     @staticmethod
-    def _write_words_binary(b_words: Iterable[bytes], file: IO[bytes]):
+    def _write_words_binary(b_words: Iterable[bytes], file: BinaryIO):
         """
         Helper method to write an iterable of bytes and their lengths.
         """
         for word in b_words:
-            Vocab._write_binary(file, "<I", len(word))
+            _write_binary(file, "<I", len(word))
             file.write(word)
 
     @staticmethod
-    def _read_items(file: IO[bytes], length: int,
+    def _read_items(file: BinaryIO, length: int,
                     indices=False) -> Tuple[List[str], Dict[str, int]]:
         """
         Helper method to read items from a vocabulary chunk.
 
         Parameters
         ----------
-        file : IO[bytes]
+        file : BinaryIO
             input file
         length : int
             number of items to read
@@ -128,11 +128,11 @@ class Vocab(Chunk):
         items = []
         index = {}
         for _ in range(length):
-            item_length = Vocab._read_binary(file, "<I")[0]
+            item_length = _read_binary(file, "<I")[0]
             word = file.read(item_length).decode("utf-8")
             items.append(word)
             if indices:
-                index[word] = Vocab._read_binary(file, "<Q")[0]
+                index[word] = _read_binary(file, "<Q")[0]
             else:
                 index[word] = len(index)
         return items, index
