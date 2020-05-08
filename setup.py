@@ -10,7 +10,7 @@ setup(
         "Topic :: Text Processing :: Linguistic",
     ],
     description="Interface to finalfusion embeddings",
-    install_requires=["numpy"],
+    install_requires=["numpy", "toml"],
     license='BlueOak-1.0.0',
     packages=find_packages('src'),
     package_dir={'': 'src'},
