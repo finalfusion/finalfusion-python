@@ -28,3 +28,9 @@ def vocab_array_tuple(tests_root):
             v.append(line[0])
             m.append([float(p) for p in line[1:]])
     yield v, np.array(m, dtype=np.float32)
+
+
+@pytest.fixture
+def embeddings_fifu(tests_root):
+    yield finalfusion.load_finalfusion(tests_root / "data" / "embeddings.fifu",
+                                       mmap=False)
