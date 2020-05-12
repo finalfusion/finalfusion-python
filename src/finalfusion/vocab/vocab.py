@@ -4,7 +4,7 @@ Finalfusion Vocabulary interface
 import abc
 from typing import List, Optional, Dict, Tuple, BinaryIO, Iterable, Any, Union
 
-from finalfusion.io import Chunk, _read_binary, _write_binary
+from finalfusion.io import Chunk, _read_required_binary, _write_binary
 
 
 class Vocab(Chunk):
@@ -16,7 +16,7 @@ class Vocab(Chunk):
     """
     @property
     @abc.abstractmethod
-    def words(self) -> list:
+    def words(self) -> List[str]:
         """
         Get the list of known words
 
@@ -27,7 +27,7 @@ class Vocab(Chunk):
         """
     @property
     @abc.abstractmethod
-    def word_index(self) -> dict:
+    def word_index(self) -> Dict[str, int]:
         """
         Get the index of known words
 
@@ -48,8 +48,8 @@ class Vocab(Chunk):
            Exclusive upper bound of indices covered by the vocabulary.
         """
     @abc.abstractmethod
-    def idx(self, item: str, default: Union[list, int, None] = None
-            ) -> Optional[Union[list, int]]:
+    def idx(self, item: str, default: Optional[Union[int, List[int]]] = None
+            ) -> Optional[Union[int, List[int]]]:
         """
         Lookup the given query item.
 
@@ -69,7 +69,7 @@ class Vocab(Chunk):
             * A list if the vocab can provide subword indices for a unknown item.
             * The provided `default` item if the vocab can't provide indices.
         """
-    def __getitem__(self, item: str) -> Union[list, int]:
+    def __getitem__(self, item: str) -> Union[int, List[int]]:
         return self.word_index[item]
 
     def __contains__(self, item: Any) -> bool:
@@ -128,11 +128,11 @@ class Vocab(Chunk):
         items = []
         index = {}
         for _ in range(length):
-            item_length = _read_binary(file, "<I")[0]
+            item_length = _read_required_binary(file, "<I")[0]
             word = file.read(item_length).decode("utf-8")
             items.append(word)
             if indices:
-                index[word] = _read_binary(file, "<Q")[0]
+                index[word] = _read_required_binary(file, "<Q")[0]
             else:
                 index[word] = len(index)
         return items, index

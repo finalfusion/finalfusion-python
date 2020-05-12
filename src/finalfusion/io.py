@@ -17,7 +17,7 @@ import struct
 from abc import ABC, abstractmethod
 from enum import unique, IntEnum
 from os import PathLike
-from typing import Optional, Tuple, List, BinaryIO, Union
+from typing import Optional, Tuple, List, BinaryIO, Union, Any
 
 _MAGIC = b'FiFu'
 VERSION = 0
@@ -95,8 +95,8 @@ class Header(Chunk):
 
     The header chunk handles the preamble.
     """
-    def __init__(self, chunk_ids):
-        self.chunk_ids_ = chunk_ids
+    def __init__(self, chunk_ids: List['ChunkIdentifier']):
+        self._chunk_ids = chunk_ids
 
     @property
     def chunk_ids(self) -> List['ChunkIdentifier']:
@@ -108,7 +108,7 @@ class Header(Chunk):
         chunk_ids : List[ChunkIdentifier]
             List of ChunkIdentifiers in the Header.
         """
-        return self.chunk_ids_
+        return self._chunk_ids
 
     @staticmethod
     def chunk_identifier() -> 'ChunkIdentifier':
@@ -121,11 +121,11 @@ class Header(Chunk):
             invalid_magic = magic.decode('ascii', errors='ignore')
             raise FinalfusionFormatError(
                 f'Magic should be b\'FiFu\', not: {invalid_magic}')
-        version = _read_binary(file, "<I")[0]
+        version = _read_required_binary(file, "<I")[0]
         if version != VERSION:
             raise FinalfusionFormatError(f'Unknown model version: {version}')
-        n_chunks = _read_binary(file, "<I")[0]
-        chunk_ids = list(_read_binary(file, f'<{n_chunks}I'))
+        n_chunks = _read_required_binary(file, "<I")[0]
+        chunk_ids = list(_read_required_binary(file, f'<{n_chunks}I'))
         return Header(chunk_ids)
 
     def write_chunk(self, file: BinaryIO):
@@ -232,7 +232,7 @@ def _write_binary(file: BinaryIO, struct_fmt: str, *args):
     file.write(data)
 
 
-def _read_binary(file: BinaryIO, struct_fmt: str) -> Optional[Tuple[int]]:
+def _read_binary(file: BinaryIO, struct_fmt: str) -> Optional[Tuple[Any, ...]]:
     """
     Helper method to read binary data from a file according to the format
     string.
@@ -264,6 +264,14 @@ def _read_binary(file: BinaryIO, struct_fmt: str) -> Optional[Tuple[int]]:
     return struct.unpack(struct_fmt, buf)
 
 
+def _read_required_binary(file: BinaryIO, struct_fmt: str) -> Tuple[Any, ...]:
+    val = _read_binary(file, struct_fmt)
+    if val is None:
+        raise FinalfusionFormatError(
+            f'Could not read {struct_fmt} bytes from file')
+    return val
+
+
 def _read_chunk_header(file: BinaryIO
                        ) -> Optional[Tuple['ChunkIdentifier', int]]:
     """
@@ -292,3 +300,10 @@ def _read_chunk_header(file: BinaryIO
     if val is None:
         return None
     return ChunkIdentifier(val[0]), val[1]
+
+
+def _read_required_chunk_header(file: BinaryIO) -> Tuple[ChunkIdentifier, int]:
+    val = _read_chunk_header(file)
+    if val is None:
+        raise FinalfusionFormatError('could not read chunk header.')
+    return val

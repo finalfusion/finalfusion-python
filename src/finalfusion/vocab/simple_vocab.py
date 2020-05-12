@@ -5,7 +5,7 @@ import struct
 from os import PathLike
 from typing import List, Optional, Dict, Union, BinaryIO
 
-from finalfusion.io import ChunkIdentifier, find_chunk, _write_binary, _read_binary
+from finalfusion.io import ChunkIdentifier, find_chunk, _write_binary, _read_required_binary
 from finalfusion.vocab.vocab import Vocab
 
 
@@ -64,7 +64,7 @@ class SimpleVocab(Vocab):
 
     @staticmethod
     def read_chunk(file: BinaryIO) -> 'SimpleVocab':
-        length = _read_binary(file, "<Q")[0]
+        length = _read_required_binary(file, "<Q")[0]
         words, index = SimpleVocab._read_items(file, length)
         return SimpleVocab(words, index)
 

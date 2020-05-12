@@ -9,7 +9,7 @@ from typing import BinaryIO, Tuple, Union
 import numpy as np
 
 from finalfusion.io import ChunkIdentifier, TypeId, FinalfusionFormatError, find_chunk, \
-    _pad_float32, _read_binary, _write_binary
+    _pad_float32, _read_required_binary, _write_binary
 from finalfusion.storage.storage import Storage
 
 
@@ -36,6 +36,10 @@ class NdArray(np.ndarray, Storage):
         if array.dtype != np.float32 or array.ndim != 2:
             raise TypeError("expected 2-d float32 array")
         return array.view(cls)
+
+    @classmethod
+    def load(cls, file: BinaryIO, mmap: bool = False) -> 'NdArray':
+        return cls.mmap_chunk(file) if mmap else cls.read_chunk(file)
 
     @staticmethod
     def chunk_identifier():
@@ -87,8 +91,8 @@ class NdArray(np.ndarray, Storage):
         FinalfusionFormatError
             If the TypeId does not match TypeId.f32
         """
-        rows, cols = _read_binary(file, "<QI")
-        type_id = TypeId(_read_binary(file, "<I")[0])
+        rows, cols = _read_required_binary(file, "<QI")
+        type_id = TypeId(_read_required_binary(file, "<I")[0])
         if TypeId.f32 != type_id:
             raise FinalfusionFormatError(
                 f"Invalid Type, expected {TypeId.f32}, got {type_id}")

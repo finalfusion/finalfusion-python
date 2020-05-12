@@ -31,6 +31,10 @@ jobs:
         pip install yapf==0.28
         yapf src/finalfusion -r --diff
         yapf tests -r --diff
+    - name: mypy
+      run: |
+        pip install mypy==0.770
+        mypy --config-file=mypy.ini src/finalfusion
     - name: Test with pytest
       run: |
         pip install pytest

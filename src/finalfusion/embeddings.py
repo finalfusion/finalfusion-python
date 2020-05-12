@@ -2,12 +2,12 @@
 Finalfusion Embeddings
 """
 from os import PathLike
-from typing import Optional, Tuple, List, Union
+from typing import Optional, Tuple, List, Union, Any
 
 import numpy as np
 
-from finalfusion.io import Chunk, Header, _read_chunk_header, ChunkIdentifier,\
-    FinalfusionFormatError
+from finalfusion.io import Chunk, Header, _read_chunk_header, ChunkIdentifier, \
+    FinalfusionFormatError, _read_required_chunk_header
 from finalfusion.metadata import Metadata
 from finalfusion.norms import Norms
 from finalfusion.storage import Storage, NdArray
@@ -246,7 +246,10 @@ class Embeddings:  # pylint: disable=too-many-instance-attributes
                 out[:] = default[0]
                 return out, default[1]
             return default
-        return self._embedding(idx, out)
+        # declare the norm as Any, self._embedding returns Optional[float], but above its
+        # ensured norms are present, the norm is guaranteed to be float, not Optional[float]
+        val = self._embedding(idx, out)  # type: Tuple[np.ndarray, Any]
+        return val
 
     @property
     def storage(self) -> Storage:
@@ -347,12 +350,12 @@ class Embeddings:  # pylint: disable=too-many-instance-attributes
         chunks : List[Chunk]
             List of embeddings chunks.
         """
-        chunks = []
-        if self._metadata is not None:
+        chunks = []  # type: List[Chunk]
+        if self.metadata is not None:
             chunks.append(self.metadata)
         chunks.append(self.vocab)
         chunks.append(self.storage)
-        if self._norms is not None:
+        if self.norms is not None:
             chunks.append(self.norms)
         return chunks
 
@@ -444,13 +447,13 @@ def load_finalfusion(file: Union[str, bytes, int, PathLike],
     """
     with open(file, 'rb') as inf:
         _ = Header.read_chunk(inf)
-        chunk_id, _ = _read_chunk_header(inf)
+        chunk_id, _ = _read_required_chunk_header(inf)
         norms = None
         metadata = None
 
         if chunk_id == ChunkIdentifier.Metadata:
             metadata = Metadata.read_chunk(inf)
-            chunk_id, _ = _read_chunk_header(inf)
+            chunk_id, _ = _read_required_chunk_header(inf)
 
         if chunk_id == ChunkIdentifier.SimpleVocab:
             vocab = SimpleVocab.read_chunk(inf)
@@ -458,15 +461,15 @@ def load_finalfusion(file: Union[str, bytes, int, PathLike],
             raise FinalfusionFormatError(
                 f'Expected vocab chunk, not {str(chunk_id)}')
 
-        chunk_id, _ = _read_chunk_header(inf)
+        chunk_id, _ = _read_required_chunk_header(inf)
         if chunk_id == ChunkIdentifier.NdArray:
             storage = NdArray.load(inf, mmap)
         else:
             raise FinalfusionFormatError(
                 f'Expected storage chunk, not {str(chunk_id)}')
-        chunk_id = _read_chunk_header(inf)
-        if chunk_id is not None:
-            if chunk_id[0] == ChunkIdentifier.NdNorms:
+        maybe_chunk_id = _read_chunk_header(inf)
+        if maybe_chunk_id is not None:
+            if maybe_chunk_id[0] == ChunkIdentifier.NdNorms:
                 norms = Norms.read_chunk(inf)
             else:
                 raise FinalfusionFormatError(

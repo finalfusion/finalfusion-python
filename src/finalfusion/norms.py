@@ -9,7 +9,7 @@ from typing import BinaryIO, Union
 import numpy as np
 
 from finalfusion.io import Chunk, ChunkIdentifier, find_chunk, TypeId, FinalfusionFormatError, \
-    _pad_float32, _write_binary, _read_binary
+    _pad_float32, _write_binary, _read_required_binary
 
 
 class Norms(np.ndarray, Chunk):
@@ -47,7 +47,7 @@ class Norms(np.ndarray, Chunk):
 
     @staticmethod
     def read_chunk(file: BinaryIO) -> 'Norms':
-        n_norms, dtype = _read_binary(file, "<QI")
+        n_norms, dtype = _read_required_binary(file, "<QI")
         type_id = TypeId(dtype)
         if TypeId.f32 != type_id:
             raise FinalfusionFormatError(

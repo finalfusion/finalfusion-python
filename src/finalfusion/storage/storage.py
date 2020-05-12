@@ -50,8 +50,6 @@ class Storage(Chunk):
         ValueError
             If the file did not contain a storage.
         """
-        return cls.mmap_chunk(file) if mmap else cls.read_chunk(file)
-
     @staticmethod
     @abc.abstractmethod
     def mmap_chunk(file: BinaryIO) -> 'Storage':

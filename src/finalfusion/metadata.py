@@ -7,8 +7,8 @@ from typing import BinaryIO, Union
 
 import toml
 
-from finalfusion.io import Chunk, ChunkIdentifier, find_chunk, _read_binary, _write_binary,\
-    FinalfusionFormatError
+from finalfusion.io import Chunk, ChunkIdentifier, find_chunk, _read_required_binary,\
+    _write_binary, FinalfusionFormatError
 
 
 class Metadata(dict, Chunk):
@@ -40,7 +40,7 @@ class Metadata(dict, Chunk):
         # place the file before the chunk header since the chunk size for
         # metadata the number of bytes that we need to read
         file.seek(-chunk_header_size, 1)
-        chunk_id, chunk_len = _read_binary(file, "<IQ")
+        chunk_id, chunk_len = _read_required_binary(file, "<IQ")
         assert ChunkIdentifier(chunk_id) == Metadata.chunk_identifier()
         buf = file.read(chunk_len)
         if len(buf) != chunk_len:
