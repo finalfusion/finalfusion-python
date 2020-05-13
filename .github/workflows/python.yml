@@ -4,13 +4,11 @@ on: [push, pull_request]
 
 jobs:
   build:
-
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
         python-version: [3.6, 3.7, 3.8]
-
     steps:
     - uses: actions/checkout@v1
     - name: Set up Python ${{ matrix.python-version }}
@@ -23,15 +21,18 @@ jobs:
         pip install cython
         python setup.py develop
     - name: pylint
+      if: ${{ matrix.python-version == '3.7' && matrix.os == 'ubuntu-latest' }}
       run: |
         pip install pylint==2.4.4
         pylint finalfusion
     - name: yapf
+      if: ${{ matrix.python-version == '3.7' && matrix.os == 'ubuntu-latest' }}
       run: |
         pip install yapf==0.28
         yapf src/finalfusion -r --diff
         yapf tests -r --diff
     - name: mypy
+      if: ${{ matrix.python-version == '3.7' && matrix.os == 'ubuntu-latest' }}
       run: |
         pip install mypy==0.770
         mypy --config-file=mypy.ini src/finalfusion
