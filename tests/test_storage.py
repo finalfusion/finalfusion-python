@@ -1,5 +1,5 @@
 import contextlib
-import os
+import sys
 import pytest
 import numpy as np
 
@@ -21,6 +21,7 @@ def test_read_array(tests_root, vocab_array_tuple):
     assert np.allclose(e, matrix)
 
 
+@pytest.mark.skipif(sys.byteorder == "big", reason="MMap unsupported on BE")
 def test_mmap_array(tests_root, vocab_array_tuple):
     with pytest.raises(TypeError):
         load_storage(None, mmap=True)
@@ -50,6 +51,7 @@ def test_array_roundtrip(tests_root, tmp_path):
     assert np.allclose(s, s2)
 
 
+@pytest.mark.skipif(sys.byteorder == "big", reason="MMap unsupported on BE")
 def test_array_roundtrip_mmap(tests_root, tmp_path):
     filename = tmp_path / "write_simple.fifu"
     s = load_storage(tests_root / "data" / "simple_vocab.fifu", mmap=True)
@@ -163,6 +165,8 @@ def test_write_sliced(tmp_path):
         lower = np.random.randint(-len(matrix) * 3, len(matrix) * 3)
         step = np.random.randint(-len(matrix) * 3, len(matrix) * 3)
         mmap = np.random.randint(0, 1)
+        if mmap and sys.byteorder == "big":
+            continue
         if step == 0:
             continue
         s[lower:upper:step].write(filename)

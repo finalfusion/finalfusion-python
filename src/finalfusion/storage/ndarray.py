@@ -4,12 +4,13 @@ Finalfusion storage
 
 import struct
 from os import PathLike
+import sys
 from typing import BinaryIO, Tuple, Union
 
 import numpy as np
 
 from finalfusion.io import ChunkIdentifier, TypeId, FinalfusionFormatError, find_chunk, \
-    _pad_float32, _read_required_binary, _write_binary
+    _pad_float32, _read_required_binary, _write_binary, _serialize_array_as_le
 from finalfusion.storage.storage import Storage
 
 
@@ -33,8 +34,10 @@ class NdArray(np.ndarray, Storage):
         TypeError
             If the array is not a 2-dimensional float32 array.
         """
-        if array.dtype != np.float32 or array.ndim != 2:
-            raise TypeError("expected 2-d float32 array")
+        if not np.issubdtype(array.dtype, np.float32) or array.ndim != 2:
+            raise TypeError(
+                f"expected 2-d float32 array, not {array.ndim}-d {array.dtype}"
+            )
         return array.view(cls)
 
     @classmethod
@@ -49,6 +52,8 @@ class NdArray(np.ndarray, Storage):
     def read_chunk(file: BinaryIO) -> 'NdArray':
         rows, cols = NdArray._read_array_header(file)
         array = np.fromfile(file=file, count=rows * cols, dtype=np.float32)
+        if sys.byteorder == "big":
+            array.byteswap(inplace=True)
         array = np.reshape(array, (rows, cols))
         return NdArray(array)
 
@@ -58,15 +63,18 @@ class NdArray(np.ndarray, Storage):
 
     @staticmethod
     def mmap_chunk(file: BinaryIO) -> 'NdArray':
+        if sys.byteorder == "big":
+            raise NotImplementedError(
+                "Memmapping arrays is not supported on big endian platforms")
         rows, cols = NdArray._read_array_header(file)
         offset = file.tell()
         file.seek(rows * cols * struct.calcsize('f'), 1)
-        return NdArray(
-            np.memmap(file.name,
-                      dtype=np.float32,
-                      mode='r',
-                      offset=offset,
-                      shape=(rows, cols)))
+        array = np.memmap(file.name,
+                          dtype='<f4',
+                          mode='r',
+                          offset=offset,
+                          shape=(rows, cols))
+        return NdArray(array)
 
     @staticmethod
     def _read_array_header(file: BinaryIO) -> Tuple[int, int]:
@@ -108,7 +116,7 @@ class NdArray(np.ndarray, Storage):
         rows, cols = self.shape
         _write_binary(file, "<QQII", chunk_len, rows, cols, int(TypeId.f32))
         _write_binary(file, f"{padding}x")
-        self.tofile(file)
+        _serialize_array_as_le(file, self)
 
     def __getitem__(self, key):
         if isinstance(key, slice):

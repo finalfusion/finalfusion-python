@@ -14,10 +14,13 @@ The :class:`Header` handles the preamble of finalfusion files.
 files.
 """
 import struct
+import sys
 from abc import ABC, abstractmethod
 from enum import unique, IntEnum
 from os import PathLike
 from typing import Optional, Tuple, List, BinaryIO, Union, Any
+
+import numpy as np
 
 _MAGIC = b'FiFu'
 VERSION = 0
@@ -307,3 +310,17 @@ def _read_required_chunk_header(file: BinaryIO) -> Tuple[ChunkIdentifier, int]:
     if val is None:
         raise FinalfusionFormatError('could not read chunk header.')
     return val
+
+
+def _serialize_array_as_le(file: BinaryIO, array: np.ndarray):
+    native_is_le = sys.byteorder == "little"
+    array_bo = array.dtype.byteorder
+    array_is_le = array_bo in "<|" or (array_bo == "=" and native_is_le)
+    if array_is_le:
+        array.tofile(file)
+    else:
+        if array.ndim == 2:
+            for row in array:
+                row.byteswap(inplace=False).tofile(file)
+        else:
+            array.byteswap(inplace=False).tofile(file)

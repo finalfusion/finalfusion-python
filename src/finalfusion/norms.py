@@ -4,12 +4,13 @@ Norms module.
 
 import struct
 from os import PathLike
+import sys
 from typing import BinaryIO, Union
 
 import numpy as np
 
 from finalfusion.io import Chunk, ChunkIdentifier, find_chunk, TypeId, FinalfusionFormatError, \
-    _pad_float32, _write_binary, _read_required_binary
+    _pad_float32, _write_binary, _read_required_binary, _serialize_array_as_le
 
 
 class Norms(np.ndarray, Chunk):
@@ -37,8 +38,11 @@ class Norms(np.ndarray, Chunk):
         AssertionError
             If array is not a 1-d array of float32 values.
         """
-        if array.dtype != np.float32 or array.ndim != 1:
-            raise TypeError("expected 1-d float32 array")
+        if not np.issubdtype(array.dtype,
+                             np.float32) != np.float32 or array.ndim != 1:
+            raise TypeError(
+                f"expected 1-d float32 array, not {array.ndim}-d {array.dtype}"
+            )
         return array.view(cls)
 
     @staticmethod
@@ -54,8 +58,9 @@ class Norms(np.ndarray, Chunk):
                 f"Invalid Type, expected {TypeId.f32}, got {str(type_id)}")
         padding = _pad_float32(file.tell())
         file.seek(padding, 1)
-        array = file.read(struct.calcsize("f") * n_norms)
-        array = np.ndarray(buffer=array, shape=(n_norms, ), dtype=np.float32)
+        array = np.fromfile(file=file, count=n_norms, dtype=np.float32)
+        if sys.byteorder == "big":
+            array.byteswap(inplace=True)
         return Norms(array)
 
     def write_chunk(self, file: BinaryIO):
@@ -65,7 +70,7 @@ class Norms(np.ndarray, Chunk):
             f"<{self.size}f")
         _write_binary(file, f"<QQI{padding}x", chunk_len, self.size,
                       int(TypeId.f32))
-        self.tofile(file)
+        _serialize_array_as_le(file, self)
 
     def __getitem__(self, key):
         if isinstance(key, slice):

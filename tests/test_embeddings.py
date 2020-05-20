@@ -1,3 +1,5 @@
+import sys
+
 import numpy as np
 import pytest
 from finalfusion import load_finalfusion, Embeddings
@@ -16,8 +18,10 @@ TEST_NORMS = [
 def test_read_embeddings(tests_root):
     e0 = load_finalfusion(tests_root / "data" / "simple_vocab.fifu",
                           mmap=False)
-    e1 = load_finalfusion(tests_root / "data" / "simple_vocab.fifu", mmap=True)
-    assert np.allclose(e0.storage, e1.storage)
+    if sys.byteorder != "big":
+        e1 = load_finalfusion(tests_root / "data" / "simple_vocab.fifu",
+                              mmap=True)
+        assert np.allclose(e0.storage, e1.storage)
     with pytest.raises(TypeError):
         load_finalfusion(None)
     with pytest.raises(FinalfusionFormatError):

@@ -1,0 +1,17 @@
+language: python
+dist: bionic
+arch:
+  - ppc64le
+  - s390x
+  - arm64
+
+python:
+  - "3.7"
+
+install:
+  - pip install cython
+  - python setup.py develop
+
+script:
+  - pytest
+  - lscpu | grep "Byte Order"
