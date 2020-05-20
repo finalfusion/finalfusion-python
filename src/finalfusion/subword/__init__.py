@@ -5,5 +5,6 @@ This module provides access to subword indexers and a method to extract ngrams f
 """
 
 from finalfusion.subword.hash_indexers import FastTextIndexer, FinalfusionHashIndexer
+from finalfusion.subword.ngrams import ngrams
 
-__all__ = ['FastTextIndexer', 'FinalfusionHashIndexer']
+__all__ = ['FastTextIndexer', 'FinalfusionHashIndexer', 'ngrams']

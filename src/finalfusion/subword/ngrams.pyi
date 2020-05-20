@@ -1,0 +1,3 @@
+from typing import List
+
+def ngrams(word: str, min_n: int = 3, max_n: int = 6, bracket: bool = True) -> List[str]: ...
