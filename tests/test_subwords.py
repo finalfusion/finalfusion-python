@@ -1,6 +1,6 @@
 import pytest
 
-from finalfusion.subword import FinalfusionHashIndexer, FastTextIndexer, ngrams
+from finalfusion.subword import ExplicitIndexer, FinalfusionHashIndexer, FastTextIndexer, ngrams
 
 
 def test_subword_indices_finalfusion():
@@ -62,3 +62,69 @@ def test_ngrams():
         _ = ngrams("Test", 3, 0)
     with pytest.raises(AssertionError):
         _ = ngrams("Test", 0, 0)
+
+
+def test_explicit():
+    ngrams10 = [str(i) for i in range(10)]
+    indexer = ExplicitIndexer(ngrams10)
+    assert indexer.ngrams == ngrams10
+    assert indexer.ngram_index == dict((v, i) for i, v in enumerate(ngrams10))
+    assert repr(indexer) == "ExplicitIndexer(\n" \
+                               "\tmin_n=3,\n" \
+                               "\tmax_n=6,\n" \
+                               "\tngrams=[...],\n" \
+                               "\tngram_index={{...}}\n" \
+                               ")"
+    assert indexer["0"] == 0
+    assert indexer.ngrams[0] == "0"
+    assert indexer("0") == 0
+    assert indexer("") is None
+
+    ngrams5 = [str(i) for i in range(5)]
+    assert ExplicitIndexer(ngrams5) in indexer
+    assert ngrams5 in indexer
+    assert "0" in indexer
+    assert "01" not in indexer
+    assert 0 not in indexer
+
+
+def test_explicit_with_ngram_index():
+    ngrams10 = [str(i) for i in range(10)]
+    index = dict((v, i) for i, v in enumerate(ngrams10))
+    indexer = ExplicitIndexer(ngrams10, ngram_index=index)
+    assert indexer.ngrams == ngrams10
+    assert indexer.ngram_index == index
+    assert indexer["0"] == 0
+    assert indexer.ngrams[0] == "0"
+    assert indexer("0") == 0
+
+
+def test_explicit_subword_indices():
+    ngrams_test = [
+        "<Test>", "<Test", "<Tes", "<Te", "Test>", "Test", "Tes", "est>"
+    ]
+    indexer = ExplicitIndexer(ngrams_test)
+    assert indexer.subword_indices("Test", bracket=True,
+                                   with_ngrams=True) == list(
+                                       (x, i)
+                                       for i, x in enumerate(ngrams_test))
+    assert indexer.subword_indices("") == []
+    assert indexer.subword_indices("oov") == []
+    assert "st>" not in indexer
+    with pytest.raises(KeyError):
+        _ = indexer["st>"]
+
+
+def test_explicit_assertions():
+    with pytest.raises(AssertionError):
+        ExplicitIndexer(["a"] * 2)
+    with pytest.raises(AssertionError):
+        ExplicitIndexer(["a"], ngram_index={"b": 0})
+    with pytest.raises(AssertionError):
+        ExplicitIndexer(["a"], ngram_index={"a": 1})
+    with pytest.raises(AssertionError):
+        ExplicitIndexer(["a"], ngram_index={"a": 0, "b": 1})
+    with pytest.raises(AssertionError):
+        ExplicitIndexer(["a", "b"], ngram_index={"a": 0, "b": 2})
+    with pytest.raises(AssertionError):
+        ExplicitIndexer(["a"], ngram_index={"a": 1})

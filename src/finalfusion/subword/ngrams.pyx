@@ -50,3 +50,5 @@ cpdef ngrams(str word, uint32_t min_n=3, uint32_t max_n=6, bracket=True):
             if j + i <= length:
                 ngrams.append(word[i:i + j])
     return ngrams
+
+__all__ = ['ngrams']

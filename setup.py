@@ -26,7 +26,11 @@ class cython_build_ext(build_ext):
 
 
 abs_path = pathlib.Path(__file__).absolute()
-c_paths = [abs_path / "src/finalfusion/subword/hash_indexers.c", abs_path/ "src/finalfusion/subword/ngrams.c"]
+c_paths = [
+    abs_path / "src/finalfusion/subword/hash_indexers.c",
+    abs_path / "src/finalfusion/subword/ngrams.c",
+    abs_path / "src/finalfusion/subword/explicit_indexer.c"
+]
 # cython is needed if not all extensions have been cythonized
 need_cython = not all(map(os.path.exists, c_paths))
 # or if annotation or force is specified
@@ -48,16 +52,24 @@ if need_cython or force or annotate:
         "finalfusion.subword.hash_indexers",
         ["src/finalfusion/subword/hash_indexers.pyx", "src/fnv/hash_64a.c"],
         include_dirs=["src/fnv/", "src/include"])
-    ngrams = Extension("finalfusion.subword.ngrams", ["src/finalfusion/subword/ngrams.pyx"])
-    extensions = cythonize([hash_indexers, ngrams], force=force)
+    ngrams = Extension("finalfusion.subword.ngrams",
+                       ["src/finalfusion/subword/ngrams.pyx"])
+    explicit_indexer = Extension(
+        "finalfusion.subword.explicit_indexer",
+        ["src/finalfusion/subword/explicit_indexer.pyx"])
+    extensions = cythonize([hash_indexers, ngrams, explicit_indexer], force=force)
 else:
     # sdist should include the C files so Cython isn't required
     hash_indexers = Extension(
         "finalfusion.subword.hash_indexers",
         ["src/finalfusion/subword/hash_indexers.c", "src/fnv/hash_64a.c"],
         include_dirs=["src/fnv/", "src/include"])
-    ngrams = Extension("finalfusion.subword.ngrams", ["src/finalfusion/subword/ngrams.c"])
-    extensions = [hash_indexers, ngrams]
+    ngrams = Extension("finalfusion.subword.ngrams",
+                       ["src/finalfusion/subword/ngrams.c"])
+    explicit_indexer = Extension(
+        "finalfusion.subword.explicit_indexer",
+        ["src/finalfusion/subword/explicit_indexer.c"])
+    extensions = [hash_indexers, ngrams, explicit_indexer]
 
 setup(name='finalfusion',
       author="Sebastian Pütz",
