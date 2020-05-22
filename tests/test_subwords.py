@@ -9,6 +9,10 @@ def test_subword_indices_finalfusion():
         588, 646, 649, 705, 715, 759, 815, 818, 855, 858, 1005
     ]
     idx = FinalfusionHashIndexer(10)
+    assert idx == idx
+    assert idx != FinalfusionHashIndexer(21)
+    assert idx != FinalfusionHashIndexer(min_n=2)
+    assert idx != FinalfusionHashIndexer(max_n=5)
     assert sorted(idx.subword_indices("tübingen")) == tuebingen_buckets
     with pytest.raises(TypeError):
         _ = idx.subword_indices(None)
@@ -27,6 +31,10 @@ def test_subword_indices_fasttext():
         1607788, 1664269, 1712300, 1749574, 1793082, 1891605, 1934955, 1992797
     ]
     idx = FastTextIndexer()
+    assert idx == idx
+    assert idx != FastTextIndexer(10)
+    assert idx != FastTextIndexer(min_n=2)
+    assert idx != FastTextIndexer(max_n=4)
     assert sorted(idx.subword_indices("überspringen")) == ueberspringen_buckets
     assert idx.n_buckets == 2_000_000
     assert idx.upper_bound == idx.n_buckets

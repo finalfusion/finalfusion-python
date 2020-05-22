@@ -142,8 +142,15 @@ cdef class FinalfusionHashIndexer:
                         ngrams.append(h)
         return ngrams
 
+    def __eq__(self, other):
+        return isinstance(other, FinalfusionHashIndexer) and \
+               self.min_n == other.min_n and \
+               self.max_n == other.max_n and \
+               self.buckets_exp == other.buckets_exp
+
     def __repr__(self):
         return f'FinalfusionHashIndexer(buckets_exp={self._buckets_exp}, min_n={self._min_n}, max_n={self._max_n})'
+
 
 cdef class FastTextIndexer:
     """
@@ -271,8 +278,16 @@ cdef class FastTextIndexer:
     def upper_bound(self) -> int:
         return self._n_buckets
 
+
+    def __eq__(self, other):
+        return isinstance(other, FastTextIndexer) and \
+               self.min_n == other.min_n and \
+               self.max_n == other.max_n and \
+               self.n_buckets == other.n_buckets
+
     def __repr__(self):
         return f'FastTextIndexer(n_buckets={self._n_buckets}, min_n={self._min_n}, max_n={self._max_n})'
+
 
 cdef array.array find_utf8_boundaries(const uint8_t* w, const Py_ssize_t n_bytes):
     cdef unsigned int b
