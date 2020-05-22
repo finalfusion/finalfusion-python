@@ -2,7 +2,8 @@
 Finalfusion Vocabulary interface
 """
 import abc
-from typing import List, Optional, Dict, Tuple, BinaryIO, Iterable, Any, Union
+import struct
+from typing import List, Optional, Dict, Tuple, BinaryIO, Iterable, Any, Union, Sequence
 
 from finalfusion.io import Chunk, _read_required_binary, _write_binary
 
@@ -38,13 +39,13 @@ class Vocab(Chunk):
         """
     @property
     @abc.abstractmethod
-    def idx_bound(self) -> int:
+    def upper_bound(self) -> int:
         """
         The exclusive upper bound of indices in this vocabulary.
 
         Returns
         -------
-        idx_bound : int
+        upper_bound : int
            Exclusive upper bound of indices covered by the vocabulary.
         """
     @abc.abstractmethod
@@ -96,43 +97,55 @@ class Vocab(Chunk):
             return False
         return True
 
-    @staticmethod
-    def _write_words_binary(b_words: Iterable[bytes], file: BinaryIO):
-        """
-        Helper method to write an iterable of bytes and their lengths.
-        """
-        for word in b_words:
-            _write_binary(file, "<I", len(word))
-            file.write(word)
 
-    @staticmethod
-    def _read_items(file: BinaryIO, length: int,
-                    indices=False) -> Tuple[List[str], Dict[str, int]]:
-        """
-        Helper method to read items from a vocabulary chunk.
+def _write_words_binary(b_words: Iterable[bytes], file: BinaryIO):
+    """
+    Helper method to write an iterable of bytes and their lengths.
+    """
+    for word in b_words:
+        _write_binary(file, "<I", len(word))
+        file.write(word)
 
-        Parameters
-        ----------
-        file : BinaryIO
-            input file
-        length : int
-            number of items to read
-        indices : bool
-            Toggles reading an int after each item specifying its index.
 
-        Returns
-        -------
-        (words, word_index) : (List[str], Dict[str, int])
-            Tuple containing the word list and the word index.
-        """
-        items = []
-        index = {}
-        for _ in range(length):
-            item_length = _read_required_binary(file, "<I")[0]
-            word = file.read(item_length).decode("utf-8")
-            items.append(word)
-            if indices:
-                index[word] = _read_required_binary(file, "<Q")[0]
-            else:
-                index[word] = len(index)
-        return items, index
+def _read_items(file: BinaryIO, length: int) -> List[str]:
+    """
+    Helper method to read items from a vocabulary chunk.
+
+    Parameters
+    ----------
+    file : BinaryIO
+        input file
+    length : int
+        number of items to read
+
+    Returns
+    -------
+    words : List[str]
+        The word list
+    """
+    items = []
+    for _ in range(length):
+        item_length = _read_required_binary(file, "<I")[0]
+        word = file.read(item_length).decode("utf-8")
+        items.append(word)
+    return items
+
+
+def _calculate_binary_list_size(items: List[str]):
+    size = sum(len(bytes(item, "utf-8")) for item in items)
+    size += struct.calcsize("<Q")
+    size += len(items) * struct.calcsize("<I")
+    return size
+
+
+def _validate_items_and_create_index(items: Sequence[str]) -> Dict[str, int]:
+    index = dict((item, idx) for idx, item in enumerate(items))
+    n_unique_items = len(index)
+    assert len(items) == n_unique_items,\
+        f"Vocab items cannot be duplicated. List: {len(items)}, Unique: {n_unique_items}"
+    assert len(index) == len(items),\
+        f"Items and index need to have same length ({len(items)}, {len(index)})"
+    return index
+
+
+__all__ = ['Vocab']

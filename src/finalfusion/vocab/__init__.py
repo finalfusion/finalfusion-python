@@ -6,6 +6,7 @@ from typing import Union
 
 from finalfusion.io import ChunkIdentifier, find_chunk
 from finalfusion.vocab.simple_vocab import SimpleVocab, load_simple_vocab
+from finalfusion.vocab.subword import FinalfusionBucketVocab, load_finalfusion_bucket_vocab
 from finalfusion.vocab.vocab import Vocab
 
 
@@ -22,7 +23,7 @@ def load_vocab(file: Union[str, bytes, int, PathLike]) -> Vocab:
 
     Returns
     -------
-    vocab : Union[SimpleVocab]
+    vocab : Union[SimpleVocab, FinalfusionBucketVocab]
         First vocabulary in the file.
 
     Raises
@@ -40,4 +41,12 @@ def load_vocab(file: Union[str, bytes, int, PathLike]) -> Vocab:
             raise ValueError('File did not contain a vocabulary')
         if chunk == ChunkIdentifier.SimpleVocab:
             return SimpleVocab.read_chunk(inf)
+        if chunk == ChunkIdentifier.BucketSubwordVocab:
+            return FinalfusionBucketVocab.read_chunk(inf)
         raise NotImplementedError('Vocab type is not yet supported.')
+
+
+__all__ = [
+    'Vocab', 'load_vocab', 'SimpleVocab', 'load_simple_vocab',
+    'FinalfusionBucketVocab', 'load_finalfusion_bucket_vocab'
+]

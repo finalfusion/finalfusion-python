@@ -3,10 +3,11 @@ Finalfusion SimpleVocab
 """
 import struct
 from os import PathLike
-from typing import List, Optional, Dict, Union, BinaryIO
+from typing import List, Optional, Union, BinaryIO
 
 from finalfusion.io import ChunkIdentifier, find_chunk, _write_binary, _read_required_binary
-from finalfusion.vocab.vocab import Vocab
+from finalfusion.vocab.vocab import Vocab, _validate_items_and_create_index, _read_items,\
+    _write_words_binary
 
 
 class SimpleVocab(Vocab):
@@ -14,11 +15,9 @@ class SimpleVocab(Vocab):
     Simple vocabulary.
 
     SimpleVocabs provide a simple string to index mapping and index to string
-    mapping. SimpleVocab is also the base type of other vocabulary types.
+    mapping.
     """
-    def __init__(self,
-                 words: List[str],
-                 index: Optional[Dict[str, int]] = None):
+    def __init__(self, words: List[str]):
         """
         Initialize a SimpleVocab.
 
@@ -31,19 +30,13 @@ class SimpleVocab(Vocab):
         ----------
         words : List[str]
             List of unique words
-        index : Optional[Dict[str, int]]
-            Dictionary providing an entry -> index mapping.
 
         Raises
         ------
-        ValueError
-            if the length of `index` and `word` doesn't match.
+        AssertionError
+            if ``words`` contains duplicate entries.
         """
-        if index is None:
-            index = dict((word, idx) for idx, word in enumerate(words))
-        if len(index) != len(words):
-            raise ValueError("Words and index need to have same length")
-        self._index = index
+        self._index = _validate_items_and_create_index(words)
         self._words = words
 
     @property
@@ -55,7 +48,7 @@ class SimpleVocab(Vocab):
         return self._index
 
     @property
-    def idx_bound(self) -> int:
+    def upper_bound(self) -> int:
         return len(self.word_index)
 
     def idx(self, item: str, default: Union[list, int, None] = None
@@ -65,8 +58,8 @@ class SimpleVocab(Vocab):
     @staticmethod
     def read_chunk(file: BinaryIO) -> 'SimpleVocab':
         length = _read_required_binary(file, "<Q")[0]
-        words, index = SimpleVocab._read_items(file, length)
-        return SimpleVocab(words, index)
+        words = _read_items(file, length)
+        return SimpleVocab(words)
 
     def write_chunk(self, file: BinaryIO):
         _write_binary(file, "<I", int(self.chunk_identifier()))
@@ -75,8 +68,8 @@ class SimpleVocab(Vocab):
         word_lens_size = len(self.words) * struct.calcsize("<I")
         chunk_length = n_words_size + word_lens_size + b_word_len_sum
         _write_binary(file, "<QQ", chunk_length, len(self.words))
-        self._write_words_binary((bytes(word, "utf-8") for word in self.words),
-                                 file)
+        _write_words_binary((bytes(word, "utf-8") for word in self.words),
+                            file)
 
     @staticmethod
     def chunk_identifier() -> ChunkIdentifier:
@@ -102,3 +95,6 @@ def load_simple_vocab(file: Union[str, bytes, int, PathLike]) -> SimpleVocab:
         if chunk is None:
             raise ValueError('File did not contain a SimpleVocab}')
         return SimpleVocab.read_chunk(inf)
+
+
+__all__ = ['SimpleVocab', 'load_simple_vocab']

@@ -6,6 +6,7 @@ from finalfusion import load_finalfusion, Embeddings
 from finalfusion.io import FinalfusionFormatError
 from finalfusion.norms import Norms
 from finalfusion.storage import NdArray
+from finalfusion.subword import FinalfusionHashIndexer
 from finalfusion.vocab import SimpleVocab
 from finalfusion.metadata import Metadata
 
@@ -99,6 +100,17 @@ def test_ff_embeddings_roundtrip(embeddings_fifu, vocab_array_tuple, tmp_path):
     assert e_loaded.vocab == v
 
 
+def test_ff_embeddings_roundtrip_ff_buckets(bucket_vocab_embeddings_fifu,
+                                            tmp_path):
+    filename = tmp_path / "write_embeddings.fifu"
+    bucket_vocab_embeddings_fifu.write(filename)
+    e2 = load_finalfusion(filename)
+    assert bucket_vocab_embeddings_fifu.vocab == e2.vocab
+    assert bucket_vocab_embeddings_fifu.metadata == e2.metadata
+    assert np.allclose(bucket_vocab_embeddings_fifu.storage, e2.storage)
+    assert np.allclose(bucket_vocab_embeddings_fifu.norms, e2.norms)
+
+
 def test_embeddings_lookup(embeddings_fifu, vocab_array_tuple):
     matrix = vocab_array_tuple[1]
     matrix = matrix.squeeze() / np.linalg.norm(matrix, axis=1, keepdims=True)
@@ -118,7 +130,7 @@ def test_embeddings_lookup(embeddings_fifu, vocab_array_tuple):
         _ = embeddings_fifu[1]
 
 
-def test_unknown_embeddings(embeddings_fifu):
+def test_unknown_embeddings(embeddings_fifu, bucket_vocab_embeddings_fifu):
     assert embeddings_fifu.embedding(
         "OOV") is None, "Unknown lookup with no default failed"
     assert embeddings_fifu.embedding(
@@ -135,6 +147,15 @@ def test_unknown_embeddings(embeddings_fifu):
     assert np.allclose(out, default)
     out2 = embeddings_fifu.embedding("OOV", default=0, out=out)
     assert np.allclose(out2, 0)
+    with pytest.raises(TypeError):
+        _ = bucket_vocab_embeddings_fifu.embedding(None)
+    assert bucket_vocab_embeddings_fifu.embedding("") is None
+    assert bucket_vocab_embeddings_fifu.embedding("", default=1) == 1
+    oov_indices = FinalfusionHashIndexer(10).subword_indices("OOV", offset=2)
+    summed_rows = bucket_vocab_embeddings_fifu.storage[oov_indices].sum(axis=0)
+    summed_rows /= np.linalg.norm(summed_rows)
+    assert np.allclose(
+        bucket_vocab_embeddings_fifu.embedding("OOV", default=1), summed_rows)
 
 
 def test_indexing(embeddings_fifu):

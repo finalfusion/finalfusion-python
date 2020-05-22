@@ -4,6 +4,7 @@ import pathlib
 import numpy as np
 import pytest
 
+import finalfusion
 import finalfusion.vocab
 
 
@@ -34,3 +35,8 @@ def vocab_array_tuple(tests_root):
 def embeddings_fifu(tests_root):
     yield finalfusion.load_finalfusion(tests_root / "data" / "embeddings.fifu",
                                        mmap=False)
+
+
+@pytest.fixture
+def bucket_vocab_embeddings_fifu(tests_root):
+    yield finalfusion.load_finalfusion(tests_root / "data" / "ff_buckets.fifu")

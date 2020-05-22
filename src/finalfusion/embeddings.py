@@ -11,7 +11,7 @@ from finalfusion.io import Chunk, Header, _read_chunk_header, ChunkIdentifier, \
 from finalfusion.metadata import Metadata
 from finalfusion.norms import Norms
 from finalfusion.storage import Storage, NdArray
-from finalfusion.vocab import Vocab, SimpleVocab
+from finalfusion.vocab import Vocab, SimpleVocab, FinalfusionBucketVocab
 
 
 class Embeddings:  # pylint: disable=too-many-instance-attributes
@@ -37,7 +37,8 @@ class Embeddings:  # pylint: disable=too-many-instance-attributes
     1. :class:`~finalfusion.storage.Storage` *(required)*:
         * :class:`~finalfusion.storage.ndarray.NdArray`
     2. :class:`~finalfusion.vocab.Vocab` *(required)*:
-        * :class:`~finalfusion.vocab.simple_vocab.SimpleVocab`
+        * :class:`~finalfusion.vocab.simple_vocab.SimpleVocab`,
+          :class:`~finalfusion.vocab.subword.FinalfusionBucketVocab`
     3. :class:`~finalfusion.metadata.Metadata`
     4. :class:`~finalfusion.norms.Norms`
 
@@ -412,7 +413,7 @@ class Embeddings:  # pylint: disable=too-many-instance-attributes
         assert isinstance(storage, Storage),\
             "storage is required to be a Storage"
         assert isinstance(vocab, Vocab), "vocab is required to be a Vocab"
-        assert storage.shape[0] == vocab.idx_bound,\
+        assert storage.shape[0] == vocab.upper_bound,\
             "Number of embeddings needs to be equal to vocab's idx_bound"
         if norms is not None:
             Embeddings._norms_compat(storage, vocab, norms)
@@ -456,7 +457,9 @@ def load_finalfusion(file: Union[str, bytes, int, PathLike],
             chunk_id, _ = _read_required_chunk_header(inf)
 
         if chunk_id == ChunkIdentifier.SimpleVocab:
-            vocab = SimpleVocab.read_chunk(inf)
+            vocab = SimpleVocab.read_chunk(inf)  # type: Vocab
+        elif chunk_id == ChunkIdentifier.BucketSubwordVocab:
+            vocab = FinalfusionBucketVocab.read_chunk(inf)
         else:
             raise FinalfusionFormatError(
                 f'Expected vocab chunk, not {str(chunk_id)}')

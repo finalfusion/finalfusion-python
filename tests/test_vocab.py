@@ -2,6 +2,8 @@ import pytest
 import finalfusion.vocab
 
 from finalfusion.io import FinalfusionFormatError
+from finalfusion.subword import FinalfusionHashIndexer, FastTextIndexer
+from finalfusion.vocab import FinalfusionBucketVocab, SimpleVocab, load_vocab
 
 
 def test_reading(tests_root):
@@ -13,7 +15,7 @@ def test_reading(tests_root):
     with pytest.raises(IOError):
         finalfusion.vocab.load_vocab("foo")
     vocab_path = tests_root / "data" / "simple_vocab.fifu"
-    v = finalfusion.vocab.load_vocab(vocab_path)
+    v = load_vocab(vocab_path)
     assert v.words[0] == "Paris"
 
 
@@ -29,22 +31,22 @@ def test_contains():
 
 def test_simple_roundtrip(tests_root, tmp_path):
     filename = tmp_path / "write_simple.fifu"
-    v = finalfusion.vocab.load_vocab(tests_root / "data" / "simple_vocab.fifu")
+    v = load_vocab(tests_root / "data" / "simple_vocab.fifu")
     v.write(filename)
-    assert v == finalfusion.vocab.load_vocab(filename)
+    assert load_vocab(filename)
 
 
 def test_simple_constructor():
-    v = finalfusion.vocab.SimpleVocab([str(i) for i in range(10)])
+    v = SimpleVocab([str(i) for i in range(10)])
     assert [v[str(i)] for i in range(10)] == [i for i in range(10)]
-    with pytest.raises(ValueError):
-        finalfusion.vocab.SimpleVocab(["a"] * 2)
+    with pytest.raises(AssertionError):
+        SimpleVocab(["a"] * 2)
     assert len(v) == 10
-    assert v.idx_bound == len(v)
+    assert v.upper_bound == len(v)
 
 
 def test_simple_eq():
-    v = finalfusion.vocab.SimpleVocab([str(i) for i in range(10)])
+    v = SimpleVocab([str(i) for i in range(10)])
     assert v == v
     with pytest.raises(TypeError):
         _ = v > v
@@ -54,7 +56,7 @@ def test_simple_eq():
         _ = v <= v
     with pytest.raises(TypeError):
         _ = v < v
-    v2 = finalfusion.vocab.SimpleVocab([str(i + 1) for i in range(10)])
+    v2 = SimpleVocab([str(i + 1) for i in range(10)])
     assert v != v2
     assert v in v
 
@@ -66,3 +68,41 @@ def test_string_idx(simple_vocab_fifu):
 def test_string_oov(simple_vocab_fifu):
     with pytest.raises(KeyError):
         _ = simple_vocab_fifu["definitely in vocab"]
+
+
+def test_fifu_buckets_constructor():
+    v = FinalfusionBucketVocab([str(i) for i in range(10)])
+    assert [v[str(i)] for i in range(10)] == [i for i in range(10)]
+    with pytest.raises(AssertionError):
+        v = FinalfusionBucketVocab(["a"] * 2)
+    with pytest.raises(AssertionError):
+        _ = FinalfusionBucketVocab(v.words, FastTextIndexer(21))
+    assert len(v) == 10
+    assert v.upper_bound == len(v) + pow(2, 21)
+    assert v == v
+    assert v in v
+    assert v != SimpleVocab(v.words)
+    assert v != FinalfusionBucketVocab(v.words, FinalfusionHashIndexer(20))
+    assert repr(v) == f"FinalfusionBucketVocab(\n" \
+                      f"\tindexer={repr(v.subword_indexer)}\n" \
+                      "\twords=[...]\n" \
+                      "\tword_index={{...}}\n" \
+                      ")"
+
+
+def test_fifu_buckets_roundtrip(tests_root, tmp_path):
+    filename = tmp_path / "write_ff_buckets.fifu"
+    v = load_vocab(tests_root / "data" / "ff_buckets.fifu")
+    v.write(filename)
+    assert v == load_vocab(filename)
+
+
+def test_ff_buckets_lookup(tests_root):
+    v = load_vocab(tests_root / "data" / "ff_buckets.fifu")
+    assert v.words[0] == "one"
+    assert v["one"] == 0
+    tuebingen_buckets = [
+        14, 69, 74, 124, 168, 181, 197, 246, 250, 276, 300, 308, 325, 416, 549,
+        590, 648, 651, 707, 717, 761, 817, 820, 857, 860, 1007
+    ]
+    assert sorted(v.idx('tübingen')) == tuebingen_buckets
