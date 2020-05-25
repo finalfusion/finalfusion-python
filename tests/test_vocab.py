@@ -3,7 +3,7 @@ import finalfusion.vocab
 
 from finalfusion.io import FinalfusionFormatError
 from finalfusion.subword import FinalfusionHashIndexer, FastTextIndexer
-from finalfusion.vocab import FinalfusionBucketVocab, SimpleVocab, load_vocab
+from finalfusion.vocab import FinalfusionBucketVocab, SimpleVocab, load_vocab, FastTextVocab
 
 
 def test_reading(tests_root):
@@ -88,6 +88,34 @@ def test_fifu_buckets_constructor():
                       "\twords=[...]\n" \
                       "\tword_index={{...}}\n" \
                       ")"
+
+
+def test_fasttext_constructor():
+    v = FastTextVocab([str(i) for i in range(10)])
+    assert [v[str(i)] for i in range(10)] == [i for i in range(10)]
+    with pytest.raises(AssertionError):
+        v = FastTextVocab(["a"] * 2)
+    with pytest.raises(AssertionError):
+        _ = FastTextVocab(v.words, FinalfusionHashIndexer(21))
+    assert len(v) == 10
+    assert v.upper_bound == len(v) + 2_000_000
+    assert v == v
+    assert v in v
+    assert v != SimpleVocab(v.words)
+    assert v != FastTextVocab(v.words, FastTextIndexer(20))
+    assert repr(v) == f"FastTextVocab(\n" \
+                      f"\tindexer={repr(v.subword_indexer)}\n" \
+                      "\twords=[...]\n" \
+                      "\tword_index={{...}}\n" \
+                      ")"
+
+
+def test_fasttext_vocab_roundtrip(tmp_path):
+    filename = tmp_path / "write_ft_vocab.fifu"
+    v = FastTextVocab([str(i) for i in range(10)])
+    v.write(filename)
+    v2 = load_vocab(filename)
+    assert v == v2
 
 
 def test_fifu_buckets_roundtrip(tests_root, tmp_path):

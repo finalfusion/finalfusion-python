@@ -148,19 +148,16 @@ class FinalfusionBucketVocab(SubwordVocab):
     """
     def __init__(self,
                  words: List[str],
-                 indexer: FinalfusionHashIndexer = None):
+                 indexer: Optional[FinalfusionHashIndexer] = None):
         """
         Initialize a FinalfusionBucketVocab.
 
-        Initializes the vocabulary with the given words and optional index and
-        indexer.
+        Initializes the vocabulary with the given words.
 
         If no indexer is passed, a FinalfusionHashIndexer with bucket exponent
         21 is used.
 
-        If no index is given, the nth word in the `words` list is assigned
-        index `n`. The word list cannot contain duplicate entries and it needs
-        to be of same length as the index.
+        The word list cannot contain duplicate entries.
 
         Parameters
         ----------
@@ -211,6 +208,70 @@ class FinalfusionBucketVocab(SubwordVocab):
         return ChunkIdentifier.BucketSubwordVocab
 
 
+class FastTextVocab(SubwordVocab):
+    """
+    FastText vocabulary
+    """
+    def __init__(self,
+                 words: List[str],
+                 indexer: Optional[FastTextIndexer] = None):
+        """
+        Initialize a FastTextVocab.
+
+        Initializes the vocabulary with the given words.
+
+        If no indexer is passed, a FastTextIndexer with 2_000_000 buckets is used.
+
+        The word list cannot contain duplicate entries.
+
+        Parameters
+        ----------
+        words : List[str]
+            List of unique words
+        indexer : FastTextIndexer, optional
+            Subword indexer to use for the vocabulary. Defaults to an indexer
+            with 2_000_000 buckets and range 3-6.
+
+        Raises
+        ------
+        AssertionError
+            If the indexer is not a FastTextIndexer or ``words`` contains duplicate entries.
+        """
+        if indexer is None:
+            indexer = FastTextIndexer(2000000)
+        assert isinstance(indexer, FastTextIndexer)
+        super().__init__()
+        self._index = _validate_items_and_create_index(words)
+        self._words = words
+        self._indexer = indexer
+
+    @property
+    def subword_indexer(self) -> FastTextIndexer:
+        return self._indexer
+
+    @property
+    def words(self) -> List[str]:
+        return self._words
+
+    @property
+    def word_index(self) -> Dict[str, int]:
+        return self._index
+
+    @staticmethod
+    def read_chunk(file: BinaryIO) -> 'FastTextVocab':
+        length, min_n, max_n, buckets = _read_required_binary(file, "<QIII")
+        words = _read_items(file, length)
+        indexer = FastTextIndexer(buckets, min_n, max_n)
+        return FastTextVocab(words, indexer)
+
+    def write_chunk(self, file: BinaryIO):
+        _write_bucket_vocab(file, self)
+
+    @staticmethod
+    def chunk_identifier():
+        return ChunkIdentifier.FastTextSubwordVocab
+
+
 def load_finalfusion_bucket_vocab(file: Union[str, bytes, int, PathLike]
                                   ) -> FinalfusionBucketVocab:
     """
@@ -233,7 +294,30 @@ def load_finalfusion_bucket_vocab(file: Union[str, bytes, int, PathLike]
         return FinalfusionBucketVocab.read_chunk(inf)
 
 
-def _write_bucket_vocab(file: BinaryIO, vocab: FinalfusionBucketVocab):
+def load_fasttext_vocab(file: Union[str, bytes, int, PathLike]
+                        ) -> FastTextVocab:
+    """
+    Load a FastTextVocab from the given finalfusion file.
+
+    Parameters
+    ----------
+    file : str, bytes, int, PathLike
+        Path to file containing a FastTextVocab chunk.
+
+    Returns
+    -------
+    vocab : FastTextVocab
+        Returns the first FastTextVocab in the file.
+    """
+    with open(file, "rb") as inf:
+        chunk = find_chunk(inf, [ChunkIdentifier.FastTextSubwordVocab])
+        if chunk is None:
+            raise ValueError('File did not contain a FastTextVocab}')
+        return FastTextVocab.read_chunk(inf)
+
+
+def _write_bucket_vocab(file: BinaryIO,
+                        vocab: Union[FastTextVocab, FinalfusionBucketVocab]):
     min_n_max_n_size = struct.calcsize("<II")
     buckets_size = struct.calcsize("<I")
     chunk_length = _calculate_binary_list_size(vocab.words)
@@ -254,5 +338,6 @@ def _write_bucket_vocab(file: BinaryIO, vocab: FinalfusionBucketVocab):
 
 
 __all__ = [
-    'SubwordVocab', 'FinalfusionBucketVocab', 'load_finalfusion_bucket_vocab'
+    'SubwordVocab', 'FinalfusionBucketVocab', 'load_finalfusion_bucket_vocab',
+    'FastTextVocab', 'load_fasttext_vocab'
 ]
