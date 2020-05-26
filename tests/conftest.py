@@ -59,3 +59,9 @@ def embeddings_text_dims(tests_root):
 def embeddings_w2v(tests_root):
     yield finalfusion.compat.load_word2vec(
         os.path.join(tests_root, "data/embeddings.w2v"))
+
+
+@pytest.fixture
+def embeddings_ft(tests_root):
+    yield finalfusion.compat.load_fasttext(
+        os.path.join(tests_root, "data/fasttext.bin"))

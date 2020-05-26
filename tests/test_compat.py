@@ -1,7 +1,8 @@
 import numpy as np
 from finalfusion import Embeddings
 
-from finalfusion.compat import write_word2vec, load_word2vec, write_text, write_text_dims, load_text, load_text_dims
+from finalfusion.compat import write_word2vec, load_word2vec, write_text, write_text_dims, load_text, load_text_dims, \
+    write_fasttext, load_fasttext
 from finalfusion.norms import Norms
 from finalfusion.storage import NdArray
 from finalfusion.vocab import SimpleVocab
@@ -21,8 +22,6 @@ def test_bucket_to_w2v_roundtrip(bucket_vocab_embeddings_fifu, tmp_path):
     w2v = load_word2vec(filename)
     assert w2v.vocab.words == bucket_vocab_embeddings_fifu.vocab.words
     assert w2v.vocab.word_index == bucket_vocab_embeddings_fifu.vocab.word_index
-    print(w2v.storage)
-    print(bucket_vocab_embeddings_fifu.storage[:len(w2v.vocab)])
     assert np.allclose(w2v.storage,
                        bucket_vocab_embeddings_fifu.storage[:len(w2v.vocab)])
     assert np.allclose(w2v.norms, bucket_vocab_embeddings_fifu.norms)
@@ -60,3 +59,24 @@ def test_nonascii_whitespace_text_roundtrip(tmp_path):
     assert embeds.vocab == text.vocab, f'{embeds.vocab.words}{text.vocab.words}'
     assert np.allclose(embeds.storage, text.storage)
     assert np.allclose(embeds.norms, text.norms)
+
+
+def test_fasttext_roundtrip(embeddings_ft, tmp_path):
+    filename = tmp_path / "ft_roundtrip.bin"
+    write_fasttext(filename, embeddings_ft)
+    ft = load_fasttext(filename)
+    assert embeddings_ft.vocab == ft.vocab
+    assert np.allclose(embeddings_ft.norms, ft.norms)
+    for a, b in zip(embeddings_ft.storage, ft.storage):
+        assert np.allclose(a, b, atol=1e-5)
+    assert embeddings_ft.metadata == ft.metadata
+
+
+def test_text_to_ft(embeddings_text, tmp_path):
+    filename = tmp_path / "txt-to-ft.bin"
+    write_fasttext(filename, embeddings_text)
+    ft = load_fasttext(filename)
+    assert embeddings_text.vocab == ft.vocab
+    assert np.allclose(embeddings_text.norms, ft.norms)
+    for a, b in zip(embeddings_text.storage, ft.storage):
+        assert np.allclose(a, b, atol=1e-5)
