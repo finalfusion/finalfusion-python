@@ -363,7 +363,7 @@ class Embeddings:  # pylint: disable=too-many-instance-attributes
             chunks.append(self.norms)
         return chunks
 
-    def write(self, file: str):
+    def write(self, file: Union[str, bytes, int, PathLike]):
         """
         Write the Embeddings to the given file.
 
@@ -371,7 +371,7 @@ class Embeddings:  # pylint: disable=too-many-instance-attributes
 
         Parameters
         ----------
-        file : str
+        file : str, bytes, int, PathLike
             Path of the output file.
         """
         with open(file, 'wb') as outf:

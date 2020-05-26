@@ -88,4 +88,6 @@ setup(name='finalfusion',
       include_package_data=True,
       package_dir={'': 'src'},
       package_data={'finalfusion': ['py.typed', '*.pyi', '*.h', '*.c']},
-      url="https://github.com/finalfusion/ffp")
+      url="https://github.com/finalfusion/ffp",
+      entry_points=dict(console_scripts=['ffp-convert=finalfusion.scripts.convert:main']),
+      )

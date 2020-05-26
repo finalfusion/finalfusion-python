@@ -40,3 +40,7 @@ jobs:
       run: |
         pip install pytest
         pytest --doctest-modules
+    - name: Conversion tests
+      if: ${{ matrix.python-version == '3.7' }}
+      run: bash ./tests/conversion_integration.sh
+
