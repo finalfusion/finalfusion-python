@@ -207,7 +207,6 @@ cdef class ExplicitIndexer:
                f"\tmin_n={self.min_n},\n" \
                f"\tmax_n={self.max_n},\n" \
                "\tngrams=[...],\n" \
-               "\tngram_index={{...}}\n" \
-               ")"
+               "\tngram_index={{...}})"
 
 __all__ = ['ExplicitIndexer']

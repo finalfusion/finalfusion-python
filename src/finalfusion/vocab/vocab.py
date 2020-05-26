@@ -131,6 +131,34 @@ def _read_items(file: BinaryIO, length: int) -> List[str]:
     return items
 
 
+def _read_items_with_indices(file: BinaryIO,
+                             length: int) -> Tuple[List[str], Dict[str, int]]:
+    """
+    Helper method to read items from a vocabulary chunk.
+
+    Parameters
+    ----------
+    file : BinaryIO
+        input file
+    length : int
+        number of items to read
+
+    Returns
+    -------
+    words : List[str]
+        The word list
+    """
+    items = []
+    index = dict()
+    for _ in range(length):
+        item_length = _read_required_binary(file, "<I")[0]
+        item = file.read(item_length).decode("utf-8")
+        idx = _read_required_binary(file, "<Q")[0]
+        items.append(item)
+        index[item] = idx
+    return items, index
+
+
 def _calculate_binary_list_size(items: List[str]):
     size = sum(len(bytes(item, "utf-8")) for item in items)
     size += struct.calcsize("<Q")

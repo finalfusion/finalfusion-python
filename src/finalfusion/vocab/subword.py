@@ -10,7 +10,7 @@ from typing import List, Optional, Tuple, Any, Union, Dict, BinaryIO, cast
 from finalfusion.io import ChunkIdentifier, find_chunk, _write_binary, _read_required_binary
 from finalfusion.subword import ExplicitIndexer, FastTextIndexer, FinalfusionHashIndexer, ngrams
 from finalfusion.vocab.vocab import Vocab, _validate_items_and_create_index, \
-    _calculate_binary_list_size, _write_words_binary, _read_items
+    _calculate_binary_list_size, _write_words_binary, _read_items, _read_items_with_indices
 
 
 class SubwordVocab(Vocab):
@@ -133,8 +133,7 @@ class SubwordVocab(Vocab):
         return f"{type(self).__name__}(\n" \
                f"\tindexer={self.subword_indexer}\n" \
                "\twords=[...]\n" \
-               "\tword_index={{...}}\n" \
-               ")"
+               "\tword_index={{...}})"
 
     def __eq__(self, other: Any) -> bool:
         return isinstance(other, type(self)) and \
@@ -272,6 +271,84 @@ class FastTextVocab(SubwordVocab):
         return ChunkIdentifier.FastTextSubwordVocab
 
 
+class ExplicitVocab(SubwordVocab):
+    """
+    A vocabulary with explicitly stored n-grams.
+    """
+    def __init__(self, words: List[str], indexer: ExplicitIndexer):
+        """
+        Initialize an ExplicitVocab.
+
+        Initializes the vocabulary with the given words and ExplicitIndexer.
+
+        The word list cannot contain duplicate entries.
+
+        Parameters
+        ----------
+        words : List[str]
+            List of unique words
+        indexer : ExplicitIndexer
+            Subword indexer to use for the vocabulary.
+
+        Raises
+        ------
+        AssertionError
+            If the indexer is not an ExplicitIndexer.
+
+        See Also
+        --------
+        :class:`.ExplicitIndexer`
+        """
+        assert isinstance(indexer, ExplicitIndexer)
+        super().__init__()
+        self._index = _validate_items_and_create_index(words)
+        self._words = words
+        self._indexer = indexer
+
+    @property
+    def word_index(self) -> dict:
+        return self._index
+
+    @property
+    def subword_indexer(self) -> ExplicitIndexer:
+        return self._indexer
+
+    @property
+    def words(self) -> list:
+        return self._words
+
+    @staticmethod
+    def chunk_identifier():
+        return ChunkIdentifier.ExplicitSubwordVocab
+
+    @staticmethod
+    def read_chunk(file: BinaryIO) -> 'ExplicitVocab':
+        length, ngram_length, min_n, max_n = _read_required_binary(
+            file, "<QQII")
+        words = _read_items(file, length)
+        ngram_list, ngram_index = _read_items_with_indices(file, ngram_length)
+        indexer = ExplicitIndexer(ngram_list, min_n, max_n, ngram_index)
+        return ExplicitVocab(words, indexer)
+
+    def write_chunk(self, file) -> None:
+        chunk_length = _calculate_binary_list_size(self.words)
+        chunk_length += _calculate_binary_list_size(
+            self.subword_indexer.ngrams)
+        min_n_max_n_size = struct.calcsize("<II")
+        chunk_length += min_n_max_n_size
+        chunk_header = (int(self.chunk_identifier()), chunk_length,
+                        len(self.words), len(self.subword_indexer.ngrams),
+                        self.min_n, self.max_n)
+        _write_binary(file, "<IQQQII", *chunk_header)
+        _write_words_binary((bytes(word, "utf-8") for word in self.words),
+                            file)
+        for ngram in self.subword_indexer.ngrams:
+            b_ngram = ngram.encode("utf-8")
+            _write_binary(file, "<I", len(b_ngram))
+            file.write(b_ngram)
+            _write_binary(file, "<Q", self.subword_indexer.ngram_index[ngram])
+
+
 def load_finalfusion_bucket_vocab(file: Union[str, bytes, int, PathLike]
                                   ) -> FinalfusionBucketVocab:
     """
@@ -316,6 +393,28 @@ def load_fasttext_vocab(file: Union[str, bytes, int, PathLike]
         return FastTextVocab.read_chunk(inf)
 
 
+def load_explicit_vocab(file: Union[str, bytes, int, PathLike]
+                        ) -> ExplicitVocab:
+    """
+    Load a ExplicitVocab from the given finalfusion file.
+
+    Parameters
+    ----------
+    file : str, bytes, int, PathLike
+        Path to file containing a ExplicitVocab chunk.
+
+    Returns
+    -------
+    vocab : ExplicitVocab
+        Returns the first ExplicitVocab in the file.
+    """
+    with open(file, "rb") as inf:
+        chunk = find_chunk(inf, [ChunkIdentifier.ExplicitSubwordVocab])
+        if chunk is None:
+            raise ValueError('File did not contain a FastTextVocab}')
+        return ExplicitVocab.read_chunk(inf)
+
+
 def _write_bucket_vocab(file: BinaryIO,
                         vocab: Union[FastTextVocab, FinalfusionBucketVocab]):
     min_n_max_n_size = struct.calcsize("<II")
@@ -339,5 +438,6 @@ def _write_bucket_vocab(file: BinaryIO,
 
 __all__ = [
     'SubwordVocab', 'FinalfusionBucketVocab', 'load_finalfusion_bucket_vocab',
-    'FastTextVocab', 'load_fasttext_vocab'
+    'FastTextVocab', 'load_fasttext_vocab', 'ExplicitVocab',
+    'load_explicit_vocab'
 ]

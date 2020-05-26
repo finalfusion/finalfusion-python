@@ -2,8 +2,8 @@ import pytest
 import finalfusion.vocab
 
 from finalfusion.io import FinalfusionFormatError
-from finalfusion.subword import FinalfusionHashIndexer, FastTextIndexer
-from finalfusion.vocab import FinalfusionBucketVocab, SimpleVocab, load_vocab, FastTextVocab
+from finalfusion.subword import FinalfusionHashIndexer, FastTextIndexer, ExplicitIndexer
+from finalfusion.vocab import FinalfusionBucketVocab, SimpleVocab, load_vocab, FastTextVocab, ExplicitVocab
 
 
 def test_reading(tests_root):
@@ -86,8 +86,7 @@ def test_fifu_buckets_constructor():
     assert repr(v) == f"FinalfusionBucketVocab(\n" \
                       f"\tindexer={repr(v.subword_indexer)}\n" \
                       "\twords=[...]\n" \
-                      "\tword_index={{...}}\n" \
-                      ")"
+                      "\tword_index={{...}})"
 
 
 def test_fasttext_constructor():
@@ -106,13 +105,39 @@ def test_fasttext_constructor():
     assert repr(v) == f"FastTextVocab(\n" \
                       f"\tindexer={repr(v.subword_indexer)}\n" \
                       "\twords=[...]\n" \
-                      "\tword_index={{...}}\n" \
-                      ")"
+                      "\tword_index={{...}})"
 
 
 def test_fasttext_vocab_roundtrip(tmp_path):
     filename = tmp_path / "write_ft_vocab.fifu"
     v = FastTextVocab([str(i) for i in range(10)])
+    v.write(filename)
+    v2 = load_vocab(filename)
+    assert v == v2
+
+
+def test_explicit_constructor():
+    i = ExplicitIndexer([str(i) for i in range(10)])
+    v = ExplicitVocab([str(i) for i in range(10, 100)], indexer=i)
+    assert [v[str(i)] for i in range(10, 100)] == [i for i in range(90)]
+    with pytest.raises(AssertionError):
+        _ = ExplicitVocab(v.words, FinalfusionHashIndexer(21))
+    assert len(v) == 90
+    assert v.upper_bound == len(v) + 10
+    assert v == v
+    assert v in v
+    assert v != SimpleVocab(v.words)
+    assert v != FastTextVocab(v.words, FastTextIndexer(20))
+    assert repr(v) == f"ExplicitVocab(\n" \
+                      f"\tindexer={repr(v.subword_indexer)}\n" \
+                      "\twords=[...]\n" \
+                      "\tword_index={{...}})"
+
+
+def test_explicit_vocab_roundtrip(tmp_path):
+    filename = tmp_path / "write_explicit_vocab.fifu"
+    i = ExplicitIndexer([str(i) for i in range(10)])
+    v = ExplicitVocab([str(i) for i in range(10, 100)], indexer=i)
     v.write(filename)
     v2 = load_vocab(filename)
     assert v == v2

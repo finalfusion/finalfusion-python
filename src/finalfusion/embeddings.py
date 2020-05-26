@@ -11,7 +11,8 @@ from finalfusion.io import Chunk, Header, _read_chunk_header, ChunkIdentifier, \
 from finalfusion.metadata import Metadata
 from finalfusion.norms import Norms
 from finalfusion.storage import Storage, NdArray
-from finalfusion.vocab import Vocab, SimpleVocab, FinalfusionBucketVocab, FastTextVocab
+from finalfusion.vocab import Vocab, SimpleVocab, FinalfusionBucketVocab, FastTextVocab, \
+    ExplicitVocab
 
 
 class Embeddings:  # pylint: disable=too-many-instance-attributes
@@ -40,6 +41,7 @@ class Embeddings:  # pylint: disable=too-many-instance-attributes
         * :class:`~finalfusion.vocab.simple_vocab.SimpleVocab`,
         * :class:`~finalfusion.vocab.subword.FinalfusionBucketVocab`
         * :class:`~finalfusion.vocab.subword.FastTextVocab`
+        * :class:`~finalfusion.vocab.subword.ExplicitVocab`
     3. :class:`~finalfusion.metadata.Metadata`
     4. :class:`~finalfusion.norms.Norms`
 
@@ -463,6 +465,8 @@ def load_finalfusion(file: Union[str, bytes, int, PathLike],
             vocab = FinalfusionBucketVocab.read_chunk(inf)
         elif chunk_id == ChunkIdentifier.FastTextSubwordVocab:
             vocab = FastTextVocab.read_chunk(inf)
+        elif chunk_id == ChunkIdentifier.ExplicitSubwordVocab:
+            vocab = ExplicitVocab.read_chunk(inf)
         else:
             raise FinalfusionFormatError(
                 f'Expected vocab chunk, not {str(chunk_id)}')

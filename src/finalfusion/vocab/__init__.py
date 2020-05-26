@@ -7,7 +7,7 @@ from typing import Union
 from finalfusion.io import ChunkIdentifier, find_chunk
 from finalfusion.vocab.simple_vocab import SimpleVocab, load_simple_vocab
 from finalfusion.vocab.subword import FinalfusionBucketVocab, load_finalfusion_bucket_vocab, \
-    FastTextVocab, load_fasttext_vocab
+    FastTextVocab, load_fasttext_vocab, ExplicitVocab, load_explicit_vocab
 from finalfusion.vocab.vocab import Vocab
 
 
@@ -17,6 +17,12 @@ def load_vocab(file: Union[str, bytes, int, PathLike]) -> Vocab:
 
     Loads the first known vocabulary from a finalfusion file.
 
+    One of:
+        * :class:`~finalfusion.vocab.simple_vocab.SimpleVocab`,
+        * :class:`~finalfusion.vocab.subword.FinalfusionBucketVocab`
+        * :class:`~finalfusion.vocab.subword.FastTextVocab`
+        * :class:`~finalfusion.vocab.subword.ExplicitVocab`
+
     Parameters
     ----------
     file: str, bytes, int, PathLike
@@ -24,7 +30,7 @@ def load_vocab(file: Union[str, bytes, int, PathLike]) -> Vocab:
 
     Returns
     -------
-    vocab : Union[SimpleVocab, FinalfusionBucketVocab]
+    vocab : Vocab
         First vocabulary in the file.
 
     Raises
@@ -46,16 +52,13 @@ def load_vocab(file: Union[str, bytes, int, PathLike]) -> Vocab:
             return FinalfusionBucketVocab.read_chunk(inf)
         if chunk == ChunkIdentifier.FastTextSubwordVocab:
             return FastTextVocab.read_chunk(inf)
-        raise NotImplementedError('Vocab type is not yet supported.')
+        if chunk == ChunkIdentifier.ExplicitSubwordVocab:
+            return ExplicitVocab.read_chunk(inf)
+        raise ValueError(f'Unexpected chunk type {chunk}.')
 
 
 __all__ = [
-    'Vocab',
-    'load_vocab',
-    'SimpleVocab',
-    'load_simple_vocab',
-    'FinalfusionBucketVocab',
-    'load_finalfusion_bucket_vocab',
-    'FastTextVocab',
-    'load_fasttext_vocab',
+    'Vocab', 'load_vocab', 'SimpleVocab', 'load_simple_vocab',
+    'FinalfusionBucketVocab', 'load_finalfusion_bucket_vocab', 'FastTextVocab',
+    'load_fasttext_vocab', 'ExplicitVocab', 'load_explicit_vocab'
 ]

@@ -81,8 +81,7 @@ def test_explicit():
                                "\tmin_n=3,\n" \
                                "\tmax_n=6,\n" \
                                "\tngrams=[...],\n" \
-                               "\tngram_index={{...}}\n" \
-                               ")"
+                               "\tngram_index={{...}})"
     assert indexer["0"] == 0
     assert indexer.ngrams[0] == "0"
     assert indexer("0") == 0
