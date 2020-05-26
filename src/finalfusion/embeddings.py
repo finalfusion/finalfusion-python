@@ -381,6 +381,43 @@ class Embeddings:  # pylint: disable=too-many-instance-attributes
             for chunk in chunks:
                 chunk.write_chunk(outf)
 
+    def bucket_to_explicit(self) -> 'Embeddings':
+        """
+        Bucket to explicit Embeddings conversion.
+
+        Multiple embeddings can still map to the same bucket, but all buckets that are not
+        indexed by in-vocabulary n-grams are eliminated. This can have a big impact on the
+        size of the embedding matrix.
+
+        Metadata is **not** copied to the new embeddings since it doesn't reflect the
+        changes. You can manually set the metadata and update the values accordingly.
+
+        Returns
+        -------
+        embeddings : Embeddings
+            Embeddings with an ExplicitVocab instead of a hash-based vocabulary.
+
+        Raises
+        ------
+        TypeError
+            If the current vocabulary is not a hash-based vocabulary
+            (FinalfusionBucketVocab or FastTextVocab)
+        """
+        bucket_vocabs = (FastTextVocab, FinalfusionBucketVocab)
+        if not isinstance(self.vocab, bucket_vocabs):
+            raise TypeError(
+                "Only bucketed embeddings can be converted to explicit.")
+        vocab = self.vocab.to_explicit()
+        storage = np.zeros((vocab.upper_bound, self._storage.shape[1]),
+                           dtype=np.float32)
+        storage[:len(vocab)] = self._storage[:len(vocab)]
+        for ngram in vocab.subword_indexer:
+            storage[len(vocab) + vocab.subword_indexer[ngram]] = self._storage[
+                len(vocab) + self.vocab.subword_indexer(ngram)]
+        return Embeddings(vocab=vocab,
+                          storage=NdArray(storage),
+                          norms=self.norms)
+
     def __contains__(self, item):
         return item in self._vocab
 

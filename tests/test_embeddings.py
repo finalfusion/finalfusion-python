@@ -192,3 +192,44 @@ def test_no_norms(vocab_array_tuple):
     embeddings = Embeddings(vocab=SimpleVocab(vocab), storage=NdArray(matrix))
     with pytest.raises(TypeError):
         _ = embeddings.embedding_with_norm("bla")
+
+
+def test_buckets_to_explicit(bucket_vocab_embeddings_fifu):
+    explicit = bucket_vocab_embeddings_fifu.bucket_to_explicit()
+    assert bucket_vocab_embeddings_fifu.vocab.words == explicit.vocab.words
+    for e1, e2 in zip(bucket_vocab_embeddings_fifu, explicit):
+        assert e1[0] == e1[0]
+        assert np.allclose(e1[1], e2[1])
+    assert bucket_vocab_embeddings_fifu.vocab.upper_bound == 1024 + len(
+        bucket_vocab_embeddings_fifu.vocab)
+    assert explicit.vocab.upper_bound == len(
+        bucket_vocab_embeddings_fifu.vocab) + 16
+    known = len(bucket_vocab_embeddings_fifu.vocab)
+    assert np.allclose(bucket_vocab_embeddings_fifu.storage[:known],
+                       explicit.storage[:known])
+    bucket_indexer = bucket_vocab_embeddings_fifu.vocab.subword_indexer
+    explicit_indexer = explicit.vocab.subword_indexer
+    for ngram in explicit_indexer:
+        assert np.allclose(
+            bucket_vocab_embeddings_fifu.storage[2 + bucket_indexer(ngram)],
+            explicit.storage[2 + explicit_indexer(ngram)])
+
+
+def test_buckets_to_explicit_roundtrip(bucket_vocab_embeddings_fifu, tmp_path):
+    filename = tmp_path / "bucket_to_explicit_embeds.fifu"
+    explicit = bucket_vocab_embeddings_fifu.bucket_to_explicit()
+    explicit.write(filename)
+    explicit2 = load_finalfusion(filename)
+    assert explicit.vocab == explicit2.vocab
+    assert np.allclose(explicit.storage, explicit2.storage)
+    assert np.allclose(explicit.norms, explicit2.norms)
+    assert np.allclose(bucket_vocab_embeddings_fifu.norms, explicit2.norms)
+    known = len(bucket_vocab_embeddings_fifu.vocab)
+    assert np.allclose(bucket_vocab_embeddings_fifu.storage[:known],
+                       explicit2.storage[:known])
+    bucket_indexer = bucket_vocab_embeddings_fifu.vocab.subword_indexer
+    explicit_indexer = explicit.vocab.subword_indexer
+    for ngram in explicit_indexer:
+        assert np.allclose(
+            bucket_vocab_embeddings_fifu.storage[2 + bucket_indexer(ngram)],
+            explicit.storage[2 + explicit_indexer(ngram)])

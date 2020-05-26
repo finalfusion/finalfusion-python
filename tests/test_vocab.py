@@ -143,6 +143,18 @@ def test_explicit_vocab_roundtrip(tmp_path):
     assert v == v2
 
 
+def test_bucket_to_explicit():
+    v = FinalfusionBucketVocab(["allerdings", "groß"])
+    explicit = v.to_explicit()
+    assert v.words == explicit.words
+    assert explicit.upper_bound == len(v) + 43
+    assert explicit.subword_indexer.upper_bound == 43
+    assert explicit.subword_indexer("dings") == explicit.subword_indexer(
+        "<gro")
+    assert v.subword_indexer("dings") == v.subword_indexer("<gro")
+    assert len(explicit.subword_indexer) == 44
+
+
 def test_fifu_buckets_roundtrip(tests_root, tmp_path):
     filename = tmp_path / "write_ff_buckets.fifu"
     v = load_vocab(tests_root / "data" / "ff_buckets.fifu")

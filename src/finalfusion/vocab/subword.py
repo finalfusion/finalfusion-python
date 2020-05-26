@@ -180,6 +180,25 @@ class FinalfusionBucketVocab(SubwordVocab):
         self._words = words
         self._indexer = indexer
 
+    def to_explicit(self) -> 'ExplicitVocab':
+        """
+        Return an ExplicitVocab built from this vocab.
+
+        This method iterates over the known words and extracts all ngrams within this vocab's
+        bounds. Each of the ngrams is hashed and mapped to an index. This index is not necessarily
+        unique for each ngram, if hashes collide, multiple ngrams will be mapped to the same index.
+
+        The returned vocab will be unable to produce indices for unknown ngrams.
+
+        The indices of the new vocabs known indices will be cover `[0, vocab.upper_bound)`
+
+        Returns
+        -------
+        explicit_vocab : ExplicitVocab
+            The converted vocabulary.
+        """
+        return _bucket_to_explicit(self)
+
     def write_chunk(self, file: BinaryIO):
         _write_bucket_vocab(file, self)
 
@@ -243,6 +262,25 @@ class FastTextVocab(SubwordVocab):
         self._index = _validate_items_and_create_index(words)
         self._words = words
         self._indexer = indexer
+
+    def to_explicit(self) -> 'ExplicitVocab':
+        """
+        Return an ExplicitVocab built from this vocab.
+
+        This method iterates over the known words and extracts all ngrams within this vocab's
+        bounds. Each of the ngrams is hashed and mapped to an index. This index is not necessarily
+        unique for each ngram, if hashes collide, multiple ngrams will be mapped to the same index.
+
+        The returned vocab will be unable to produce indices for unknown ngrams.
+
+        The indices of the new vocabs known indices will be cover `[0, vocab.upper_bound)`
+
+        Returns
+        -------
+        explicit_vocab : ExplicitVocab
+            The converted vocabulary.
+        """
+        return _bucket_to_explicit(self)
 
     @property
     def subword_indexer(self) -> FastTextIndexer:
@@ -413,6 +451,25 @@ def load_explicit_vocab(file: Union[str, bytes, int, PathLike]
         if chunk is None:
             raise ValueError('File did not contain a FastTextVocab}')
         return ExplicitVocab.read_chunk(inf)
+
+
+def _bucket_to_explicit(vocab: Union[FinalfusionBucketVocab, FastTextVocab]
+                        ) -> 'ExplicitVocab':
+    ngram_index = dict()
+    idx_index = dict()  # type: Dict[int, int]
+    ngram_list = []
+    for word in vocab.words:
+        token_ngrams = vocab.subwords(word)
+        for ngram in token_ngrams:
+            if ngram not in ngram_index:
+                ngram_list.append(ngram)
+                idx = vocab.subword_indexer(ngram)
+                if idx not in idx_index:
+                    idx_index[idx] = len(idx_index)
+                ngram_index[ngram] = idx_index[idx]
+    indexer = ExplicitIndexer(ngram_list, vocab.min_n, vocab.max_n,
+                              ngram_index)
+    return ExplicitVocab(vocab.words, indexer)
 
 
 def _write_bucket_vocab(file: BinaryIO,
