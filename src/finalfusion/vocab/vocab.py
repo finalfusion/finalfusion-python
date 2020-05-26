@@ -3,7 +3,7 @@ Finalfusion Vocabulary interface
 """
 import abc
 import struct
-from typing import List, Optional, Dict, Tuple, BinaryIO, Iterable, Any, Union, Sequence
+from typing import List, Optional, Dict, Tuple, BinaryIO, Iterable, Any, Union, Sequence, Iterator
 
 from finalfusion.io import Chunk, _read_required_binary, _write_binary
 
@@ -82,7 +82,7 @@ class Vocab(Chunk):
             return all(w in self for w in item)
         return False
 
-    def __iter__(self) -> Iterable[str]:
+    def __iter__(self) -> Iterator[str]:
         return iter(self.words)
 
     def __len__(self) -> int:

@@ -6,6 +6,7 @@ import pytest
 
 import finalfusion
 import finalfusion.vocab
+import finalfusion.compat
 
 
 @pytest.fixture
@@ -40,3 +41,21 @@ def embeddings_fifu(tests_root):
 @pytest.fixture
 def bucket_vocab_embeddings_fifu(tests_root):
     yield finalfusion.load_finalfusion(tests_root / "data" / "ff_buckets.fifu")
+
+
+@pytest.fixture
+def embeddings_text(tests_root):
+    yield finalfusion.compat.load_text(
+        os.path.join(tests_root, "data/embeddings.txt"))
+
+
+@pytest.fixture
+def embeddings_text_dims(tests_root):
+    yield finalfusion.compat.load_text_dims(
+        os.path.join(tests_root, "data/embeddings.dims.txt"))
+
+
+@pytest.fixture
+def embeddings_w2v(tests_root):
+    yield finalfusion.compat.load_word2vec(
+        os.path.join(tests_root, "data/embeddings.w2v"))

@@ -233,3 +233,25 @@ def test_buckets_to_explicit_roundtrip(bucket_vocab_embeddings_fifu, tmp_path):
         assert np.allclose(
             bucket_vocab_embeddings_fifu.storage[2 + bucket_indexer(ngram)],
             explicit.storage[2 + explicit_indexer(ngram)])
+
+
+def test_embeddings(embeddings_fifu, embeddings_text, embeddings_text_dims,
+                    embeddings_w2v):
+    assert len(embeddings_fifu.vocab) == 7
+    assert len(embeddings_text.vocab) == 7
+    assert len(embeddings_text_dims.vocab) == 7
+    assert len(embeddings_w2v.vocab) == 7
+    fifu_storage = embeddings_fifu.storage
+    assert fifu_storage.shape == (7, 10)
+
+    for embedding, storage_row in zip(embeddings_fifu, fifu_storage):
+        assert np.allclose(
+            embedding[1],
+            embeddings_text[embedding[0]]), "FiFu and text embedding mismatch"
+        assert np.allclose(embedding[1], embeddings_text_dims[
+            embedding[0]]), "FiFu and textdims embedding mismatch"
+        assert np.allclose(
+            embedding[1],
+            embeddings_w2v[embedding[0]]), "FiFu and w2v embedding mismatch"
+        assert np.allclose(embedding[1],
+                           storage_row), "FiFu and storage row  mismatch"
