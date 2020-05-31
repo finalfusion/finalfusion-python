@@ -71,6 +71,10 @@ else:
         ["src/finalfusion/subword/explicit_indexer.c"])
     extensions = [hash_indexers, ngrams, explicit_indexer]
 
+install_requires = ["numpy", "toml"]
+if sys.version_info.major == 3 and sys.version_info.minor == 6:
+    install_requires.append("dataclasses")
+
 setup(name='finalfusion',
       author="Sebastian Pütz <seb.puetz@gmail.com>, Daniël de Kok <me@danieldk.eu>",
       classifiers=[
@@ -81,7 +85,7 @@ setup(name='finalfusion',
       cmdclass={'build_ext': cython_build_ext},
       description="Interface to finalfusion embeddings",
       ext_modules=extensions,
-      install_requires=["numpy", "toml"],
+      install_requires=install_requires,
       license='BlueOak-1.0.0',
       packages=find_packages('src'),
       include_package_data=True,

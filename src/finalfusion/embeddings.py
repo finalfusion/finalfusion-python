@@ -1,8 +1,10 @@
 """
 Finalfusion Embeddings
 """
+import heapq
+from dataclasses import field, dataclass
 from os import PathLike
-from typing import Optional, Tuple, List, Union, Any, Iterator
+from typing import Optional, Tuple, List, Union, Any, Iterator, Set
 
 import numpy as np
 
@@ -418,6 +420,120 @@ class Embeddings:  # pylint: disable=too-many-instance-attributes
                           storage=NdArray(storage),
                           norms=self.norms)
 
+    def analogy(  # pylint: disable=too-many-arguments
+            self,
+            word1: str,
+            word2: str,
+            word3: str,
+            k: int = 1,
+            skip: Set[str] = None) -> Optional[List['SimilarityResult']]:
+        """
+        Perform an analogy query.
+
+        This method returns words that are close in vector space the analogy
+        query `word1` is to `word2` as `word3` is to `?`. More concretely,
+        it searches embeddings that are similar to:
+
+        *embedding(word2) - embedding(word1) + embedding(word3)*
+
+        Words specified in ``skip`` are not considered as answers. If ``skip``
+        is None, the query words ``word1``, ``word2`` and ``word3`` are
+        excluded.
+
+        At most, ``k`` results are returned. ``None`` is returned when no
+        embedding could be computed for any of the tokens.
+
+        Parameters
+        ----------
+        word1 : str
+            Word1 is to...
+        word2 : str
+            word2 like...
+        word3 : str
+            word3 is to the return value
+        skip : Set[str]
+            Set of strings which should not be considered as answers. Defaults
+            to ``None`` which excludes the query strings. To allow the query
+            strings as answers, pass an empty set.
+        k : int
+            Number of answers to return, defaults to 1.
+
+        Returns
+        -------
+        answers : List[SimilarityResult]
+            List of answers.
+        """
+        embed_a = self.embedding(word1)
+        embed_b = self.embedding(word2)
+        embed_c = self.embedding(word3)
+        if embed_a is None or embed_b is None or embed_c is None:
+            return None
+        diff = embed_b - embed_a
+        embed_d = embed_c + diff
+        embed_d /= np.linalg.norm(embed_d)
+        return self._similarity(
+            embed_d, k, {word1, word2, word3} if skip is None else skip)
+
+    def word_similarity(self, query: str,
+                        k: int = 10) -> Optional[List['SimilarityResult']]:
+        """
+        Retrieves the nearest neighbors of the query string.
+
+        The similarity between the embedding of the query and other embeddings
+        is defined by the dot product of the embeddings. If the vectors are
+        unit vectors, this is the cosine similarity.
+
+        At most, ``k`` results are returned.
+
+        Parameters
+        ----------
+        query : str
+            The query string
+        k : int
+            The number of neighbors to return, defaults to 10.
+
+        Returns
+        -------
+        neighbours : List[Tuple[str, float], optional
+            List of tuples with neighbour and similarity measure. None if no
+            embedding can be found for ``query``.
+        """
+        embed = self.embedding(query)
+        if embed is None:
+            return None
+        return self._similarity(embed, k, {query})
+
+    def embedding_similarity(self,
+                             query: np.ndarray,
+                             k: int = 10,
+                             skip: Optional[Set[str]] = None
+                             ) -> Optional[List['SimilarityResult']]:
+        """
+        Retrieves the nearest neighbors of the query embedding.
+
+        The similarity between the query embedding and other embeddings is
+        defined by the dot product of the embeddings. If the vectors are unit
+        vectors, this is the cosine similarity.
+
+        At most, ``k`` results are returned.
+
+        Parameters
+        ----------
+        query : str
+            The query array.
+        k : int
+            The number of neighbors to return, defaults to 10.
+        skip : Set[str], optional
+            Set of strings that should not be considered as neighbours.
+
+        Returns
+        -------
+        neighbours : List[Tuple[str, float], optional
+            List of tuples with neighbour and similarity measure. None if no
+            embedding can be found for ``query``.
+        """
+        return self._similarity(query, k, set() if skip is None else skip)
+
     def __contains__(self, item):
         return item in self._vocab
 
@@ -426,6 +542,24 @@ class Embeddings:  # pylint: disable=too-many-instance-attributes
         if self._norms is not None:
             return zip(self._vocab, self._storage, self._norms)
         return zip(self._vocab, self._storage)
+
+    def _similarity(self, query: np.ndarray, k: int,
+                    skips: Set[str]) -> List['SimilarityResult']:
+        words = self.storage[:len(self.vocab)]  # type: np.ndarray
+        sims = words.dot(query)
+        skip_indices = set(skip for skip in (self.vocab.word_index.get(skip)
+                                             for skip in skips)
+                           if skip is not None)
+        partition = sims.argpartition(-k -
+                                      len(skip_indices))[-k -
+                                                         len(skip_indices):]
+
+        heap = []  # type: List[SimilarityResult]
+        for idx in partition:
+            if idx not in skip_indices:
+                heapq.heappush(
+                    heap, SimilarityResult(self.vocab.words[idx], sims[idx]))
+        return heapq.nlargest(k, heap)
 
     def _embedding(self,
                    idx: Union[int, List[int]],
@@ -524,3 +658,14 @@ def load_finalfusion(file: Union[str, bytes, int, PathLike],
                     f'Expected norms chunk, not {str(chunk_id)}')
 
         return Embeddings(storage, vocab, norms, metadata)
+
+
+@dataclass(order=True)
+class SimilarityResult:
+    """
+    Container for a Similarity result.
+
+    The word can be accessed through ``result.word``, the similarity through ``result.similarity``.
+    """
+    word: str = field(compare=False)
+    similarity: float

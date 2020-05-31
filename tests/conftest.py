@@ -16,7 +16,14 @@ def tests_root():
 
 @pytest.fixture
 def simple_vocab_fifu(tests_root):
-    yield finalfusion.vocab.load_vocab(tests_root / "data/simple_vocab.fifu")
+    yield finalfusion.vocab.load_vocab(tests_root / "data" /
+                                       "simple_vocab.fifu")
+
+
+@pytest.fixture
+def analogy_fifu(tests_root):
+    yield finalfusion.load_finalfusion(tests_root / "data" /
+                                       "simple_vocab.fifu")
 
 
 @pytest.fixture
@@ -45,23 +52,27 @@ def bucket_vocab_embeddings_fifu(tests_root):
 
 @pytest.fixture
 def embeddings_text(tests_root):
-    yield finalfusion.compat.load_text(
-        os.path.join(tests_root, "data/embeddings.txt"))
+    yield finalfusion.compat.load_text(tests_root / "data" / "embeddings.txt")
 
 
 @pytest.fixture
 def embeddings_text_dims(tests_root):
-    yield finalfusion.compat.load_text_dims(
-        os.path.join(tests_root, "data/embeddings.dims.txt"))
+    yield finalfusion.compat.load_text_dims(tests_root / "data" /
+                                            "embeddings.dims.txt")
 
 
 @pytest.fixture
 def embeddings_w2v(tests_root):
-    yield finalfusion.compat.load_word2vec(
-        os.path.join(tests_root, "data/embeddings.w2v"))
+    yield finalfusion.compat.load_word2vec(tests_root / "data" /
+                                           "embeddings.w2v")
 
 
 @pytest.fixture
 def embeddings_ft(tests_root):
-    yield finalfusion.compat.load_fasttext(
-        os.path.join(tests_root, "data/fasttext.bin"))
+    yield finalfusion.compat.load_fasttext(tests_root / "data" /
+                                           "fasttext.bin")
+
+
+@pytest.fixture
+def similarity_fifu(tests_root):
+    yield finalfusion.load_finalfusion(tests_root / "data" / "similarity.fifu")
