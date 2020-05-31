@@ -72,8 +72,7 @@ else:
     extensions = [hash_indexers, ngrams, explicit_indexer]
 
 setup(name='finalfusion',
-      author="Sebastian Pütz",
-      author_email="seb.puetz@gmail.com",
+      author="Sebastian Pütz <seb.puetz@gmail.com>, Daniël de Kok <me@danieldk.eu>",
       classifiers=[
           "Programming Language :: Python :: 3",
           "Operating System :: OS Independent",
@@ -90,4 +89,5 @@ setup(name='finalfusion',
       package_data={'finalfusion': ['py.typed', '*.pyi', '*.h', '*.c']},
       url="https://github.com/finalfusion/ffp",
       entry_points=dict(console_scripts=['ffp-convert=finalfusion.scripts.convert:main']),
+      version="0.7.0-pre"
       )
