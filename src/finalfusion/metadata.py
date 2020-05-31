@@ -31,7 +31,7 @@ class Metadata(dict, Chunk):
     'other value'
     """
     @staticmethod
-    def chunk_identifier():
+    def chunk_identifier() -> ChunkIdentifier:
         return ChunkIdentifier.Metadata
 
     @staticmethod

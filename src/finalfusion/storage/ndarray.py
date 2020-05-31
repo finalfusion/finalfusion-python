@@ -5,7 +5,7 @@ Finalfusion storage
 import struct
 from os import PathLike
 import sys
-from typing import BinaryIO, Tuple, Union
+from typing import BinaryIO, Tuple, Union, Iterator
 
 import numpy as np
 
@@ -45,7 +45,7 @@ class NdArray(np.ndarray, Storage):
         return cls.mmap_chunk(file) if mmap else cls.read_chunk(file)
 
     @staticmethod
-    def chunk_identifier():
+    def chunk_identifier() -> ChunkIdentifier:
         return ChunkIdentifier.NdArray
 
     @staticmethod
@@ -118,10 +118,13 @@ class NdArray(np.ndarray, Storage):
         _write_binary(file, f"{padding}x")
         _serialize_array_as_le(file, self)
 
-    def __getitem__(self, key):
-        if isinstance(key, slice):
-            return super().__getitem__(key)
-        return super().__getitem__(key).view(np.ndarray)
+    def __getitem__(self, index) -> Union['NdArray', np.ndarray]:
+        if isinstance(index, slice):
+            return super().__getitem__(index)
+        return np.ndarray.__getitem__(self, index).view(np.ndarray)
+
+    def __iter__(self) -> Iterator[np.ndarray]:
+        return iter(self.view(np.ndarray))
 
 
 def load_ndarray(file: Union[str, bytes, int, PathLike],

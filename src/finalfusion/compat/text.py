@@ -9,7 +9,7 @@ from typing import Union, TextIO
 import numpy as np
 
 from finalfusion import Embeddings
-from finalfusion._util import _normalize_ndarray_storage
+from finalfusion._util import _normalize_matrix
 from finalfusion.storage import NdArray
 from finalfusion.vocab import SimpleVocab
 
@@ -137,7 +137,7 @@ def _load_text(file: TextIO, rows: int, cols: int) -> Embeddings:
         row[:] = parts[1:]
     storage = NdArray(matrix)
     return Embeddings(storage=storage,
-                      norms=_normalize_ndarray_storage(storage),
+                      norms=_normalize_matrix(storage),
                       vocab=SimpleVocab(words))
 
 
@@ -151,7 +151,7 @@ def _write_text(file: Union[str, bytes, int, PathLike],
         if dims:
             print(*matrix.shape, file=outf)
         for idx, word in enumerate(vocab):
-            row = matrix[idx]
+            row = matrix[idx]  # type: np.ndarray
             if embeddings.norms is not None:
                 row = row * embeddings.norms[idx]
             print(word, ' '.join(map(str, row)), sep=sep, file=outf)

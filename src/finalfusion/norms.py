@@ -5,7 +5,7 @@ Norms module.
 import struct
 from os import PathLike
 import sys
-from typing import BinaryIO, Union
+from typing import BinaryIO, Union, List, Collection
 
 import numpy as np
 
@@ -13,13 +13,13 @@ from finalfusion.io import Chunk, ChunkIdentifier, find_chunk, TypeId, Finalfusi
     _pad_float32, _write_binary, _read_required_binary, _serialize_array_as_le
 
 
-class Norms(np.ndarray, Chunk):
+class Norms(np.ndarray, Chunk, Collection[float]):
     """
     Norms Chunk.
 
     Norms subclass `numpy.ndarray`, all typical numpy operations are available.
     """
-    def __new__(cls, array: np.array):
+    def __new__(cls, array: np.ndarray):
         """
         Construct new Norms.
 
@@ -46,7 +46,7 @@ class Norms(np.ndarray, Chunk):
         return array.view(cls)
 
     @staticmethod
-    def chunk_identifier():
+    def chunk_identifier() -> ChunkIdentifier:
         return ChunkIdentifier.NdNorms
 
     @staticmethod
@@ -72,10 +72,12 @@ class Norms(np.ndarray, Chunk):
                       int(TypeId.f32))
         _serialize_array_as_le(file, self)
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: Union[int, slice, List[int], np.ndarray]
+                    ) -> Union[float, 'Norms']:
         if isinstance(key, slice):
             return Norms(super().__getitem__(key))
-        return super().__getitem__(key)
+        norm = super().__getitem__(key)  # type: float
+        return norm
 
 
 def load_norms(file: Union[str, bytes, int, PathLike]):

@@ -16,7 +16,7 @@ import argparse
 from finalfusion.scripts.util import Format
 
 
-def main():  # pylint: disable=missing-function-docstring
+def main() -> None:  # pylint: disable=missing-function-docstring
     formats = ["word2vec", "finalfusion", "fasttext", "text", "textdims"]
     parser = argparse.ArgumentParser(prog="ffp-convert",
                                      description="Convert embeddings.")

@@ -3,8 +3,9 @@ Storage
 """
 
 import abc
-from typing import Tuple, BinaryIO
+from typing import Tuple, BinaryIO, Union, Iterator
 
+import numpy as np
 from finalfusion.io import Chunk
 
 
@@ -24,7 +25,11 @@ class Storage(Chunk):
             Tuple containing `(rows, columns)`
         """
     @abc.abstractmethod
-    def __getitem__(self, index):
+    def __getitem__(self, index) -> Union['Storage', np.ndarray]:
+        pass
+
+    @abc.abstractmethod
+    def __iter__(self) -> Iterator[np.ndarray]:
         pass
 
     @classmethod

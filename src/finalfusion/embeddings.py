@@ -2,7 +2,7 @@
 Finalfusion Embeddings
 """
 from os import PathLike
-from typing import Optional, Tuple, List, Union, Any
+from typing import Optional, Tuple, List, Union, Any, Iterator
 
 import numpy as np
 
@@ -421,23 +421,24 @@ class Embeddings:  # pylint: disable=too-many-instance-attributes
     def __contains__(self, item):
         return item in self._vocab
 
-    def __iter__(self):
+    def __iter__(self) -> Union[Iterator[Tuple[str, np.ndarray]], Iterator[
+            Tuple[str, np.ndarray, float]]]:
         if self._norms is not None:
-            return zip(self._vocab.words, self._storage, self._norms)
-        return zip(self._vocab.words, self._storage)
+            return zip(self._vocab, self._storage, self._norms)
+        return zip(self._vocab, self._storage)
 
     def _embedding(self,
                    idx: Union[int, List[int]],
                    out: Optional[np.ndarray] = None
                    ) -> Tuple[np.ndarray, Optional[float]]:
-        res = self._storage[idx]
+        res = self._storage[idx]  # type: np.ndarray
         if res.ndim == 1:
             if out is not None:
                 out[:] = res
             else:
                 out = res
             if self._norms is not None:
-                norm = self._norms[idx]
+                norm = self._norms[idx]  # type: Optional[float]
             else:
                 norm = None
         else:
