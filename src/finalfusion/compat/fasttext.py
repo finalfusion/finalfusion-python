@@ -9,7 +9,7 @@ from typing import Union, BinaryIO, cast, List, Any, Dict
 import numpy as np
 
 from finalfusion import Embeddings
-from finalfusion._util import _normalize_ndarray_storage
+from finalfusion._util import _normalize_matrix
 from finalfusion.io import _read_required_binary, _write_binary, _serialize_array_as_le
 from finalfusion.metadata import Metadata
 from finalfusion.storage import NdArray
@@ -46,7 +46,7 @@ def load_fasttext(file: Union[str, bytes, int, PathLike]) -> Embeddings:
         vocab = _read_ft_vocab(inf, metadata['buckets'], metadata['min_n'],
                                metadata['max_n'])
         storage = _read_ft_storage(inf, vocab)
-        norms = _normalize_ndarray_storage(storage[:len(vocab)])
+        norms = _normalize_matrix(storage[:len(vocab)])
     return Embeddings(storage=storage,
                       vocab=vocab,
                       norms=norms,
@@ -309,10 +309,12 @@ def _write_ft_storage_subwords(outf: BinaryIO, embeds: Embeddings):
     norms = embeds.norms
     for i, word in enumerate(vocab):
         indices = vocab.subword_indices(word)
-        embed = storage[i] * (len(indices) + 1)
+        embed = storage[i]  # type: np.ndarray
+        embed = embed * (len(indices) + 1)
         if norms is not None:
             embed *= norms[i]
-        embed -= storage[indices].sum(0, keepdims=False)
+        sw_embeds = storage[indices]  # type: np.ndarray
+        embed -= sw_embeds.sum(0, keepdims=False)
         _serialize_array_as_le(outf, embed)
 
     _serialize_array_as_le(outf, storage[len(vocab):])
@@ -327,7 +329,7 @@ def _write_ft_storage_simple(outf: BinaryIO, embeds: Embeddings):
     storage = embeds.storage
     norms = embeds.norms
     for i in range(storage.shape[0]):
-        embed = storage[i]
+        embed = storage[i]  # type: np.ndarray
         if norms is not None:
             embed = norms[i] * embed
         _serialize_array_as_le(outf, embed)

@@ -3,12 +3,13 @@ Finalfusion Vocabulary interface
 """
 import abc
 import struct
-from typing import List, Optional, Dict, Tuple, BinaryIO, Iterable, Any, Union, Sequence, Iterator
+from typing import List, Optional, Dict, Tuple, BinaryIO, Iterable, Any, Union, Sequence, \
+    Iterator, Collection
 
 from finalfusion.io import Chunk, _read_required_binary, _write_binary
 
 
-class Vocab(Chunk):
+class Vocab(Chunk, Collection[str]):
     """
     Finalfusion vocabulary interface.
 

@@ -11,7 +11,7 @@ import numpy as np
 from finalfusion import Embeddings
 from finalfusion.io import _serialize_array_as_le
 from finalfusion.storage import NdArray
-from finalfusion._util import _normalize_ndarray_storage
+from finalfusion._util import _normalize_matrix
 from finalfusion.vocab import SimpleVocab
 
 
@@ -48,7 +48,7 @@ def load_word2vec(file: Union[str, bytes, int, PathLike]) -> Embeddings:
             row[:] = array
     storage = NdArray(matrix)
     return Embeddings(storage=storage,
-                      norms=_normalize_ndarray_storage(storage),
+                      norms=_normalize_matrix(storage),
                       vocab=SimpleVocab(words))
 
 
@@ -84,7 +84,7 @@ def write_word2vec(file: Union[str, bytes, int, PathLike],
     with open(file, 'wb') as outf:
         outf.write(f'{matrix.shape[0]} {matrix.shape[1]}\n'.encode('ascii'))
         for idx, word in enumerate(vocab):
-            row = matrix[idx]
+            row = matrix[idx]  # type: np.ndarray
             if embeddings.norms is not None:
                 row = row * embeddings.norms[idx]
             b_word = word.encode('utf-8')

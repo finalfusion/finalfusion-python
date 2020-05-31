@@ -3,7 +3,7 @@ Finalfusion SimpleVocab
 """
 import struct
 from os import PathLike
-from typing import List, Optional, Union, BinaryIO
+from typing import List, Optional, Union, BinaryIO, Dict
 
 from finalfusion.io import ChunkIdentifier, find_chunk, _write_binary, _read_required_binary
 from finalfusion.vocab.vocab import Vocab, _validate_items_and_create_index, _read_items,\
@@ -40,11 +40,11 @@ class SimpleVocab(Vocab):
         self._words = words
 
     @property
-    def words(self) -> list:
+    def words(self) -> List[str]:
         return self._words
 
     @property
-    def word_index(self) -> dict:
+    def word_index(self) -> Dict[str, int]:
         return self._index
 
     @property
