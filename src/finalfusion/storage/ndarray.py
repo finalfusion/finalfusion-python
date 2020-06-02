@@ -10,7 +10,8 @@ from typing import BinaryIO, Tuple, Union, Iterator
 import numpy as np
 
 from finalfusion.io import ChunkIdentifier, TypeId, FinalfusionFormatError, find_chunk, \
-    _pad_float32, _read_required_binary, _write_binary, _serialize_array_as_le
+    _pad_float32, _read_required_binary, _write_binary, _serialize_array_as_le, \
+    _read_array_as_native
 from finalfusion.storage.storage import Storage
 
 
@@ -51,9 +52,7 @@ class NdArray(np.ndarray, Storage):
     @staticmethod
     def read_chunk(file: BinaryIO) -> 'NdArray':
         rows, cols = NdArray._read_array_header(file)
-        array = np.fromfile(file=file, count=rows * cols, dtype=np.float32)
-        if sys.byteorder == "big":
-            array.byteswap(inplace=True)
+        array = _read_array_as_native(file, np.float32, rows * cols)
         array = np.reshape(array, (rows, cols))
         return NdArray(array)
 

@@ -4,7 +4,7 @@ import pytest
 import numpy as np
 
 from finalfusion.io import FinalfusionFormatError
-from finalfusion.storage import load_ndarray, load_storage, Storage, NdArray
+from finalfusion.storage import load_ndarray, load_storage, Storage, NdArray, load_quantized_array
 
 
 def test_read_array(tests_root, vocab_array_tuple):
@@ -186,3 +186,51 @@ def test_iter_sliced():
         for storage_row, matrix_row in zip(s[lower:upper:step],
                                            matrix[lower:upper:step]):
             assert np.allclose(storage_row, matrix_row)
+
+
+def test_quantized_array_read(tests_root, pq_check):
+    s = load_quantized_array(tests_root / "data/pq.fifu")
+    for i, (check, e) in enumerate(zip(pq_check.storage, s)):
+        out = np.zeros_like(check)
+        assert np.allclose(check, e, atol=0.05)
+        out2 = s.embedding(i, out)
+        assert out is out2
+        assert np.allclose(e, out2)
+    out = np.zeros_like(pq_check.storage)
+    out2 = s.embedding(slice(None, None), out=out)
+    assert out is out2
+    assert np.allclose(s, pq_check.storage, atol=0.05)
+    assert np.allclose(out, pq_check.storage, atol=0.05)
+    # works with arrays
+    out2 = s.embedding(np.arange(len(s)), out=out)
+    assert out is out2
+    # works with matrices
+    out = np.zeros((2, *s.shape))
+    key = np.vstack((np.arange(len(s)), np.arange(len(s)))).reshape((2, -1))
+    out2 = s.embedding(key, out=out)
+    assert out is out2
+    assert np.allclose(out,
+                       np.vstack((pq_check.storage, pq_check.storage)).reshape(
+                           (2, *pq_check.storage.shape)),
+                       atol=0.05)
+    # works with tensors
+    out = np.zeros_like(pq_check.storage)[None, None]
+    out2 = s.embedding(np.arange(len(s))[None, None], out=out)
+    assert out is out2
+
+
+@pytest.mark.skipif(sys.byteorder == "big", reason="MMap unsupported on BE")
+def test_quantized_array_mmap(tests_root, pq_check):
+    s = load_quantized_array(tests_root / "data/pq.fifu", mmap=True)
+    for check, e in zip(pq_check.storage, s):
+        assert np.allclose(check, e, atol=0.05)
+    assert np.allclose(s, pq_check.storage, atol=0.05)
+
+
+def test_quantized_array_roundtrip(tests_root, tmp_path, pq_check):
+    s = load_quantized_array(tests_root / "data/pq.fifu")
+    outfile = tmp_path / "pq_storage.fifu"
+    s.write(outfile)
+    s2 = load_quantized_array(outfile)
+    assert np.allclose(s, s2)
+    assert np.allclose(s, pq_check.storage, atol=0.05)

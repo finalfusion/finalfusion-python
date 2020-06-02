@@ -255,3 +255,44 @@ def test_embeddings(embeddings_fifu, embeddings_text, embeddings_text_dims,
             embeddings_w2v[embedding[0]]), "FiFu and w2v embedding mismatch"
         assert np.allclose(embedding[1],
                            storage_row), "FiFu and storage row  mismatch"
+
+
+@pytest.mark.skipif(sys.byteorder == "big", reason="MMap unsupported on BE")
+def test_embeddings_pq_mmap(pq_check, embeddings_pq_memmap):
+    embedding_pq = embeddings_pq_memmap.embedding("Berlin")
+    embedding_fifu = pq_check.embedding("Berlin")
+    assert np.allclose(embedding_fifu, embedding_pq, atol=0.03)
+
+
+def test_embeddings_pq_read(pq_check, embeddings_pq_read):
+    embedding_pq = embeddings_pq_read.embedding("Berlin")
+    embedding_fifu = pq_check.embedding("Berlin")
+    assert np.allclose(embedding_fifu, embedding_pq, atol=0.03)
+
+
+def test_embeddings_pq_roundtrip(pq_check, embeddings_pq_read, tmp_path):
+    filename = tmp_path / "embeddings_pq.fifu"
+    embeddings_pq_read.write(filename)
+    e2 = load_finalfusion(filename)
+    assert np.allclose(embeddings_pq_read.storage, e2.storage)
+    assert embeddings_pq_read.vocab == e2.vocab
+    # converts the storage to an np.ndarray
+    assert np.allclose(pq_check.storage, e2.storage, atol=0.05)
+    # iterates over the storage without converting to np.ndarray
+    for a, b in zip(pq_check.storage, e2.storage):
+        assert np.allclose(a, b, atol=0.05)
+
+
+@pytest.mark.skipif(sys.byteorder == "big", reason="MMap unsupported on BE")
+def test_embeddings_pq_roundtrip_mmap(pq_check, embeddings_pq_read, tmp_path):
+    filename = tmp_path / "embeddings_pq.fifu"
+    embeddings_pq_read.write(filename)
+    e2 = load_finalfusion(filename, mmap=True)
+    assert np.allclose(embeddings_pq_read.storage, e2.storage)
+    assert np.allclose(pq_check.storage, e2.storage, atol=0.05)
+    assert embeddings_pq_read.vocab == e2.vocab
+    # converts the storage to an np.ndarray
+    assert np.allclose(pq_check.storage, e2.storage, atol=0.05)
+    # iterates over the storage without converting to np.ndarray
+    for a, b in zip(pq_check.storage, e2.storage):
+        assert np.allclose(a, b, atol=0.05)

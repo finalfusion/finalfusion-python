@@ -76,3 +76,19 @@ def embeddings_ft(tests_root):
 @pytest.fixture
 def similarity_fifu(tests_root):
     yield finalfusion.load_finalfusion(tests_root / "data" / "similarity.fifu")
+
+
+@pytest.fixture
+def embeddings_pq_memmap(tests_root):
+    yield finalfusion.load_finalfusion(tests_root / "data" / "pq.fifu", True)
+
+
+@pytest.fixture
+def embeddings_pq_read(tests_root):
+    yield finalfusion.load_finalfusion(tests_root / "data" / "pq.fifu", False)
+
+
+@pytest.fixture
+def pq_check(tests_root):
+    yield finalfusion.load_finalfusion(tests_root / "data" / "pq-check.fifu",
+                                       False)
