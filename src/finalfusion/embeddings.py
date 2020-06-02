@@ -12,7 +12,7 @@ from finalfusion.io import Chunk, Header, _read_chunk_header, ChunkIdentifier, \
     FinalfusionFormatError, _read_required_chunk_header
 from finalfusion.metadata import Metadata
 from finalfusion.norms import Norms
-from finalfusion.storage import Storage, NdArray
+from finalfusion.storage import Storage, NdArray, QuantizedArray
 from finalfusion.vocab import Vocab, SimpleVocab, FinalfusionBucketVocab, FastTextVocab, \
     ExplicitVocab
 
@@ -39,6 +39,7 @@ class Embeddings:  # pylint: disable=too-many-instance-attributes
 
     1. :class:`~finalfusion.storage.Storage` *(required)*:
         * :class:`~finalfusion.storage.ndarray.NdArray`
+        * :class:`~finalfusion.storage.ndarray.QuantizedArray`
     2. :class:`~finalfusion.vocab.Vocab` *(required)*:
         * :class:`~finalfusion.vocab.simple_vocab.SimpleVocab`,
         * :class:`~finalfusion.vocab.subword.FinalfusionBucketVocab`
@@ -645,7 +646,9 @@ def load_finalfusion(file: Union[str, bytes, int, PathLike],
 
         chunk_id, _ = _read_required_chunk_header(inf)
         if chunk_id == ChunkIdentifier.NdArray:
-            storage = NdArray.load(inf, mmap)
+            storage = NdArray.load(inf, mmap)  # type: Storage
+        elif chunk_id == ChunkIdentifier.QuantizedArray:
+            storage = QuantizedArray.load(inf, mmap)
         else:
             raise FinalfusionFormatError(
                 f'Expected storage chunk, not {str(chunk_id)}')

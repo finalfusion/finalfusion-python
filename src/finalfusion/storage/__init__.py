@@ -7,6 +7,7 @@ from typing import Union
 from finalfusion.io import ChunkIdentifier, find_chunk
 from finalfusion.storage.storage import Storage
 from finalfusion.storage.ndarray import NdArray, load_ndarray
+from finalfusion.storage.quantized import QuantizedArray, load_quantized_array
 
 
 def load_storage(file: Union[str, bytes, int, PathLike],
@@ -42,4 +43,8 @@ def load_storage(file: Union[str, bytes, int, PathLike],
             if mmap:
                 return NdArray.mmap_chunk(inf)
             return NdArray.read_chunk(inf)
+        if chunk == ChunkIdentifier.QuantizedArray:
+            if mmap:
+                return QuantizedArray.mmap_chunk(inf)
+            return QuantizedArray.read_chunk(inf)
         raise NotImplementedError('Storage type is not yet supported.')
