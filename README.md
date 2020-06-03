@@ -122,6 +122,13 @@ between the supported formats.
 $ ffp-convert -f fasttext fasttext.bin -t finalfusion embeddings.fifu
 ~~~
 
+`ffp-bucket-to-explicit` can be used to convert bucket embeddings to embeddings
+with an explicit ngram lookup.
+~~~shell
+# convert finalfusion bucket embeddings to explicit
+$ ffp-bucket-to-explicit -f finalfusion embeddings.fifu explicit.fifu
+~~~ 
+
 ## Where to go from here
 
   * [finalfrontier](https://finalfusion.github.io/finalfrontier)

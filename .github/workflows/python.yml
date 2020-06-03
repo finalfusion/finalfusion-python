@@ -42,6 +42,4 @@ jobs:
         pytest --doctest-modules
     - name: Conversion tests
       if: ${{ matrix.python-version == '3.7' }}
-      run: |
-        bash ./tests/integration/conversion.sh
-
+      run: bash ./tests/integration/all.sh
