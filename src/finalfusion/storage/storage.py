@@ -76,3 +76,6 @@ class Storage(Chunk):
         ValueError
             If the file did not contain a storage.
         """
+
+
+__all__ = ['Storage']

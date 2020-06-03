@@ -7,7 +7,7 @@ from typing import Union
 from finalfusion.io import ChunkIdentifier, find_chunk
 from finalfusion.vocab.simple_vocab import SimpleVocab, load_simple_vocab
 from finalfusion.vocab.subword import FinalfusionBucketVocab, load_finalfusion_bucket_vocab, \
-    FastTextVocab, load_fasttext_vocab, ExplicitVocab, load_explicit_vocab
+    FastTextVocab, load_fasttext_vocab, ExplicitVocab, load_explicit_vocab, SubwordVocab
 from finalfusion.vocab.vocab import Vocab
 
 
@@ -60,5 +60,6 @@ def load_vocab(file: Union[str, bytes, int, PathLike]) -> Vocab:
 __all__ = [
     'Vocab', 'load_vocab', 'SimpleVocab', 'load_simple_vocab',
     'FinalfusionBucketVocab', 'load_finalfusion_bucket_vocab', 'FastTextVocab',
-    'load_fasttext_vocab', 'ExplicitVocab', 'load_explicit_vocab'
+    'load_fasttext_vocab', 'ExplicitVocab', 'load_explicit_vocab',
+    'SubwordVocab'
 ]

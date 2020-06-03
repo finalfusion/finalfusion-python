@@ -672,3 +672,6 @@ class SimilarityResult:
     """
     word: str = field(compare=False)
     similarity: float
+
+
+__all__ = ['Embeddings', 'SimilarityResult', 'load_finalfusion']

@@ -8,8 +8,8 @@ from typing import Union, BinaryIO, cast, List, Any, Dict
 
 import numpy as np
 
-from finalfusion import Embeddings
 from finalfusion._util import _normalize_matrix
+from finalfusion.embeddings import Embeddings
 from finalfusion.io import _read_required_binary, _write_binary, _serialize_array_as_le
 from finalfusion.metadata import Metadata
 from finalfusion.storage import NdArray
