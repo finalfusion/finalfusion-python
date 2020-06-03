@@ -103,6 +103,7 @@ setup(name='finalfusion',
       },
       entry_points=dict(console_scripts=[
           'ffp-convert=finalfusion.scripts.convert:main',
+          'ffp-bucket-to-explicit=finalfusion.scripts.bucket_to_explicit:main',
       ]),
       version="0.7.0-pre"
       )
