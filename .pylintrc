@@ -1,2 +1,5 @@
 [TYPECHECK]
 extension-pkg-whitelist=finalfusion.subword.hash_indexers, finalfusion.subword.explicit_indexer
+
+[SIMILARITY]
+ignore-imports=yes
