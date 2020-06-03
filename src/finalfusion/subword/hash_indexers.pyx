@@ -137,7 +137,7 @@ cdef class FinalfusionHashIndexer:
                 if j + i <= length:
                     h = (fifu_hash_ngram(word, i, j) & self.mask) + offset
                     if with_ngrams:
-                        ngrams.append((h, word[i:i + j]))
+                        ngrams.append((word[i:i + j], h))
                     else:
                         ngrams.append(h)
         return ngrams
@@ -269,7 +269,7 @@ cdef class FastTextIndexer:
                     end = offsets.data.as_uints[i + j]
                     h = ft_hash_ngram(b_word_ptr, start, end) % self._n_buckets + offset
                     if with_ngrams:
-                        ngrams.append((h, word[i:i + j]))
+                        ngrams.append((word[i:i + j], h))
                     else:
                         ngrams.append(h)
         return ngrams
