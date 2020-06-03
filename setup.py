@@ -101,6 +101,8 @@ setup(name='finalfusion',
       project_urls={
           "Finalfusion": "https://finalfusion.github.io",
       },
-      entry_points=dict(console_scripts=['ffp-convert=finalfusion.scripts.convert:main']),
+      entry_points=dict(console_scripts=[
+          'ffp-convert=finalfusion.scripts.convert:main',
+      ]),
       version="0.7.0-pre"
       )
