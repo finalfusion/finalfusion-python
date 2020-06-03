@@ -1,4 +1,5 @@
 # finalfusion-python
+[![Documentation Status](https://readthedocs.org/projects/finalfusion-python/badge/?version=latest)](https://finalfusion-python.readthedocs.io/en/latest/?badge=latest)
 
 ## Introduction
 
@@ -124,6 +125,7 @@ $ ffp-convert -f fasttext fasttext.bin -t finalfusion embeddings.fifu
 
 ## Where to go from here
 
+  * [documentation](https://finalfusion-python.readthedocs.io/en/)
   * [finalfrontier](https://finalfusion.github.io/finalfrontier)
   * [finalfusion](https://finalfusion.github.io/)
   * [pretrained embeddings](https://finalfusion.github.io/pretrained)
