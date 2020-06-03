@@ -20,6 +20,23 @@ class NdArray(np.ndarray, Storage):
     Array storage.
 
     Wraps an numpy matrix, either in-memory or memory-mapped.
+
+    Examples
+    --------
+    >>> storage = NdArray(np.array([[1., 0.5], [0.5, 1.], [0.3, 0.4]],
+    ...                            dtype=np.float32))
+    >>> # slicing an NdArray returns a storage backed by the same array
+    >>> storage[:2]
+    NdArray([[1. , 0.5],
+             [0.5, 1. ]], dtype=float32)
+    >>> # NdArray storage can be treated as numpy arrays
+    >>> storage * 2
+    NdArray([[2. , 1. ],
+             [1. , 2. ],
+             [0.6, 0.8]], dtype=float32)
+    >>> # Indexing with arrays, lists or ints returns numpy.ndarray
+    >>> storage[0]
+    array([1. , 0.5], dtype=float32)
     """
     def __new__(cls, array: np.ndarray):
         """

@@ -37,14 +37,18 @@ class Embeddings:  # pylint: disable=too-many-instance-attributes
 
     Embeddings are composed of the 4 chunk types:
 
-    1. :class:`~finalfusion.storage.Storage` *(required)*:
+    1. :class:`~finalfusion.storage.storage.Storage` *(required)*:
+
         * :class:`~finalfusion.storage.ndarray.NdArray`
         * :class:`~finalfusion.storage.ndarray.QuantizedArray`
-    2. :class:`~finalfusion.vocab.Vocab` *(required)*:
-        * :class:`~finalfusion.vocab.simple_vocab.SimpleVocab`,
+
+    2. :class:`~finalfusion.vocab.vocab.Vocab` *(required)*:
+
+        * :class:`~finalfusion.vocab.simple_vocab.SimpleVocab`
         * :class:`~finalfusion.vocab.subword.FinalfusionBucketVocab`
         * :class:`~finalfusion.vocab.subword.FastTextVocab`
         * :class:`~finalfusion.vocab.subword.ExplicitVocab`
+
     3. :class:`~finalfusion.metadata.Metadata`
     4. :class:`~finalfusion.norms.Norms`
 
@@ -81,7 +85,7 @@ class Embeddings:  # pylint: disable=too-many-instance-attributes
         Initializes Embeddings with the given chunks.
 
         :Conditions:
-            The following conditions need to hold if the respective chunks are passed.
+            The following conditions need to hold if the respective chunks are passed:
 
             * Chunks need to have the expected type.
             * ``vocab.idx_bound == storage.shape[0]``
@@ -103,6 +107,7 @@ class Embeddings:  # pylint: disable=too-many-instance-attributes
         ------
         AssertionError
             If any of the conditions don't hold.
+
         """
         Embeddings._check_requirements(storage, vocab, norms, metadata)
         self._storage = storage
@@ -112,7 +117,7 @@ class Embeddings:  # pylint: disable=too-many-instance-attributes
 
     def __getitem__(self, item: str) -> np.ndarray:
         """
-        Returns an embeddings.
+        Returns an embedding.
 
         Parameters
         ----------
@@ -347,10 +352,11 @@ class Embeddings:  # pylint: disable=too-many-instance-attributes
         Get the Embeddings Chunks as a list.
 
         The Chunks are ordered in the expected serialization order:
-        1. Metadata (optional)
-        2. Vocabulary
-        3. Storage
-        4. Norms (optional)
+
+            1. Metadata (optional)
+            2. Vocabulary
+            3. Storage
+            4. Norms (optional)
 
         Returns
         -------
@@ -435,7 +441,7 @@ class Embeddings:  # pylint: disable=too-many-instance-attributes
         query `word1` is to `word2` as `word3` is to `?`. More concretely,
         it searches embeddings that are similar to:
 
-        *embedding(word2) - embedding(word1) + embedding(word3)*
+        ``embedding(word2) - embedding(word1) + embedding(word3)``
 
         Words specified in ``skip`` are not considered as answers. If ``skip``
         is None, the query words ``word1``, ``word2`` and ``word3`` are

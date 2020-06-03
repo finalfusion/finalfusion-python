@@ -54,7 +54,7 @@ def load_word2vec(file: Union[str, bytes, int, PathLike]) -> Embeddings:
 
 def write_word2vec(file: Union[str, bytes, int, PathLike],
                    embeddings: Embeddings):
-    """
+    r"""
     Write embeddings in word2vec binary format.
 
     If the embeddings are not compatible with the w2v format (e.g. include a SubwordVocab), only
@@ -67,10 +67,11 @@ def write_word2vec(file: Union[str, bytes, int, PathLike],
     This is followed by the embeddings.
 
     Each embedding consists of:
-        * utf-8 encoded word
-        * single space `' '` following the word
-        * `cols` single-precision floating point numbers
-        * `'\n'` newline at the end of each line.
+
+    * utf-8 encoded word
+    * single space ``' '`` following the word
+    * ``cols`` single-precision floating point numbers
+    *  ``'\n'`` newline at the end of each line.
 
     Parameters
     ----------

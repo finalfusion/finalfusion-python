@@ -48,9 +48,10 @@ def load_text(file: Union[str, bytes, int, PathLike]) -> Embeddings:
     l2-normalized per default and the corresponding norms are stored in the Norms.
 
     Expects a file with utf-8 encoded lines with:
-        * word at the start of the line
-        * followed by whitespace
-        * followed by whitespace separated vector components
+
+    * word at the start of the line
+    * followed by whitespace
+    * followed by whitespace separated vector components
 
     Parameters
     ----------
