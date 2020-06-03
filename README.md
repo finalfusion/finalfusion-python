@@ -99,18 +99,19 @@ print(fifu_embeds.metadata)
 ~~~Python
 # load only a vocab from a finalfusion file
 from finalfusion import load_vocab
-path = "/path/to/finalfusion_file.fifu" 
-vocab = load_vocab(path)
+vocab = load_vocab("/path/to/finalfusion_file.fifu")
 
 # serialize vocab to single file
-vocab.write("/path/to/vocab_file.fifu")
+vocab.write("/path/to/vocab_file.fifu.voc")
 
 # more specific loading functions exist
 from finalfusion.vocab import load_finalfusion_bucket_vocab
-fifu_bucket_vocab = load_finalfusion_bucket_vocab(path)
+fifu_bucket_vocab = load_finalfusion_bucket_vocab("/path/to/vocab_file.fifu.voc")
 ~~~
 
 The package supports loading and writing all `finalfusion` chunks this way.
+This is only supported by the Python package, reading will fail with e.g.
+the `finalfusion-rust`.
 
 ## Scripts
 
