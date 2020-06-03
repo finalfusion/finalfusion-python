@@ -157,3 +157,6 @@ def load_ndarray(file: Union[str, bytes, int, PathLike],
                 return NdArray.mmap_chunk(inf)
             return NdArray.read_chunk(inf)
         raise ValueError(f"unknown storage type: {chunk}")
+
+
+__all__ = ['NdArray', 'load_ndarray']

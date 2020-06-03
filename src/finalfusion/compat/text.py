@@ -8,7 +8,7 @@ from typing import Union, TextIO
 
 import numpy as np
 
-from finalfusion import Embeddings
+from finalfusion.embeddings import Embeddings
 from finalfusion._util import _normalize_matrix
 from finalfusion.storage import NdArray
 from finalfusion.vocab import SimpleVocab

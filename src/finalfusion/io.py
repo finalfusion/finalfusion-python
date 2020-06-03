@@ -332,3 +332,7 @@ def _read_array_as_native(file: BinaryIO, dtype: np.dtype,
     if sys.byteorder == "big":
         array.byteswap(inplace=True)
     return array
+
+
+# export nothing from this module since it's not part of the public API
+__all__ = []  # type: List[str]

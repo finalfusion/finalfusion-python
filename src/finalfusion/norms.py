@@ -108,3 +108,6 @@ def load_norms(file: Union[str, bytes, int, PathLike]):
         if chunk == ChunkIdentifier.NdNorms:
             return Norms.read_chunk(inf)
         raise ValueError(f"Unexpected chunk: {str(chunk)}")
+
+
+__all__ = ['Norms', 'load_norms']

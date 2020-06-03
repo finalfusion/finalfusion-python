@@ -8,7 +8,7 @@ from typing import Union, BinaryIO, AnyStr
 
 import numpy as np
 
-from finalfusion import Embeddings
+from finalfusion.embeddings import Embeddings
 from finalfusion.io import _serialize_array_as_le
 from finalfusion.storage import NdArray
 from finalfusion._util import _normalize_matrix

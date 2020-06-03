@@ -329,3 +329,5 @@ cdef uint64_t ft_hash_ngram(const uint8_t* b_word, const Py_ssize_t start, const
         h ^= <uint32_t> (<int8_t> b_word[i])
         h *= PRIME32
     return h
+
+__all__ = ['FinalfusionHashIndexer', 'FastTextIndexer']
