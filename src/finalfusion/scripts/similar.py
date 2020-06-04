@@ -25,10 +25,16 @@ def main() -> None:  # pylint: disable=missing-function-docstring
         metavar="INPUT_FORMAT")
     parser.add_argument("-k",
                         type=int,
+                        help="Number of neighbours. Default: 10",
                         default=10,
-                        help=f"Number of neighbours. Default: 10",
                         metavar="K")
-    parser.add_argument("input", nargs='?', default=0)
+    parser.add_argument(
+        "input",
+        help=
+        "Optional input file with one word per line. If unspecified reads from stdin",
+        nargs='?',
+        default=0,
+    )
     args = parser.parse_args()
     embeds = Format(args.format).load(args.embeddings)
     with open(args.input) as queries:

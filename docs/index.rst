@@ -38,8 +38,9 @@ other tools from the ``finalfusion`` ecosystem.
 It integrates nicely with :mod:`.numpy` since its :class:`~.Storage` types can be
 treated as numpy arrays.
 
-``finalfusion`` comes with :doc:`ffp-convert <scripts/finalfusion.scripts.ffp-convert>` to convert between
-any of the supported embedding formats.
+``finalfusion`` comes with some :doc:`scripts <finalfusion.scripts>` to convert between
+embedding formats, do analogy and similarity queries and turn bucket subword embeddings
+into explicit subword embeddings.
 
 The package is implemented in Python with some ``Cython`` extensions, it is not based on bindings
 to the `finalfusion-rust crate <https://github.com/finalfusion/finalfusion-rust/>`__.
@@ -58,7 +59,7 @@ Contents
    install
    modules/re-exports
    modules/api
-   scripts/finalfusion.scripts.ffp-convert
+   finalfusion.scripts
 
 Indices and tables
 ------------------
