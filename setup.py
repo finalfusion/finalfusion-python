@@ -40,6 +40,11 @@ need_cython = not all(map(os.path.exists, c_paths))
 annotate = "--annotate" in sys.argv
 force = "--force" in sys.argv or annotate
 
+if os.environ.get('MANYLINUX'):
+    extra_compile_args = ['-DFOR_MANYLINUX']
+else:
+    extra_compile_args = []
+
 if need_cython or force or annotate:
     try:
         from Cython.Build import cythonize
@@ -54,19 +59,20 @@ if need_cython or force or annotate:
     hash_indexers = Extension(
         "finalfusion.subword.hash_indexers",
         ["src/finalfusion/subword/hash_indexers.pyx", "src/fnv/hash_64a.c"],
-        include_dirs=["src/fnv/", "src/include"])
+        include_dirs=["src/fnv/", "src/include"], extra_compile_args=extra_compile_args)
     ngrams = Extension("finalfusion.subword.ngrams",
                        ["src/finalfusion/subword/ngrams.pyx"])
     explicit_indexer = Extension(
         "finalfusion.subword.explicit_indexer",
         ["src/finalfusion/subword/explicit_indexer.pyx"])
-    extensions = cythonize([hash_indexers, ngrams, explicit_indexer], force=force)
+    extensions = cythonize([hash_indexers, ngrams, explicit_indexer],
+                           force=force)
 else:
     # sdist should include the C files so Cython isn't required
     hash_indexers = Extension(
         "finalfusion.subword.hash_indexers",
         ["src/finalfusion/subword/hash_indexers.c", "src/fnv/hash_64a.c"],
-        include_dirs=["src/fnv/", "src/include"])
+        include_dirs=["src/fnv/", "src/include"], extra_compile_args=extra_compile_args)
     ngrams = Extension("finalfusion.subword.ngrams",
                        ["src/finalfusion/subword/ngrams.c"])
     explicit_indexer = Extension(
