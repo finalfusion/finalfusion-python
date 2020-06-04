@@ -141,7 +141,7 @@ $ echo Tübingen Stuttgart Heidelberg | ffp-analogy embeddings.fifu
 
 ## Where to go from here
 
-  * [documentation](https://finalfusion-python.readthedocs.io/en/)
+  * [documentation](https://finalfusion-python.readthedocs.io/en/latest)
   * [finalfrontier](https://finalfusion.github.io/finalfrontier)
   * [finalfusion](https://finalfusion.github.io/)
   * [pretrained embeddings](https://finalfusion.github.io/pretrained)
