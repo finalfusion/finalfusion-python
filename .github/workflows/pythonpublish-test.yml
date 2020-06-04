@@ -1,7 +1,7 @@
-name: Upload Python Package
+name: Test Upload Python Package
 on:
   release:
-    types: [released]
+    types: [prereleased]
 
 jobs:
   deploy-linux:
@@ -22,11 +22,11 @@ jobs:
           pytest
       - name: Upload linux wheels
         env:
-          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+          TWINE_USERNAME: ${{ secrets.TEST_PYPI_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD }}
         run: |
-          twine upload wheelhouse/*.whl --skip-existing
-          twine upload dist/*.tar.gz --skip-existing
+          twine upload wheelhouse/*.whl --skip-existing --repository testpypi
+          twine upload dist/*.tar.gz --repository testpypi --skip-existing
   deploy-mac:
     runs-on: macOS-latest
     strategy:
@@ -56,10 +56,10 @@ jobs:
         pytest
     - name: Publish macos
       env:
-        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        TWINE_USERNAME: ${{ secrets.TEST_PYPI_USERNAME }}
+        TWINE_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD }}
       run: |
-        twine upload dist/*.whl --skip-existing
+        twine upload dist/*.whl --repository testpypi --skip-existing
   deploy-windows:
     runs-on: windows-latest
     strategy:
@@ -78,7 +78,7 @@ jobs:
         python setup.py bdist_wheel
     - name: Publish windows
       env:
-        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        TWINE_USERNAME: ${{ secrets.TEST_PYPI_USERNAME }}
+        TWINE_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD }}
       run: |
-        twine upload dist\*.whl --skip-existing
+        twine upload dist\*.whl --repository testpypi --skip-existing
