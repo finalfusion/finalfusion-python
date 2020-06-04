@@ -100,7 +100,7 @@ setup(name='finalfusion',
       package_data={'finalfusion': ['py.typed', '*.pyi', '*.h', '*.c']},
       url="https://github.com/finalfusion/finalfusion-python",
       project_urls={
-          "Documentation": "https://finalfusion-python.readthedocs.io/en/latest",
+          "Documentation": "https://finalfusion-python.readthedocs.io/en/0.7.0",
           "Finalfusion": "https://finalfusion.github.io",
       },
       entry_points=dict(console_scripts=[
@@ -109,5 +109,5 @@ setup(name='finalfusion',
           'ffp-similar=finalfusion.scripts.similar:main',
           'ffp-analogy=finalfusion.scripts.analogy:main',
       ]),
-      version="0.7.0-pre"
+      version="0.7.0"
       )
