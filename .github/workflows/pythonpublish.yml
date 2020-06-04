@@ -1,0 +1,82 @@
+name: Upload Python Package
+on:
+  release:
+    types: [created]
+
+jobs:
+  deploy-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Set up Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.6
+      - name: Publish linux
+        env:
+          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        run: |
+          pip install twine
+          docker run -v $PWD:/io quay.io/pypa/manylinux1_x86_64 "/io/build_wheels.sh"
+          twine upload wheelhouse/*.whl --skip-existing
+          twine upload dist/*.tar.gz
+  deploy-mac:
+    runs-on: macOS-latest
+    strategy:
+      matrix:
+        python-version: [3.6, 3.7, 3.8]
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up Python
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Build mac wheel
+      run: |
+        python -m pip install --upgrade pip
+        pip install setuptools wheel==0.31.1 twine cython
+        python setup.py bdist_wheel
+    - name: Test mac wheel
+      run: |
+        pip install dist/*.whl pytest
+        pytest
+    - name: Test mac wheel system python
+      if: {{ matrix.python.version == '3.7' }}
+      run: |
+        /usr/bin/python3 -m venv venv
+        source venv/bin/activate
+        pip install dist/*.whl pytest
+        pytest
+    - name: Publish macos
+      env:
+        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+      run: |
+        twine upload dist/*.whl --skip-existing
+  deploy-windows:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        python-version: [3.6, 3.7, 3.8]
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up Python
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Build windows wheel
+      run: |
+        python -m pip install --upgrade pip
+        pip install setuptools wheel==0.31.1 twine cython
+        python setup.py bdist_wheel
+    - name: Test windows wheel
+      run: |
+        pip install dist/*.whl pytest
+        pytest
+    - name: Publish windows
+      env:
+        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+      run: |
+        twine upload dist\*.whl --skip-existing
