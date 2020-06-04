@@ -80,6 +80,7 @@ if sys.version_info.major == 3 and sys.version_info.minor == 6:
 
 setup(name='finalfusion',
       author="Sebastian Pütz <seb.puetz@gmail.com>, Daniël de Kok <me@danieldk.eu>",
+      author_email="seb.puetz@gmail.com",
       classifiers=[
           "Programming Language :: Python :: 3",
           "Operating System :: OS Independent",
