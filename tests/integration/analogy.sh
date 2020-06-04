@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 set -eu
-export LC_ALL=en_US.UTF-8
-
-tmp_dir=$(mktemp -d /tmp/run_similarity.XXXXXX)
+tmp_dir=$(mktemp -d /tmp/run_analogy.XXXXXX)
 
 function finish() {
   rm -rf "$tmp_dir"
