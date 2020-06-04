@@ -129,6 +129,15 @@ with an explicit ngram lookup.
 $ ffp-bucket-to-explicit -f finalfusion embeddings.fifu explicit.fifu
 ~~~ 
 
+Finally, the package comes with `ffp-similar` and `ffp-analogy` to do
+analogy and similarity queries.
+~~~shell
+# get the 5 nearest neighbours of "Tübingen"
+$ echo Tübingen | ffp-similar embeddings.fifu
+# get the 5 top answers for "Tübingen" is to "Stuttgart" like "Heidelberg" to...
+$ echo Tübingen Stuttgart Heidelberg | ffp-analogy embeddings.fifu
+~~~
+
 ## Where to go from here
 
   * [finalfrontier](https://finalfusion.github.io/finalfrontier)
