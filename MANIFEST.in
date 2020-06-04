@@ -1,0 +1,4 @@
+include LICENSE
+include CONTRIBUTORS
+graft src/fnv
+recursive-include src *.h *.c *.pyx *.pxd *.pyi
