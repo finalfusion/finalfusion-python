@@ -36,9 +36,14 @@ def main() -> None:  # pylint: disable=missing-function-docstring
     parser.add_argument("-k",
                         type=int,
                         default=10,
-                        help=f"Number of neighbours. Default: 1",
+                        help="Number of neighbours. Default: 10",
                         metavar="K")
-    parser.add_argument("input", nargs='?', default=0)
+    parser.add_argument(
+        "input",
+        help=
+        "Optional input file with 3 words per line. If unspecified reads from stdin",
+        nargs='?',
+        default=0)
     args = parser.parse_args()
     if args.include != [] and len(args.include) > 3:
         print("-i/--include can take up to 3 unique values: a, b and c.",

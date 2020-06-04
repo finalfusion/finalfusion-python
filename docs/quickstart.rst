@@ -62,10 +62,22 @@ The full API documentation can be found :doc:`here <modules/api>`.
 Conversion
 ----------
 
-``finalfusion`` also comes with a conversion tool to convert between supported file formats:
+``finalfusion`` also comes with a conversion tool to convert between supported file formats
+and from bucket subword embeddings to explicit subword embeddings:
 
 .. code-block:: bash
 
-   ffp-convert -f fasttext from_fasttext.bin -t finalfusion to_finalfusion.fifu
+   $ ffp-convert -f fasttext from_fasttext.bin -t finalfusion to_finalfusion.fifu
+   $ ffp-bucket-to-explicit buckets.fifu explicit.fifu
 
-See :doc:`ffp-convert <scripts/finalfusion.scripts.ffp-convert>`
+See :doc:`Scripts<finalfusion.scripts>`
+
+Similarity and Analogy
+----------------------
+
+.. code-block:: bash
+
+   $ echo Tübingen | ffp-similar embeddings.fifu
+   $ echo Tübingen Stuttgart Heidelberg | ffp-analogy embeddings.fifu
+
+See :doc:`Scripts<finalfusion.scripts>`
