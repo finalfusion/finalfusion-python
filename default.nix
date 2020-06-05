@@ -27,8 +27,8 @@ buildPythonPackage {
    checkPhase = ''
     pytest
 
-    patchShebangs tests/conversion_integration.sh
+    patchShebangs tests/integration
     export PATH=$PATH:$out/bin
-    tests/conversion_integration.sh
+    tests/integration/all.sh
   '';
 }
