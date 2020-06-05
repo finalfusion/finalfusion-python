@@ -8,6 +8,7 @@ with python.pkgs;
 buildPythonPackage {
   pname = "finalfusion";
   version = "0.7.0-git";
+  format = "pyproject";
 
   src = pkgs.nix-gitignore.gitignoreSource [ ".git/" "*.nix" "result*" ] ./.;
 
