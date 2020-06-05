@@ -15,7 +15,7 @@ jobs:
       - name: Build linux wheels
         run: |
           pip install twine
-          docker run -v $PWD:/io quay.io/pypa/manylinux1_x86_64 "/io/build_wheels.sh"
+          docker run -v $PWD:/io quay.io/pypa/manylinux2014_x86_64 "/io/build_wheels.sh"
       - name: Test linux wheel
         run: |
           pip install dist/finalfusion*36*.whl pytest
