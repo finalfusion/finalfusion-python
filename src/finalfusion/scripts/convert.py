@@ -13,36 +13,16 @@ fails.
 """
 import argparse
 
-from finalfusion.scripts.util import Format
+from finalfusion.scripts.util import Format, add_input_output_args, add_format_args
 
 
 def main() -> None:  # pylint: disable=missing-function-docstring
     formats = ["word2vec", "finalfusion", "fasttext", "text", "textdims"]
     parser = argparse.ArgumentParser(prog="ffp-convert",
                                      description="Convert embeddings.")
-    parser.add_argument("input",
-                        type=str,
-                        help="Input embeddings",
-                        metavar="INPUT")
-    parser.add_argument("output",
-                        type=str,
-                        help="Output path",
-                        metavar="OUTPUT")
-    parser.add_argument("-f",
-                        "--from",
-                        type=str,
-                        choices=formats,
-                        default="word2vec",
-                        help=f"Valid choices: {formats} Default: 'word2vec'",
-                        metavar="INPUT_FORMAT")
-    parser.add_argument(
-        "-t",
-        "--to",
-        type=str,
-        choices=formats,
-        default="finalfusion",
-        help=f"Valid choices: {formats} Default: 'finalfusion'",
-        metavar="OUTPUT_FORMAT")
+    add_input_output_args(parser)
+    add_format_args(parser, "f", "from", formats, "word2vec")
+    add_format_args(parser, "t", "to", formats, "finalfusion")
     args = parser.parse_args()
     embeds = Format(getattr(args, 'from')).load(args.input)
     Format(args.to).write(args.output, embeds)

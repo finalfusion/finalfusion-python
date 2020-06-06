@@ -1,12 +1,35 @@
 # pylint: disable=missing-docstring
+from argparse import ArgumentParser
 from enum import Enum
 from functools import partial
 from os import PathLike
-from typing import Union, Callable
+from typing import Union, Callable, List
 
 from finalfusion import Embeddings, load_finalfusion
 from finalfusion.compat import write_word2vec, write_text, write_text_dims, write_fasttext, \
     load_word2vec, load_text, load_text_dims, load_fasttext
+
+
+def add_input_output_args(parser: ArgumentParser):
+    parser.add_argument("input",
+                        type=str,
+                        help="Input embeddings",
+                        metavar="INPUT")
+    parser.add_argument("output",
+                        type=str,
+                        help="Output path",
+                        metavar="OUTPUT")
+
+
+def add_format_args(parser: ArgumentParser, short: str, name: str,
+                    formats: List[str], default: str):
+    parser.add_argument(f"-{short}",
+                        f"--{name}",
+                        type=str,
+                        choices=formats,
+                        default=default,
+                        help=f"Valid choices: {formats} Default: '{default}'",
+                        metavar="FORMAT")
 
 
 class Format(Enum):

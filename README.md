@@ -130,6 +130,16 @@ with an explicit ngram lookup.
 $ ffp-bucket-to-explicit -f finalfusion embeddings.fifu explicit.fifu
 ~~~ 
 
+`ffp-select` generates new embedding files based on some embeddings and a word
+list. Using `ffp-select` with embeddings with a simple vocab results in a
+subset of the original embeddings. With subword embeddings, vectors for unknown
+words in the word list are computed and added to the new embeddings. The
+resulting embeddings **cannot** provide representations for OOV words anymore.
+The new vocabulary covers only the words in the word list.
+~~~shell
+$ ffp-select large-embeddings.fifu subset-embeddings.fifu words.txt
+~~~
+
 Finally, the package comes with `ffp-similar` and `ffp-analogy` to do
 analogy and similarity queries.
 ~~~shell

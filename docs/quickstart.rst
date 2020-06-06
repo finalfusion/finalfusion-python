@@ -81,3 +81,13 @@ Similarity and Analogy
    $ echo Tübingen Stuttgart Heidelberg | ffp-analogy embeddings.fifu
 
 See :doc:`Scripts<finalfusion.scripts>`
+
+Selecting Embeddings
+--------------------
+
+It's also possible to generate an embedding file based on an input vocabulary.  For subword
+vocabularies, ``ffp-select`` adds computed representations for unknown words.
+
+.. code-block:: bash
+
+   $ ffp-select big-embeddings.fifu small-output.fifu vocab.txt
