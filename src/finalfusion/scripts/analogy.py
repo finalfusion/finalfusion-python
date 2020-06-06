@@ -5,25 +5,18 @@ import argparse
 import sys
 from typing import List, Set
 
-from finalfusion.scripts.util import Format
+from finalfusion.scripts.util import Format, add_format_args
 
 
 def main() -> None:  # pylint: disable=missing-function-docstring
     formats = ["word2vec", "finalfusion", "fasttext", "text", "textdims"]
     parser = argparse.ArgumentParser(prog="ffp-analogy",
                                      description="Analogy queries.")
-    parser.add_argument(
-        "-f",
-        "--format",
-        choices=formats,
-        type=str,
-        default="finalfusion",
-        help=f"Valid choices: {formats} Default: 'finalfusion'",
-        metavar="INPUT_FORMAT")
     parser.add_argument("embeddings",
                         help="Input embeddings",
                         type=str,
                         metavar="EMBEDDINGS")
+    add_format_args(parser, "f", "format", formats, "finalfusion")
     parser.add_argument(
         "-i",
         "--include",

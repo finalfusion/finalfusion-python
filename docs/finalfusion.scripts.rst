@@ -18,7 +18,7 @@ Convert
 .. code-block:: bash
 
    $ ffp-convert --help
-   usage: ffp-convert [-h] [-f INPUT_FORMAT] [-t OUTPUT_FORMAT] INPUT OUTPUT
+   usage: ffp-convert [-h] [-f FORMAT] [-t FORMAT] INPUT OUTPUT
 
    Convert embeddings.
 
@@ -28,10 +28,10 @@ Convert
 
    optional arguments:
      -h, --help            show this help message and exit
-     -f INPUT_FORMAT, --from INPUT_FORMAT
+     -f FORMAT, --from FORMAT
                            Valid choices: ['word2vec', 'finalfusion', 'fasttext',
                            'text', 'textdims'] Default: 'word2vec'
-     -t OUTPUT_FORMAT, --to OUTPUT_FORMAT
+     -t FORMAT, --to FORMAT
                            Valid choices: ['word2vec', 'finalfusion', 'fasttext',
                            'text', 'textdims'] Default: 'finalfusion'
 
@@ -45,7 +45,7 @@ Similar
 .. code-block:: bash
 
    $ ffp-similar --help
-   usage: ffp-similar [-h] [-f INPUT_FORMAT] [-k K] EMBEDDINGS [input]
+   usage: ffp-similar [-h] [-f FORMAT] [-k K] EMBEDDINGS [input]
 
    Similarity queries.
 
@@ -57,7 +57,7 @@ Similar
 
    optional arguments:
      -h, --help            show this help message and exit
-     -f INPUT_FORMAT, --format INPUT_FORMAT
+     -f FORMAT, --format FORMAT
                            Valid choices: ['word2vec', 'finalfusion', 'fasttext',
                            'text', 'textdims'] Default: 'finalfusion'
      -k K                  Number of neighbours. Default: 10
@@ -72,7 +72,7 @@ Analogy
 .. code-block:: bash
 
    $ ffp-analogy --help
-   usage: ffp-analogy [-h] [-f INPUT_FORMAT] [-i {a,b,c} [{a,b,c} ...]] [-k K]
+   usage: ffp-analogy [-h] [-f FORMAT] [-i {a,b,c} [{a,b,c} ...]] [-k K]
                       EMBEDDINGS [input]
 
    Analogy queries.
@@ -84,7 +84,7 @@ Analogy
 
    optional arguments:
      -h, --help            show this help message and exit
-     -f INPUT_FORMAT, --format INPUT_FORMAT
+     -f FORMAT, --format FORMAT
                            Valid choices: ['word2vec', 'finalfusion', 'fasttext',
                            'text', 'textdims'] Default: 'finalfusion'
      -i {a,b,c} [{a,b,c} ...], --include {a,b,c} [{a,b,c} ...]
@@ -102,17 +102,49 @@ Bucket to Explicit
 
 .. code-block:: bash
 
-   $ ffp-bucket-to-explicit
-   usage: ffp-bucket-to-explicit [-h] [-f INPUT_FORMAT] INPUT OUTPUT
+   $ ffp-bucket-to-explicit --help
+   usage: ffp-bucket-to-explicit [-h] [-f FORMAT] INPUT OUTPUT
 
    Convert bucket embeddings to explicit lookups.
 
    positional arguments:
-     INPUT                 Input bucket embeddings
+     INPUT                 Input embeddings
      OUTPUT                Output path
 
    optional arguments:
      -h, --help            show this help message and exit
-     -f INPUT_FORMAT, --from INPUT_FORMAT
+     -f INPUT_FORMAT, --from FORMAT
                            Valid choices: ['finalfusion', 'fasttext'] Default:
                            'finalfusion'
+
+Embedding Selection
+-------------------
+
+It's also possible to generate an embedding file based on an input vocabulary. For subword
+vocabularies, ``ffp-select`` adds computed representations for unknown words. Subword embeddings
+are converted to embeddings with a simple lookup through this script. The resulting embeddings have
+an array storage.
+
+.. code-block:: bash
+
+   $ ffp-select --help
+
+   usage: ffp-select [-h] [-f FORMAT] INPUT OUTPUT [WORDS]
+
+   Build embeddings from list of words.
+
+   positional arguments:
+     INPUT                 Input embeddings
+     OUTPUT                Output path
+     WORDS                 List of words to include in the embeddings. One word
+                           per line. Spaces permitted.Reads from stdin if
+                           unspecified.
+
+   optional arguments:
+     -h, --help            show this help message and exit
+     -f FORMAT, --format FORMAT
+                           Valid choices: ['word2vec', 'finalfusion', 'fasttext',
+                           'text', 'textdims'] Default: 'finalfusion'
+     --ignore_unk, -i      Skip unrepresentable words.
+     --verbose, -v         Print which tokens are skipped because they can't be
+                           represented to stderr.

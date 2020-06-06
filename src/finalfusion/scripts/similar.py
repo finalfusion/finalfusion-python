@@ -4,7 +4,7 @@ Similarity queries for embeddings.
 import argparse
 import sys
 
-from finalfusion.scripts.util import Format
+from finalfusion.scripts.util import Format, add_format_args
 
 
 def main() -> None:  # pylint: disable=missing-function-docstring
@@ -15,14 +15,7 @@ def main() -> None:  # pylint: disable=missing-function-docstring
                         type=str,
                         help="Input embeddings",
                         metavar="EMBEDDINGS")
-    parser.add_argument(
-        "-f",
-        "--format",
-        type=str,
-        choices=formats,
-        default="finalfusion",
-        help=f"Valid choices: {formats} Default: 'finalfusion'",
-        metavar="INPUT_FORMAT")
+    add_format_args(parser, "f", "format", formats, "finalfusion")
     parser.add_argument("-k",
                         type=int,
                         help="Number of neighbours. Default: 10",

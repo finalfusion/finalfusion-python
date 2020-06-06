@@ -108,6 +108,7 @@ setup(name='finalfusion',
           'ffp-bucket-to-explicit=finalfusion.scripts.bucket_to_explicit:main',
           'ffp-similar=finalfusion.scripts.similar:main',
           'ffp-analogy=finalfusion.scripts.analogy:main',
+          'ffp-select=finalfusion.scripts.select:main',
       ]),
       version="0.7.0-pre"
       )

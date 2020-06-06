@@ -19,3 +19,6 @@ echo similarity >&2
 
 echo analogy >&2
 "${TESTDIR}"/analogy.sh
+
+echo select >&2
+"${TESTDIR}"/select.sh
