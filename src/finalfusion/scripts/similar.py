@@ -4,7 +4,7 @@ Similarity queries for embeddings.
 import argparse
 import sys
 
-from finalfusion.scripts.util import Format, add_format_args
+from finalfusion.scripts.util import Format, add_format_args, add_common_args
 
 
 def main() -> None:  # pylint: disable=missing-function-docstring
@@ -28,8 +28,9 @@ def main() -> None:  # pylint: disable=missing-function-docstring
         nargs='?',
         default=0,
     )
+    add_common_args(parser)
     args = parser.parse_args()
-    embeds = Format(args.format).load(args.embeddings)
+    embeds = Format(args.format).load(args.embeddings, args.lossy, args.mmap)
     with open(args.input) as queries:
         for query in queries:
             query = query.strip()

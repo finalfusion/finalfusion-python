@@ -13,7 +13,7 @@ fails.
 """
 import argparse
 
-from finalfusion.scripts.util import Format, add_input_output_args, add_format_args
+from finalfusion.scripts.util import Format, add_input_output_args, add_format_args, add_common_args
 
 
 def main() -> None:  # pylint: disable=missing-function-docstring
@@ -23,8 +23,10 @@ def main() -> None:  # pylint: disable=missing-function-docstring
     add_input_output_args(parser)
     add_format_args(parser, "f", "from", formats, "word2vec")
     add_format_args(parser, "t", "to", formats, "finalfusion")
+    add_common_args(parser)
     args = parser.parse_args()
-    embeds = Format(getattr(args, 'from')).load(args.input)
+    embeds = Format(getattr(args, 'from')).load(args.input, args.lossy,
+                                                args.mmap)
     Format(args.to).write(args.output, embeds)
 
 

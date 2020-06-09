@@ -7,8 +7,8 @@ from finalfusion.vocab.subword import FastTextVocab, SubwordVocab
 
 
 def test(inp, input_format, output, output_format):
-    e1 = Format(input_format).load(inp)
-    e2 = Format(output_format).load(output)
+    e1 = Format(input_format).load(inp, mmap=False, lossy=False)
+    e2 = Format(output_format).load(output, mmap=False, lossy=False)
     if isinstance(e1.vocab, FastTextVocab) and \
             output_format in ["finalfusion", "fasttext"]:
         exit(cmp_subword_embeds(e1, e2))

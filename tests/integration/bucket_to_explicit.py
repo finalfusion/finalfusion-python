@@ -1,12 +1,14 @@
 import numpy as np
+
+from finalfusion import load_finalfusion
 from finalfusion.scripts.util import Format
 from finalfusion.subword import ngrams
 from finalfusion.vocab.subword import FastTextVocab, ExplicitVocab, FinalfusionBucketVocab
 
 
 def test(inp, input_format, output):
-    e1 = Format(input_format).load(inp)
-    e2 = Format("finalfusion").load(output)
+    e1 = Format(input_format).load(inp, mmap=False, lossy=False)
+    e2 = load_finalfusion(output)
 
     v1 = e1.vocab
     v2 = e2.vocab

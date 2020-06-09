@@ -15,7 +15,8 @@ from finalfusion._util import _normalize_matrix
 from finalfusion.vocab import SimpleVocab
 
 
-def load_word2vec(file: Union[str, bytes, int, PathLike]) -> Embeddings:
+def load_word2vec(file: Union[str, bytes, int, PathLike],
+                  lossy: bool = False) -> Embeddings:
     """
     Read embeddings in word2vec binary format.
 
@@ -30,6 +31,9 @@ def load_word2vec(file: Union[str, bytes, int, PathLike]) -> Embeddings:
     ----------
     file : str, bytes, int, PathLike
         Path to a file with embeddings in word2vec binary format.
+    lossy : bool
+        If set to true, malformed UTF-8 sequences in words will be replaced with the `U+FFFD`
+        REPLACEMENT character.
 
     Returns
     -------
@@ -41,7 +45,7 @@ def load_word2vec(file: Union[str, bytes, int, PathLike]) -> Embeddings:
         rows, cols = map(int, inf.readline().decode("ascii").split())
         matrix = np.zeros((rows, cols), dtype=np.float32)
         for row in matrix:
-            words.append(_read_binary_word(inf, b' ').strip())
+            words.append(_read_binary_word(inf, b' ', lossy).strip())
             array = np.fromfile(file=inf, count=cols, dtype=np.float32)
             if sys.byteorder == "big":
                 array.byteswap(inplace=True)
@@ -95,7 +99,7 @@ def write_word2vec(file: Union[str, bytes, int, PathLike],
             outf.write(b'\n')
 
 
-def _read_binary_word(inf: BinaryIO, delim: AnyStr):
+def _read_binary_word(inf: BinaryIO, delim: AnyStr, lossy: bool):
     word = []
     while True:
         byte = inf.read(1)
@@ -104,7 +108,8 @@ def _read_binary_word(inf: BinaryIO, delim: AnyStr):
         if byte == b'':
             raise EOFError
         word.append(byte)
-    return b''.join(word).decode('utf-8')
+    return b''.join(word).decode('utf-8',
+                                 errors='replace' if lossy else 'strict')
 
 
 __all__ = ['load_word2vec', 'write_word2vec']
