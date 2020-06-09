@@ -37,7 +37,7 @@ def add_common_args(parser: ArgumentParser):
         action="store_true",
         default=False,
         help=
-        "Whether to fail on malformed UTF-8. Setting this flag replaces malformed UTF8"
+        "Whether to fail on malformed UTF-8. Setting this flag replaces malformed UTF-8 "
         "with the replacement character. Not applicable to finalfusion format."
     )
     parser.add_argument(

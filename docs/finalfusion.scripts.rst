@@ -18,7 +18,7 @@ Convert
 .. code-block:: bash
 
    $ ffp-convert --help
-   usage: ffp-convert [-h] [-f FORMAT] [-t FORMAT] INPUT OUTPUT
+   usage: ffp-convert [-h] [-f FORMAT] [-t FORMAT] [-l] [--mmap] INPUT OUTPUT
 
    Convert embeddings.
 
@@ -34,6 +34,11 @@ Convert
      -t FORMAT, --to FORMAT
                            Valid choices: ['word2vec', 'finalfusion', 'fasttext',
                            'text', 'textdims'] Default: 'finalfusion'
+     -l, --lossy           Whether to fail on malformed UTF-8. Setting this flag
+                           replaces malformed UTF-8 with the replacement character.
+                           Not applicable to finalfusion format.
+     --mmap                Whether to mmap the storage. Only applicable to
+                           finalfusion files.
 
 .. Similar:
 
@@ -45,7 +50,7 @@ Similar
 .. code-block:: bash
 
    $ ffp-similar --help
-   usage: ffp-similar [-h] [-f FORMAT] [-k K] EMBEDDINGS [input]
+   usage: ffp-similar [-h] [-f FORMAT] [-k K] [-l] [--mmap] EMBEDDINGS [input]
 
    Similarity queries.
 
@@ -61,6 +66,11 @@ Similar
                            Valid choices: ['word2vec', 'finalfusion', 'fasttext',
                            'text', 'textdims'] Default: 'finalfusion'
      -k K                  Number of neighbours. Default: 10
+     -l, --lossy           Whether to fail on malformed UTF-8. Setting this flag
+                           replaces malformed UTF-8 with the replacement character.
+                           Not applicable to finalfusion format.
+     --mmap                Whether to mmap the storage. Only applicable to
+                           finalfusion files.
 
 .. Analogy:
 
@@ -91,6 +101,11 @@ Analogy
                            Specify query parts that should be allowed as answers.
                            Valid choices: ['a', 'b', 'c']
      -k K                  Number of neighbours. Default: 10
+     -l, --lossy           Whether to fail on malformed UTF-8. Setting this flag
+                           replaces malformed UTF-8 with the replacement character.
+                           Not applicable to finalfusion format.
+     --mmap                Whether to mmap the storage. Only applicable to
+                           finalfusion files.
 
 .. bucket to explicit:
 
@@ -116,6 +131,11 @@ Bucket to Explicit
      -f INPUT_FORMAT, --from FORMAT
                            Valid choices: ['finalfusion', 'fasttext'] Default:
                            'finalfusion'
+     -l, --lossy           Whether to fail on malformed UTF-8. Setting this flag
+                           replaces malformed UTF-8 with the replacement character.
+                           Not applicable to finalfusion format.
+     --mmap                Whether to mmap the storage. Only applicable to
+                           finalfusion files.
 
 Embedding Selection
 -------------------
@@ -148,3 +168,8 @@ an array storage.
      --ignore_unk, -i      Skip unrepresentable words.
      --verbose, -v         Print which tokens are skipped because they can't be
                            represented to stderr.
+     -l, --lossy           Whether to fail on malformed UTF-8. Setting this flag
+                           replaces malformed UTF-8 with the replacement character.
+                           Not applicable to finalfusion format.
+     --mmap                Whether to mmap the storage. Only applicable to
+                           finalfusion files.
