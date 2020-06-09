@@ -1,9 +1,7 @@
 # pylint: disable=missing-docstring
 from argparse import ArgumentParser
 from enum import Enum
-from functools import partial
-from os import PathLike
-from typing import Union, Callable, List
+from typing import List
 
 from finalfusion import Embeddings, load_finalfusion
 from finalfusion.compat import write_word2vec, write_text, write_text_dims, write_fasttext, \
@@ -32,6 +30,24 @@ def add_format_args(parser: ArgumentParser, short: str, name: str,
                         metavar="FORMAT")
 
 
+def add_common_args(parser: ArgumentParser):
+    parser.add_argument(
+        "-l",
+        "--lossy",
+        action="store_true",
+        default=False,
+        help=
+        "Whether to fail on malformed UTF-8. Setting this flag replaces malformed UTF8"
+        "with the replacement character. Not applicable to finalfusion format."
+    )
+    parser.add_argument(
+        "--mmap",
+        action="store_true",
+        default=False,
+        help=
+        "Whether to mmap the storage. Only applicable to finalfusion files.")
+
+
 class Format(Enum):
     """
     Supported embedding formats.
@@ -42,43 +58,35 @@ class Format(Enum):
     textdims = "textdims"
     text = "text"
 
-    @property
-    def write(
-            self
-    ) -> Callable[[Union[str, bytes, int, PathLike], Embeddings], None]:
+    def write(self, path: str, embeddings: Embeddings):
         """
-        Helper to get the write method for different Formats
+        Helper to write different Formats
         """
         if self == Format.finalfusion:
+            embeddings.write(path)
+        elif self == Format.word2vec:
+            write_word2vec(path, embeddings)
+        elif self == Format.text:
+            write_text(path, embeddings)
+        elif self == Format.textdims:
+            write_text_dims(path, embeddings)
+        elif self == Format.fasttext:
+            write_fasttext(path, embeddings)
+        else:
+            raise ValueError(f"Unknown format {str(self)}")
 
-            def write_fifu(path: Union[str, bytes, int, PathLike],
-                           embeddings: Embeddings):
-                embeddings.write(path)
-
-            return write_fifu
-        if self == Format.word2vec:
-            return write_word2vec
-        if self == Format.text:
-            return write_text
-        if self == Format.textdims:
-            return write_text_dims
-        if self == Format.fasttext:
-            return write_fasttext
-        raise ValueError(f"Unknown format {str(self)}")
-
-    @property
-    def load(self) -> Callable[[Union[str, bytes, int, PathLike]], Embeddings]:
+    def load(self, path: str, lossy: bool, mmap: bool) -> Embeddings:
         """
-        Helper to get the load method for different Formats
+        Helper to load different Formats
         """
         if self == Format.finalfusion:
-            return partial(load_finalfusion, mmap=True)
+            return load_finalfusion(path, mmap)
         if self == Format.word2vec:
-            return load_word2vec
+            return load_word2vec(path, lossy)
         if self == Format.text:
-            return load_text
+            return load_text(path, lossy)
         if self == Format.textdims:
-            return load_text_dims
+            return load_text_dims(path, lossy)
         if self == Format.fasttext:
-            return load_fasttext
+            return load_fasttext(path, lossy)
         raise ValueError(f"Unknown format {str(self)}")

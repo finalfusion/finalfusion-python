@@ -19,7 +19,8 @@ from finalfusion.vocab import FastTextVocab, Vocab, SimpleVocab
 _FT_MAGIC = 793_712_314
 
 
-def load_fasttext(file: Union[str, bytes, int, PathLike]) -> Embeddings:
+def load_fasttext(file: Union[str, bytes, int, PathLike],
+                  lossy: bool = False) -> Embeddings:
     """
     Read embeddings from a file in fastText format.
 
@@ -34,6 +35,9 @@ def load_fasttext(file: Union[str, bytes, int, PathLike]) -> Embeddings:
     ----------
     file : str, bytes, int, PathLike
         Path to a file with embeddings in word2vec binary format.
+    lossy : bool
+        If set to true, malformed UTF8 sequences in words will be replaced with the `U+FFFD`
+        REPLACEMENT character.
 
     Returns
     -------
@@ -44,7 +48,7 @@ def load_fasttext(file: Union[str, bytes, int, PathLike]) -> Embeddings:
         _read_ft_header(inf)
         metadata = _read_ft_cfg(inf)
         vocab = _read_ft_vocab(inf, metadata['buckets'], metadata['min_n'],
-                               metadata['max_n'])
+                               metadata['max_n'], lossy)
         storage = _read_ft_storage(inf, vocab)
         norms = _normalize_matrix(storage[:len(vocab)])
     return Embeddings(storage=storage,
@@ -132,8 +136,8 @@ def _read_ft_cfg(file: BinaryIO) -> Metadata:
     return Metadata(dict(zip(_FT_REQUIRED_CFG_KEYS, cfg)))
 
 
-def _read_ft_vocab(file: BinaryIO, buckets: int, min_n: int,
-                   max_n: int) -> Union[FastTextVocab, SimpleVocab]:
+def _read_ft_vocab(file: BinaryIO, buckets: int, min_n: int, max_n: int,
+                   lossy: bool) -> Union[FastTextVocab, SimpleVocab]:
     """
     Helper method to read a vocab from a fastText file
 
@@ -152,21 +156,24 @@ def _read_ft_vocab(file: BinaryIO, buckets: int, min_n: int,
         raise NotImplementedError("Pruned vocabs are not supported")
 
     if min_n:
-        return _read_ft_subwordvocab(file, buckets, min_n, max_n, vocab_size)
-    return SimpleVocab([_read_binary_word(file) for _ in range(vocab_size)])
+        return _read_ft_subwordvocab(file, buckets, min_n, max_n, vocab_size,
+                                     lossy)
+    return SimpleVocab(
+        [_read_binary_word(file, lossy) for _ in range(vocab_size)])
 
 
-def _read_ft_subwordvocab(file: BinaryIO, buckets: int, min_n: int, max_n: int,
-                          vocab_size: int) -> FastTextVocab:
+def _read_ft_subwordvocab(  # pylint: disable=too-many-arguments
+        file: BinaryIO, buckets: int, min_n: int, max_n: int, vocab_size: int,
+        lossy: bool) -> FastTextVocab:
     """
     Helper method to build a FastTextVocab from a fastText file.
     """
-    words = [_read_binary_word(file) for _ in range(vocab_size)]
+    words = [_read_binary_word(file, lossy) for _ in range(vocab_size)]
     indexer = FastTextIndexer(buckets, min_n, max_n)
     return FastTextVocab(words, indexer)
 
 
-def _read_binary_word(file: BinaryIO) -> str:
+def _read_binary_word(file: BinaryIO, lossy: bool) -> str:
     """
     Helper method to read null-terminated binary strings.
     """
@@ -184,8 +191,7 @@ def _read_binary_word(file: BinaryIO) -> str:
     if entry_type != 0:
         raise ValueError(f'Non word entry: {word}')
 
-    # pylint: disable=fixme # XXX handle unicode errors
-    return word.decode("utf8")
+    return word.decode('utf8', errors='replace' if lossy else 'strict')
 
 
 def _read_ft_storage(file: BinaryIO, vocab: Vocab) -> NdArray:

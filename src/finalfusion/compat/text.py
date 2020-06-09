@@ -16,7 +16,8 @@ from finalfusion.vocab import SimpleVocab
 _ASCII_WHITESPACE_PAT = re.compile(r'(?a)\s+')
 
 
-def load_text_dims(file: Union[str, bytes, int, PathLike]) -> Embeddings:
+def load_text_dims(file: Union[str, bytes, int, PathLike],
+                   lossy: bool = False) -> Embeddings:
     """
     Read emebddings in text-dims format.
 
@@ -29,18 +30,24 @@ def load_text_dims(file: Union[str, bytes, int, PathLike]) -> Embeddings:
     Parameters
     ----------
     file : str, bytes, int, PathLike
-        Path to a file with embeddings in word2vec binary format.
+        Path to a file with embeddings in text format with dimensions on the first line.
+    lossy : bool
+        If set to true, malformed UTF-8 sequences in words will be replaced with the `U+FFFD`
+        REPLACEMENT character.
+
     Returns
     -------
     embeddings : Embeddings
         The embeddings from the input file.
     """
-    with open(file) as inf:
+    with open(file, encoding='utf8',
+              errors='replace' if lossy else 'strict') as inf:
         rows, cols = next(inf).split()
         return _load_text(inf, int(rows), int(cols))
 
 
-def load_text(file: Union[str, bytes, int, PathLike]) -> Embeddings:
+def load_text(file: Union[str, bytes, int, PathLike],
+              lossy: bool = False) -> Embeddings:
     """
     Read embeddings in text format.
 
@@ -57,6 +64,9 @@ def load_text(file: Union[str, bytes, int, PathLike]) -> Embeddings:
     ----------
     file : str, bytes, int, PathLike
         Path to a file with embeddings in word2vec binary format.
+    lossy : bool
+        If set to true, malformed UTF-8 sequences in words will be replaced with the `U+FFFD`
+        REPLACEMENT character.
 
     Returns
     -------
@@ -64,7 +74,8 @@ def load_text(file: Union[str, bytes, int, PathLike]) -> Embeddings:
         Embeddings from the input file. The resulting Embeddings will have a
         SimpleVocab, NdArray and Norms.
     """
-    with open(file) as inf:
+    with open(file, encoding='utf8',
+              errors='replace' if lossy else 'strict') as inf:
         try:
             first = next(inf)
         except StopIteration:
@@ -148,7 +159,7 @@ def _write_text(file: Union[str, bytes, int, PathLike],
                 sep=" "):
     vocab = embeddings.vocab
     matrix = embeddings.storage[:len(vocab)]
-    with open(file, 'w') as outf:
+    with open(file, 'w', encoding='utf8') as outf:
         if dims:
             print(*matrix.shape, file=outf)
         for idx, word in enumerate(vocab):

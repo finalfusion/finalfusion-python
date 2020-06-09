@@ -5,7 +5,7 @@ import argparse
 import sys
 from typing import List, Set
 
-from finalfusion.scripts.util import Format, add_format_args
+from finalfusion.scripts.util import Format, add_format_args, add_common_args
 
 
 def main() -> None:  # pylint: disable=missing-function-docstring
@@ -37,12 +37,13 @@ def main() -> None:  # pylint: disable=missing-function-docstring
         "Optional input file with 3 words per line. If unspecified reads from stdin",
         nargs='?',
         default=0)
+    add_common_args(parser)
     args = parser.parse_args()
     if args.include != [] and len(args.include) > 3:
         print("-i/--include can take up to 3 unique values: a, b and c.",
               file=sys.stderr)
         sys.exit(1)
-    embeds = Format(args.format).load(args.embeddings)
+    embeds = Format(args.format).load(args.embeddings, args.lossy, args.mmap)
     with open(args.input) as queries:
         for query in queries:
             query_a, query_b, query_c = query.strip().split()

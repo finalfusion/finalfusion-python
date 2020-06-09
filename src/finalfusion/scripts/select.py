@@ -6,7 +6,7 @@ import sys
 
 import numpy as np
 from finalfusion import Metadata, Embeddings
-from finalfusion.scripts.util import Format, add_input_output_args, add_format_args
+from finalfusion.scripts.util import Format, add_input_output_args, add_format_args, add_common_args
 from finalfusion.storage import NdArray
 from finalfusion.vocab import SimpleVocab
 
@@ -38,9 +38,10 @@ def main() -> None:  # pylint: disable=missing-function-docstring
         help=
         "Print which tokens are skipped because they can't be represented to stderr."
     )
+    add_common_args(parser)
     args = parser.parse_args()
-    embeds = Format(args.format).load(args.input)
-    with open(args.words) as inp:
+    embeds = Format(args.format).load(args.input, args.lossy, args.mmap)
+    with open(args.words, errors='replace' if args.lossy else 'strict') as inp:
         unique_words = set(word.strip() for word in inp)
         matrix = np.zeros((len(unique_words), embeds.storage.shape[1]),
                           dtype=np.float32)
