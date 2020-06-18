@@ -33,7 +33,8 @@ buildPythonPackage {
     tests/integration/all.sh
   '';
 
-  # Remove when nixpkgs#89607 is merged/fixed.
+  # This is not necessary anymore in nixos-unstable and can be removed
+  # after nixpkgs/nixos 20.09 is released. (See nixpkgs#89607)
   shellHook = ''
     runHook preShellHook
 
