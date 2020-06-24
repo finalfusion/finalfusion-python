@@ -264,6 +264,30 @@ class Embeddings:  # pylint: disable=too-many-instance-attributes
         return val
 
     @property
+    def dims(self) -> int:
+        """
+        Get the embdeding dimensionality.
+
+        Returns
+        -------
+        dims : int
+            Embedding dimensionality
+        """
+        return self.storage.shape[1]
+
+    @property
+    def n_words(self) -> int:
+        """
+        Get the number of known words.
+
+        Returns
+        -------
+        n_words : int
+            Number of known words
+        """
+        return len(self.vocab)
+
+    @property
     def storage(self) -> Storage:
         """
         Get the :class:`~finalfusion.storage.storage.Storage`.
