@@ -98,6 +98,9 @@ class Vocab(Chunk, Collection[str]):
             return False
         return True
 
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}(n_words={len(self)}, upper_bound={self.upper_bound})"
+
 
 def _write_words_binary(b_words: Iterable[bytes], file: BinaryIO):
     """

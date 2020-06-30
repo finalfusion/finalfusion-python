@@ -150,7 +150,8 @@ def _load_text(file: TextIO, rows: int, cols: int) -> Embeddings:
     storage = NdArray(matrix)
     return Embeddings(storage=storage,
                       norms=_normalize_matrix(storage),
-                      vocab=SimpleVocab(words))
+                      vocab=SimpleVocab(words),
+                      origin=file.name)
 
 
 def _write_text(file: Union[str, bytes, int, PathLike],

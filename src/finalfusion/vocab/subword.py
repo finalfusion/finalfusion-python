@@ -131,9 +131,10 @@ class SubwordVocab(Vocab):
 
     def __repr__(self) -> str:
         return f"{type(self).__name__}(\n" \
+               f"\tn_words={len(self)},\n" \
+               f"\tupper_bound={self.upper_bound},\n" \
                f"\tindexer={self.subword_indexer}\n" \
-               "\twords=[...]\n" \
-               "\tword_index={{...}})"
+                ")"
 
     def __eq__(self, other: Any) -> bool:
         return isinstance(other, type(self)) and \

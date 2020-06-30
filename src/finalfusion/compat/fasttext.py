@@ -54,7 +54,8 @@ def load_fasttext(file: Union[str, bytes, int, PathLike],
     return Embeddings(storage=storage,
                       vocab=vocab,
                       norms=norms,
-                      metadata=metadata)
+                      metadata=metadata,
+                      origin=inf.name)
 
 
 def write_fasttext(file: Union[str, bytes, int, PathLike], embeds: Embeddings):
