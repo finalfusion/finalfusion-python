@@ -53,7 +53,8 @@ def load_word2vec(file: Union[str, bytes, int, PathLike],
     storage = NdArray(matrix)
     return Embeddings(storage=storage,
                       norms=_normalize_matrix(storage),
-                      vocab=SimpleVocab(words))
+                      vocab=SimpleVocab(words),
+                      origin=inf.name)
 
 
 def write_word2vec(file: Union[str, bytes, int, PathLike],

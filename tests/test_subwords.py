@@ -77,11 +77,8 @@ def test_explicit():
     indexer = ExplicitIndexer(ngrams10)
     assert indexer.ngrams == ngrams10
     assert indexer.ngram_index == dict((v, i) for i, v in enumerate(ngrams10))
-    assert repr(indexer) == "ExplicitIndexer(\n" \
-                               "\tmin_n=3,\n" \
-                               "\tmax_n=6,\n" \
-                               "\tngrams=[...],\n" \
-                               "\tngram_index={{...}})"
+    assert repr(indexer) == "ExplicitIndexer(min_n=3, max_n=6, " \
+                            "n_ngrams=10, n_indices=10)"
     assert indexer["0"] == 0
     assert indexer.ngrams[0] == "0"
     assert indexer("0") == 0

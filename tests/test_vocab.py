@@ -83,10 +83,11 @@ def test_fifu_buckets_constructor():
     assert v in v
     assert v != SimpleVocab(v.words)
     assert v != FinalfusionBucketVocab(v.words, FinalfusionHashIndexer(20))
-    assert repr(v) == f"FinalfusionBucketVocab(\n" \
+    assert repr(v) == "FinalfusionBucketVocab(\n" \
+                      f"\tn_words={len(v)},\n" \
+                      f"\tupper_bound={len(v) + pow(2, 21)},\n" \
                       f"\tindexer={repr(v.subword_indexer)}\n" \
-                      "\twords=[...]\n" \
-                      "\tword_index={{...}})"
+                      f")"
 
 
 def test_fasttext_constructor():
@@ -102,10 +103,11 @@ def test_fasttext_constructor():
     assert v in v
     assert v != SimpleVocab(v.words)
     assert v != FastTextVocab(v.words, FastTextIndexer(20))
-    assert repr(v) == f"FastTextVocab(\n" \
+    assert repr(v) == "FastTextVocab(\n" \
+                      f"\tn_words={len(v)},\n" \
+                      f"\tupper_bound={len(v) + 2_000_000},\n" \
                       f"\tindexer={repr(v.subword_indexer)}\n" \
-                      "\twords=[...]\n" \
-                      "\tword_index={{...}})"
+                      f")"
 
 
 def test_fasttext_vocab_roundtrip(tmp_path):
@@ -128,10 +130,11 @@ def test_explicit_constructor():
     assert v in v
     assert v != SimpleVocab(v.words)
     assert v != FastTextVocab(v.words, FastTextIndexer(20))
-    assert repr(v) == f"ExplicitVocab(\n" \
+    assert repr(v) == "ExplicitVocab(\n" \
+                      f"\tn_words={len(v)},\n" \
+                      f"\tupper_bound={len(v) + 10},\n" \
                       f"\tindexer={repr(v.subword_indexer)}\n" \
-                      "\twords=[...]\n" \
-                      "\tword_index={{...}})"
+                      f")"
 
 
 def test_explicit_vocab_roundtrip(tmp_path):

@@ -203,10 +203,9 @@ cdef class ExplicitIndexer:
         return False
 
     def __repr__(self) -> str:
-        return "ExplicitIndexer(\n" \
-               f"\tmin_n={self.min_n},\n" \
-               f"\tmax_n={self.max_n},\n" \
-               "\tngrams=[...],\n" \
-               "\tngram_index={{...}})"
+        return f"ExplicitIndexer(min_n={self.min_n}, " \
+               f"max_n={self.max_n}, " \
+               f"n_ngrams={len(self.ngrams)}, " \
+               f"n_indices={self.upper_bound})"
 
 __all__ = ['ExplicitIndexer']

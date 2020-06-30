@@ -74,11 +74,13 @@ class Embeddings:  # pylint: disable=too-many-instance-attributes
     >>> embeddings.metadata
     {'Some': 'value', 'numerical': 0}
     """
-    def __init__(self,
-                 storage: Storage,
-                 vocab: Vocab,
-                 norms: Optional[Norms] = None,
-                 metadata: Optional[Metadata] = None):
+    def __init__(  # pylint: disable=too-many-arguments
+            self,
+            storage: Storage,
+            vocab: Vocab,
+            norms: Optional[Norms] = None,
+            metadata: Optional[Metadata] = None,
+            origin: str = "<memory>"):
         """
         Initialize Embeddings.
 
@@ -102,6 +104,8 @@ class Embeddings:  # pylint: disable=too-many-instance-attributes
             Embeddings Norms.
         metadata : Metadata, optional
             Embeddings Metadata.
+        origin : str, optional
+            Origin of the embeddings, e.g. file name
 
         Raises
         ------
@@ -114,6 +118,7 @@ class Embeddings:  # pylint: disable=too-many-instance-attributes
         self._vocab = vocab
         self._norms = norms
         self._metadata = metadata
+        self._origin = origin
 
     def __getitem__(self, item: str) -> np.ndarray:
         """
@@ -371,6 +376,18 @@ class Embeddings:  # pylint: disable=too-many-instance-attributes
         else:
             raise TypeError("Expected 'None' or 'Metadata'.")
 
+    @property
+    def origin(self) -> str:
+        """
+        The origin of the embeddings.
+
+        Returns
+        -------
+        origin : str
+            Origin of the embeddings, e.g. file name
+        """
+        return self._origin
+
     def chunks(self) -> List[Chunk]:
         """
         Get the Embeddings Chunks as a list.
@@ -574,6 +591,17 @@ class Embeddings:  # pylint: disable=too-many-instance-attributes
             return zip(self._vocab, self._storage, self._norms)
         return zip(self._vocab, self._storage)
 
+    def __repr__(self):
+        return f"{type(self).__name__}(\n" \
+               f"\tstorage_type={type(self.storage).__name__}\n" \
+               f"\tvocab_type={type(self.vocab).__name__}\n" \
+               f"\thas_metadata={self.metadata is not None}\n" \
+               f"\thas_norms={self.norms is not None}\n" \
+               f"\tn_words={self.n_words},\n" \
+               f"\tdims={self.dims},\n" \
+               f"\torigin='{self.origin}',\n" \
+               f")"
+
     def _similarity(self, query: np.ndarray, k: int,
                     skips: Set[str]) -> List['SimilarityResult']:
         words = self.storage[:len(self.vocab)]  # type: np.ndarray
@@ -690,7 +718,7 @@ def load_finalfusion(file: Union[str, bytes, int, PathLike],
                 raise FinalfusionFormatError(
                     f'Expected norms chunk, not {str(chunk_id)}')
 
-        return Embeddings(storage, vocab, norms, metadata)
+        return Embeddings(storage, vocab, norms, metadata, inf.name)
 
 
 @dataclass(order=True)
