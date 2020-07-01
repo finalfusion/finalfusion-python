@@ -151,7 +151,7 @@ def _read_ft_vocab(file: BinaryIO, buckets: int, min_n: int, max_n: int,
     _read_required_binary(file, "<q")
 
     prune_idx_size = _read_required_binary(file, "<q")[0]
-    if prune_idx_size > 0:
+    if prune_idx_size >= 0:
         raise NotImplementedError("Pruned vocabs are not supported")
 
     words = [_read_binary_word(file, lossy) for _ in range(vocab_size)]
@@ -263,8 +263,8 @@ def _write_ft_vocab(outf: BinaryIO, vocab: Vocab):
     """
     # assumes that vocab_size == word_size if n_labels == 0
     _write_binary(outf, "<iii", len(vocab), len(vocab), 0)
-    # we discard n_tokens, serialize as 0, no pruned vocabs exist, also 0
-    _write_binary(outf, "<qq", 0, 0)
+    # we discard n_tokens, serialize as 0, vocab is not pruned, thus -1
+    _write_binary(outf, "<qq", 0, -1)
     for word in vocab:
         outf.write(word.encode("utf-8"))
         outf.write(b'\x00')
