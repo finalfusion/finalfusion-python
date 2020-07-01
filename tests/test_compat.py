@@ -69,14 +69,3 @@ def test_fasttext_roundtrip(embeddings_ft, tmp_path):
     assert np.allclose(embeddings_ft.norms, ft.norms)
     for a, b in zip(embeddings_ft.storage, ft.storage):
         assert np.allclose(a, b, atol=1e-5)
-    assert embeddings_ft.metadata == ft.metadata
-
-
-def test_text_to_ft(embeddings_text, tmp_path):
-    filename = tmp_path / "txt-to-ft.bin"
-    write_fasttext(filename, embeddings_text)
-    ft = load_fasttext(filename)
-    assert embeddings_text.vocab == ft.vocab
-    assert np.allclose(embeddings_text.norms, ft.norms)
-    for a, b in zip(embeddings_text.storage, ft.storage):
-        assert np.allclose(a, b, atol=1e-5)

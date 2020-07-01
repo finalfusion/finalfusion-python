@@ -4,7 +4,7 @@ Fasttext IO compat module.
 
 import sys
 from os import PathLike
-from typing import Union, BinaryIO, cast, List, Any, Dict
+from typing import Union, BinaryIO, cast, List
 
 import numpy as np
 
@@ -62,24 +62,23 @@ def write_fasttext(file: Union[str, bytes, int, PathLike], embeds: Embeddings):
     """
     Write embeddings in fastText format.
 
-    fastText requires Metadata with all expected keys for fastText configs:
-        * dims: int (inferred from model)
-        * window_size: int (default -1)
-        * min_count: int (default -1)
-        * ns: int (default -1)
-        * word_ngrams: int (default 1)
-        * loss: one of ``['HierarchicalSoftmax', 'NegativeSampling', 'Softmax']`` (default Softmax)
-        * model: one of ``['CBOW', 'SkipGram', 'Supervised']`` (default SkipGram)
-        * buckets: int (inferred from model)
-        * min_n: int (inferred from model)
-        * max_n: int (inferred from model)
-        * lr_update_rate: int (default -1)
-        * sampling_threshold: float (default -1)
+    Only embeddings with fastText vocabulary can be written to fastText format.
 
-    ``dims``, ``buckets``, ``min_n`` and ``max_n`` are inferred from the model. If other values
-    are unspecified, a default value of ``-1`` is used for all numerical fields. Loss defaults
-    to ``Softmax``, model to ``SkipGram``. Unknown values for ``loss`` and ``model`` are
-    overwritten with defaults since the models are incompatible with fastText otherwise.
+    fastText models require values for all config keys, some of these can be inferred from
+    finalfusion models others are assigned some default values:
+
+        * dims: inferred from model
+        * window_size: 0
+        * min_count: 0
+        * ns: 0
+        * word_ngrams: 1
+        * loss: HierarchicalSoftmax
+        * model: CBOW
+        * buckets: inferred from model
+        * min_n: inferred from model
+        * max_n: inferred from model
+        * lr_update_rate: 0
+        * sampling_threshold: 0
 
     Some information from original fastText models gets lost e.g.:
         * word frequencies
@@ -89,8 +88,6 @@ def write_fasttext(file: Union[str, bytes, int, PathLike], embeds: Embeddings):
     scaled by the associated norm. Additionally, the original state of the embedding matrix is
     restored, precomputation and l2-normalization of word embeddings is undone.
 
-    Only embeddings with a FastTextVocab or SimpleVocab can be serialized to this format.
-
     Parameters
     ----------
     file : str, bytes, int, PathLike
@@ -99,12 +96,13 @@ def write_fasttext(file: Union[str, bytes, int, PathLike], embeds: Embeddings):
         Embeddings to write
     """
     with open(file, 'wb') as outf:
-        if not isinstance(embeds.vocab, (FastTextVocab, SimpleVocab)):
+        vocab = embeds.vocab
+        if not isinstance(vocab, FastTextVocab):
             raise ValueError(
-                f'Expected FastTextVocab or SimpleVocab, not: {type(embeds.vocab).__name__}'
-            )
+                f'Expected FastTextVocab, not: {type(embeds.vocab).__name__}')
         _write_binary(outf, "<ii", _FT_MAGIC, 12)
-        _write_ft_cfg(outf, embeds)
+        _write_ft_cfg(outf, embeds.dims, vocab.subword_indexer.n_buckets,
+                      vocab.min_n, vocab.max_n)
         _write_ft_vocab(outf, embeds.vocab)
         _write_binary(outf, "<?QQ", 0, *embeds.storage.shape)
         if isinstance(embeds.vocab, SimpleVocab):
@@ -142,7 +140,7 @@ def _read_ft_vocab(file: BinaryIO, buckets: int, min_n: int, max_n: int,
     """
     Helper method to read a vocab from a fastText file
 
-    Returns a SimpleVocab if min_n is 0, otherwise FastTextVocab is returned.
+    Returns a FastTextVocab.
     """
     # discard n_words
     vocab_size, _n_words, n_labels = _read_required_binary(file, "<iii")
@@ -156,19 +154,6 @@ def _read_ft_vocab(file: BinaryIO, buckets: int, min_n: int, max_n: int,
     if prune_idx_size > 0:
         raise NotImplementedError("Pruned vocabs are not supported")
 
-    if min_n:
-        return _read_ft_subwordvocab(file, buckets, min_n, max_n, vocab_size,
-                                     lossy)
-    return SimpleVocab(
-        [_read_binary_word(file, lossy) for _ in range(vocab_size)])
-
-
-def _read_ft_subwordvocab(  # pylint: disable=too-many-arguments
-        file: BinaryIO, buckets: int, min_n: int, max_n: int, vocab_size: int,
-        lossy: bool) -> FastTextVocab:
-    """
-    Helper method to build a FastTextVocab from a fastText file.
-    """
     words = [_read_binary_word(file, lossy) for _ in range(vocab_size)]
     indexer = FastTextIndexer(buckets, min_n, max_n)
     return FastTextVocab(words, indexer)
@@ -233,56 +218,42 @@ def _precompute_word_vecs(vocab: FastTextVocab, matrix: np.ndarray):
         matrix[i] = matrix[indices].mean(0, keepdims=False)
 
 
-def _write_ft_cfg(file: BinaryIO, embeds: Embeddings):
+def _write_ft_cfg(file: BinaryIO, dims: int, n_buckets: int, min_n: int,
+                  max_n: int):
     """
     Helper method to write fastText config.
 
-    * dims: taken from embeds
-    * window_size: -1 if unspecified
-    * min_count:  -1 if unspecified
-    * ns:  -1 if unspecified
-    * word_ngrams:  1
-    * loss: one of `['HierarchicalSoftmax', 'NegativeSampling', 'Softmax']`, defaults to 'Softmax'
-    * model: one of `['CBOW', 'SkipGram', 'Supervised']`, defaults to SkipGram
-    * buckets: taken from embeds, 0 if SimpleVocab
-    * min_n: taken from embeds, 0 if SimpleVocab
-    * max_n: taken from embeds, 0 if SimpleVocab
-    * lr_update_rate: -1 if unspecified
-    * sampling_threshold: -1 if unspecified
+    The following values are used:
 
-    loss and model values are overwritten by the default if they are not listed above.
+    * dims: passed as arg
+    * window_size: 0
+    * min_count:  0
+    * ns:  0
+    * word_ngrams:  1
+    * loss: HierarchicalSoftmax
+    * model: CBOW
+    * buckets: passed as arg
+    * min_n: passed as arg
+    * max_n: passed as arg
+    * lr_update_rate: 0
+    * sampling_threshold: 0
     """
     # declare some dummy values that we can't get from embeds
-    meta = {
-        'window_size': -1,
-        'epoch': -1,
-        'min_count': -1,
-        'ns': -1,
-        'word_ngrams': 1,
-        'loss': 'Softmax',
-        # fastText uses an integral enum with vals 1, 2, 3, so we can't use
-        # a placeholder for unknown models which maps to e.g. 0.
-        'model': 'SkipGram',
-        'lr_update_rate': -1,
-        'sampling_threshold': -1
-    }  # type: Dict[str, Any]
-    if embeds.metadata is not None:
-        meta.update(embeds.metadata)
-    meta['dims'] = embeds.storage.shape[1]
-    if isinstance(embeds.vocab, FastTextVocab):
-        meta['min_n'] = embeds.vocab.min_n
-        meta['max_n'] = embeds.vocab.max_n
-        meta['buckets'] = embeds.vocab.subword_indexer.n_buckets
-    else:
-        meta['min_n'] = 0
-        meta['max_n'] = 0
-        meta['buckets'] = 0
-    cfg = [meta[k] for k in _FT_REQUIRED_CFG_KEYS]
-    # see explanation above why we need to select some known value
-    losses = {'HierarchicalSoftmax': 1, 'NegativeSampling': 2, 'Softmax': 3}
-    cfg[6] = losses.get(cfg[6], 3)
-    models = {'CBOW': 1, 'SkipGram': 2, 'Supervised': 3}
-    cfg[7] = models.get(cfg[7], 2)
+    cfg = [
+        dims,  # dims
+        0,  # window_size
+        0,  # epoch
+        0,  # mincount
+        0,  # ns
+        1,  # word_ngrams
+        1,  # loss, defaults to hierarchical_softmax
+        1,  # model, defaults to CBOW
+        n_buckets,  # buckets
+        min_n,  # min_n
+        max_n,  # max_n
+        0,  # lr_update_rate
+        0,  # sampling_threshold
+    ]
     _write_binary(file, "<12id", *cfg)
 
 

@@ -23,7 +23,6 @@ function verify_all_conversions() {
   local out_path_prefix=${tmp_dir}/${in_format}
   convert_and_verify "${input}" "${in_format}" "${out_path_prefix}_to_fifu.fifu" finalfusion
   convert_and_verify "${input}" "${in_format}" "${out_path_prefix}_to_w2v.w2v" word2vec
-  convert_and_verify "${input}" "${in_format}" "${out_path_prefix}_to_ft.bin" fasttext
   convert_and_verify "${input}" "${in_format}" "${out_path_prefix}_to_text.txt" text
   convert_and_verify "${input}" "${in_format}" "${out_path_prefix}_to_text.dims.txt" textdims
 }
@@ -58,3 +57,6 @@ convert_and_verify "${input}" finalfusion \
 
 input="${TESTDIR}/../data/fasttext.bin"
 verify_all_conversions  "${input}" fasttext
+convert_and_verify "${input}" fasttext "${tmp_dir}/fasttext_to_ft.bin" fasttext
+
+
