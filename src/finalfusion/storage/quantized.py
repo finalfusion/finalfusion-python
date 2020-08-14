@@ -292,7 +292,7 @@ class QuantizedArray(Storage):
             file)
         n_embeddings, quantized_len = embeds_shape
         quantized_embeddings = _read_array_as_native(
-            file, np.uint8, n_embeddings * quantized_len)
+            file, np.dtype("uint8"), n_embeddings * quantized_len)
         quantized_embeddings = quantized_embeddings.reshape(embeds_shape)
         return QuantizedArray(quantizer, quantized_embeddings, norms)
 
@@ -367,7 +367,7 @@ class QuantizedArray(Storage):
                 f"Invalid Type, expected {str(TypeId.f32)}, got {type_id}")
         file.seek(_pad_float32(file.tell()), 1)
         if projection:
-            projection = _read_array_as_native(file, np.float32,
+            projection = _read_array_as_native(file, np.dtype("float32"),
                                                reconstructed_len**2)
             projection_shape = (reconstructed_len, reconstructed_len)
             projection = projection.reshape(projection_shape)
@@ -377,10 +377,12 @@ class QuantizedArray(Storage):
                            reconstructed_len // quantized_len)
         quantizers_size = quantized_len * n_centroids * (reconstructed_len //
                                                          quantized_len)
-        quantizers = _read_array_as_native(file, np.float32, quantizers_size)
+        quantizers = _read_array_as_native(file, np.dtype("float32"),
+                                           quantizers_size)
         quantizers = quantizers.reshape(quantizer_shape)
         if read_norms:
-            norms = _read_array_as_native(file, np.float32, n_embeddings)
+            norms = _read_array_as_native(file, np.dtype("float32"),
+                                          n_embeddings)
         else:
             norms = None
         quantizer = PQ(quantizers, projection)

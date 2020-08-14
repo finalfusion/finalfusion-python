@@ -4,7 +4,7 @@ Finalfusion Embeddings
 import heapq
 from dataclasses import field, dataclass
 from os import PathLike
-from typing import Optional, Tuple, List, Union, Any, Iterator, Set
+from typing import Optional, Tuple, List, Union, Any, Iterator, Set, BinaryIO
 
 import numpy as np
 
@@ -681,44 +681,65 @@ def load_finalfusion(file: Union[str, bytes, int, PathLike],
         The embeddings from the input file.
     """
     with open(file, 'rb') as inf:
-        _ = Header.read_chunk(inf)
+        return _read_impl(inf, mmap, inf.name)
+
+
+def read_finalfusion(inf: BinaryIO) -> Embeddings:
+    """
+    Read embeddings from binary IO in finalfusion format.
+
+    Parameters
+    ----------
+    inf : BinaryIO
+        Seekable binary stream with Embeddings in finalfusion format.
+
+    Returns
+    -------
+    embeddings : Embeddings
+        The embeddings from the input stream.
+    """
+    return _read_impl(inf, False, "<memory>")
+
+
+def _read_impl(inf: BinaryIO, mmap: bool, name: str) -> Embeddings:
+    _ = Header.read_chunk(inf)
+    chunk_id, _ = _read_required_chunk_header(inf)
+    norms = None
+    metadata = None
+
+    if chunk_id == ChunkIdentifier.Metadata:
+        metadata = Metadata.read_chunk(inf)
         chunk_id, _ = _read_required_chunk_header(inf)
-        norms = None
-        metadata = None
 
-        if chunk_id == ChunkIdentifier.Metadata:
-            metadata = Metadata.read_chunk(inf)
-            chunk_id, _ = _read_required_chunk_header(inf)
+    if chunk_id == ChunkIdentifier.SimpleVocab:
+        vocab = SimpleVocab.read_chunk(inf)  # type: Vocab
+    elif chunk_id == ChunkIdentifier.BucketSubwordVocab:
+        vocab = FinalfusionBucketVocab.read_chunk(inf)
+    elif chunk_id == ChunkIdentifier.FastTextSubwordVocab:
+        vocab = FastTextVocab.read_chunk(inf)
+    elif chunk_id == ChunkIdentifier.ExplicitSubwordVocab:
+        vocab = ExplicitVocab.read_chunk(inf)
+    else:
+        raise FinalfusionFormatError(
+            f'Expected vocab chunk, not {str(chunk_id)}')
 
-        if chunk_id == ChunkIdentifier.SimpleVocab:
-            vocab = SimpleVocab.read_chunk(inf)  # type: Vocab
-        elif chunk_id == ChunkIdentifier.BucketSubwordVocab:
-            vocab = FinalfusionBucketVocab.read_chunk(inf)
-        elif chunk_id == ChunkIdentifier.FastTextSubwordVocab:
-            vocab = FastTextVocab.read_chunk(inf)
-        elif chunk_id == ChunkIdentifier.ExplicitSubwordVocab:
-            vocab = ExplicitVocab.read_chunk(inf)
+    chunk_id, _ = _read_required_chunk_header(inf)
+    if chunk_id == ChunkIdentifier.NdArray:
+        storage = NdArray.load(inf, mmap)  # type: Storage
+    elif chunk_id == ChunkIdentifier.QuantizedArray:
+        storage = QuantizedArray.load(inf, mmap)
+    else:
+        raise FinalfusionFormatError(
+            f'Expected storage chunk, not {str(chunk_id)}')
+    maybe_chunk_id = _read_chunk_header(inf)
+    if maybe_chunk_id is not None:
+        if maybe_chunk_id[0] == ChunkIdentifier.NdNorms:
+            norms = Norms.read_chunk(inf)
         else:
             raise FinalfusionFormatError(
-                f'Expected vocab chunk, not {str(chunk_id)}')
+                f'Expected norms chunk, not {str(chunk_id)}')
 
-        chunk_id, _ = _read_required_chunk_header(inf)
-        if chunk_id == ChunkIdentifier.NdArray:
-            storage = NdArray.load(inf, mmap)  # type: Storage
-        elif chunk_id == ChunkIdentifier.QuantizedArray:
-            storage = QuantizedArray.load(inf, mmap)
-        else:
-            raise FinalfusionFormatError(
-                f'Expected storage chunk, not {str(chunk_id)}')
-        maybe_chunk_id = _read_chunk_header(inf)
-        if maybe_chunk_id is not None:
-            if maybe_chunk_id[0] == ChunkIdentifier.NdNorms:
-                norms = Norms.read_chunk(inf)
-            else:
-                raise FinalfusionFormatError(
-                    f'Expected norms chunk, not {str(chunk_id)}')
-
-        return Embeddings(storage, vocab, norms, metadata, inf.name)
+    return Embeddings(storage, vocab, norms, metadata, name)
 
 
 @dataclass(order=True)
@@ -732,4 +753,6 @@ class SimilarityResult:
     similarity: float
 
 
-__all__ = ['Embeddings', 'SimilarityResult', 'load_finalfusion']
+__all__ = [
+    'Embeddings', 'SimilarityResult', 'load_finalfusion', 'read_finalfusion'
+]

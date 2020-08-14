@@ -11,6 +11,7 @@ Embeddings
 
    finalfusion.embeddings.Embeddings
    finalfusion.embeddings.load_finalfusion
+   finalfusion.embeddings.read_finalfusion
 
 Compat
 ^^^^^^

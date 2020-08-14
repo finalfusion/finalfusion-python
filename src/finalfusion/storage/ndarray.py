@@ -69,7 +69,7 @@ class NdArray(np.ndarray, Storage):
     @staticmethod
     def read_chunk(file: BinaryIO) -> 'NdArray':
         rows, cols = NdArray._read_array_header(file)
-        array = _read_array_as_native(file, np.float32, rows * cols)
+        array = _read_array_as_native(file, np.dtype('float32'), rows * cols)
         array = np.reshape(array, (rows, cols))
         return NdArray(array)
 

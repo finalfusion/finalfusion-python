@@ -328,7 +328,8 @@ def _serialize_array_as_le(file: BinaryIO, array: np.ndarray):
 
 def _read_array_as_native(file: BinaryIO, dtype: np.dtype,
                           count: int) -> np.array:
-    array = np.fromfile(file=file, count=count, dtype=dtype)
+    buffer = file.read(count * dtype.itemsize)
+    array = np.frombuffer(buffer, count=count, dtype=dtype)
     if sys.byteorder == "big":
         array.byteswap(inplace=True)
     return array

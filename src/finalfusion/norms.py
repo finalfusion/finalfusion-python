@@ -4,13 +4,13 @@ Norms module.
 
 import struct
 from os import PathLike
-import sys
 from typing import BinaryIO, Union, List, Collection
 
 import numpy as np
 
 from finalfusion.io import Chunk, ChunkIdentifier, find_chunk, TypeId, FinalfusionFormatError, \
-    _pad_float32, _write_binary, _read_required_binary, _serialize_array_as_le
+    _pad_float32, _write_binary, _read_required_binary, _serialize_array_as_le, \
+    _read_array_as_native
 
 
 class Norms(np.ndarray, Chunk, Collection[float]):
@@ -58,9 +58,7 @@ class Norms(np.ndarray, Chunk, Collection[float]):
                 f"Invalid Type, expected {TypeId.f32}, got {str(type_id)}")
         padding = _pad_float32(file.tell())
         file.seek(padding, 1)
-        array = np.fromfile(file=file, count=n_norms, dtype=np.float32)
-        if sys.byteorder == "big":
-            array.byteswap(inplace=True)
+        array = _read_array_as_native(file, np.dtype("float32"), n_norms)
         return Norms(array)
 
     def write_chunk(self, file: BinaryIO):
