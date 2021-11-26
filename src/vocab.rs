@@ -3,17 +3,17 @@ use std::rc::Rc;
 
 use finalfusion::vocab::{NGramIndices, SubwordIndices, Vocab, VocabWrap, WordIndex};
 use pyo3::class::sequence::PySequenceProtocol;
-use pyo3::exceptions::{IndexError, KeyError, ValueError};
+use pyo3::exceptions::{PyIndexError, PyKeyError, PyValueError};
 use pyo3::prelude::*;
 use pyo3::{PyIterProtocol, PyMappingProtocol};
 
 use crate::iter::PyVocabIterator;
 use crate::EmbeddingsWrap;
 
-type NGramIndex = (String, Option<usize>);
+type NGramIndex = (String, Vec<usize>);
 
 /// finalfusion vocab.
-#[pyclass(name=Vocab)]
+#[pyclass(name = "Vocab", unsendable)]
 pub struct PyVocab {
     embeddings: Rc<RefCell<EmbeddingsWrap>>,
 }
@@ -34,7 +34,7 @@ impl PyVocab {
             WordIndex::Word(idx) => idx.to_object(gil.python()),
             WordIndex::Subword(indices) => indices.to_object(gil.python()),
         });
-        if !default.is_none() && idx.is_none() {
+        if !default.is_none(gil.python()) && idx.is_none() {
             return Some(default);
         }
         idx
@@ -42,16 +42,26 @@ impl PyVocab {
 
     fn ngram_indices(&self, word: &str) -> PyResult<Option<Vec<NGramIndex>>> {
         let embeds = self.embeddings.borrow();
-        Ok(match embeds.vocab() {
+        let indices = match embeds.vocab() {
             VocabWrap::FastTextSubwordVocab(inner) => inner.ngram_indices(word),
             VocabWrap::BucketSubwordVocab(inner) => inner.ngram_indices(word),
             VocabWrap::ExplicitSubwordVocab(inner) => inner.ngram_indices(word),
+            VocabWrap::FloretSubwordVocab(inner) => inner.ngram_indices(word),
             VocabWrap::SimpleVocab(_) => {
-                return Err(ValueError::py_err(
+                return Err(PyValueError::new_err(
                     "querying n-gram indices is not supported for this vocabulary",
                 ))
             }
-        })
+        };
+
+        let indices = indices.map(|indices| {
+            indices
+                .into_iter()
+                .map(|idx| (idx.0, idx.1.into_vec()))
+                .collect()
+        });
+
+        Ok(indices)
     }
 
     fn subword_indices(&self, word: &str) -> PyResult<Option<Vec<usize>>> {
@@ -60,7 +70,8 @@ impl PyVocab {
             VocabWrap::FastTextSubwordVocab(inner) => Ok(inner.subword_indices(word)),
             VocabWrap::BucketSubwordVocab(inner) => Ok(inner.subword_indices(word)),
             VocabWrap::ExplicitSubwordVocab(inner) => Ok(inner.subword_indices(word)),
-            VocabWrap::SimpleVocab(_) => Err(ValueError::py_err(
+            VocabWrap::FloretSubwordVocab(inner) => Ok(inner.subword_indices(word)),
+            VocabWrap::SimpleVocab(_) => Err(PyValueError::new_err(
                 "querying subwords' indices is not supported for this vocabulary",
             )),
         }
@@ -73,7 +84,7 @@ impl PyVocab {
         embeds
             .vocab()
             .idx(query)
-            .ok_or_else(|| KeyError::py_err(format!("key not found: '{}'", query)))
+            .ok_or_else(|| PyKeyError::new_err(format!("key not found: '{}'", query)))
     }
 
     fn validate_and_convert_isize_idx(&self, mut idx: isize) -> PyResult<usize> {
@@ -84,7 +95,7 @@ impl PyVocab {
         }
 
         if idx >= vocab.words_len() as isize || idx < 0 {
-            Err(IndexError::py_err("list index out of range"))
+            Err(PyIndexError::new_err("list index out of range"))
         } else {
             Ok(idx as usize)
         }
@@ -109,7 +120,7 @@ impl PyMappingProtocol for PyVocab {
             });
         }
 
-        Err(KeyError::py_err("key must be integer or string"))
+        Err(PyKeyError::new_err("key must be integer or string"))
     }
 }
 

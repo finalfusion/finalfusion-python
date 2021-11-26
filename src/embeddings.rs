@@ -6,7 +6,7 @@ use std::rc::Rc;
 
 use finalfusion::compat::text::{ReadText, ReadTextDims};
 use finalfusion::compat::word2vec::ReadWord2Vec;
-use finalfusion::io::{self as ffio, WriteEmbeddings};
+use finalfusion::io::WriteEmbeddings;
 use finalfusion::metadata::Metadata;
 use finalfusion::prelude::*;
 use finalfusion::similarity::*;
@@ -14,7 +14,7 @@ use finalfusion::storage::{NdArray, Storage};
 use finalfusion::vocab::Vocab;
 use itertools::Itertools;
 use ndarray::Array1;
-use numpy::{IntoPyArray, NpyDataType, PyArray1};
+use numpy::{IntoPyArray, PyArray1, PyReadonlyArray1};
 use pyo3::class::iter::PyIterProtocol;
 use pyo3::prelude::*;
 use pyo3::types::{PyAny, PyIterator, PyTuple};
@@ -25,7 +25,7 @@ use crate::storage::PyStorage;
 use crate::{EmbeddingsWrap, PyEmbeddingIterator, PyVocab, PyWordSimilarity};
 
 /// finalfusion embeddings.
-#[pyclass(name = Embeddings)]
+#[pyclass(name = "Embeddings", unsendable)]
 pub struct PyEmbeddings {
     // The use of Rc + RefCell should be safe in this crate:
     //
@@ -46,7 +46,7 @@ impl PyEmbeddings {
     /// some query efficiency.
     #[new]
     #[args(mmap = false)]
-    fn __new__(obj: &PyRawObject, path: &str, mmap: bool) -> PyResult<()> {
+    fn new(path: &str, mmap: bool) -> PyResult<PyEmbeddings> {
         // First try to load embeddings with viewable storage. If that
         // fails, attempt to load the embeddings as non-viewable
         // storage.
@@ -54,12 +54,10 @@ impl PyEmbeddings {
             Ok(e) => Rc::new(RefCell::new(EmbeddingsWrap::View(e))),
             Err(_) => read_embeddings(path, mmap)
                 .map(|e| Rc::new(RefCell::new(EmbeddingsWrap::NonView(e))))
-                .map_err(|err| exceptions::IOError::py_err(err.to_string()))?,
+                .map_err(|err| exceptions::PyIOError::new_err(err.to_string()))?,
         };
 
-        obj.init(PyEmbeddings { embeddings });
-
-        Ok(())
+        Ok(PyEmbeddings { embeddings })
     }
 
     /// read_fasttext(path,/ lossy)
@@ -162,7 +160,7 @@ impl PyEmbeddings {
         let embeddings = self.embeddings.borrow();
 
         let embeddings = embeddings.view().ok_or_else(|| {
-            exceptions::ValueError::py_err(
+            exceptions::PyValueError::new_err(
                 "Analogy queries are not supported for this type of embedding matrix",
             )
         })?;
@@ -178,7 +176,7 @@ impl PyEmbeddings {
                     .filter(|(_, success)| !*success)
                     .map(|(word, _)| word)
                     .join(" ");
-                exceptions::KeyError::py_err(format!("Unknown word or n-grams: {}", failed))
+                exceptions::PyKeyError::new_err(format!("Unknown word or n-grams: {}", failed))
             })?;
 
         Self::similarity_results(py, results)
@@ -207,7 +205,7 @@ impl PyEmbeddings {
         let gil = pyo3::Python::acquire_gil();
         if let PyEmbeddingDefault::Embedding(array) = &default {
             if array.as_ref(gil.python()).shape()[0] != embeddings.storage().shape().1 {
-                return Err(exceptions::ValueError::py_err(format!(
+                return Err(exceptions::PyValueError::new_err(format!(
                     "Invalid shape of default embedding: {}",
                     array.as_ref(gil.python()).shape()[0]
                 )));
@@ -258,7 +256,7 @@ impl PyEmbeddings {
 
         match metadata.map(|v| toml::ser::to_string_pretty(&**v)) {
             Some(Ok(toml)) => Ok(Some(toml)),
-            Some(Err(err)) => Err(exceptions::IOError::py_err(format!(
+            Some(Err(err)) => Err(exceptions::PyIOError::new_err(format!(
                 "Metadata is invalid TOML: {}",
                 err
             ))),
@@ -271,7 +269,7 @@ impl PyEmbeddings {
         let value = match metadata.parse::<Value>() {
             Ok(value) => value,
             Err(err) => {
-                return Err(exceptions::ValueError::py_err(format!(
+                return Err(exceptions::PyValueError::new_err(format!(
                     "Metadata is invalid TOML: {}",
                     err
                 )));
@@ -295,14 +293,14 @@ impl PyEmbeddings {
         let embeddings = self.embeddings.borrow();
 
         let embeddings = embeddings.view().ok_or_else(|| {
-            exceptions::ValueError::py_err(
+            exceptions::PyValueError::new_err(
                 "Similarity queries are not supported for this type of embedding matrix",
             )
         })?;
 
         let results = py
             .allow_threads(|| embeddings.word_similarity(word, limit))
-            .ok_or_else(|| exceptions::KeyError::py_err("Unknown word and n-grams"))?;
+            .ok_or_else(|| exceptions::PyKeyError::new_err("Unknown word and n-grams"))?;
 
         Self::similarity_results(py, results)
     }
@@ -319,7 +317,7 @@ impl PyEmbeddings {
         let embeddings = self.embeddings.borrow();
 
         let embeddings = embeddings.view().ok_or_else(|| {
-            exceptions::ValueError::py_err(
+            exceptions::PyValueError::new_err(
                 "Similarity queries are not supported for this type of embedding matrix",
             )
         })?;
@@ -327,7 +325,7 @@ impl PyEmbeddings {
         let embedding = embedding.0.as_array();
 
         if embedding.shape()[0] != embeddings.storage().shape().1 {
-            return Err(exceptions::ValueError::py_err(format!(
+            return Err(exceptions::PyValueError::new_err(format!(
                 "Incompatible embedding shapes: embeddings: ({},), query: ({},)",
                 embedding.shape()[0],
                 embeddings.storage().shape().1
@@ -336,7 +334,7 @@ impl PyEmbeddings {
 
         let results = py
             .allow_threads(|| embeddings.embedding_similarity_masked(embedding, limit, &skip.0))
-            .ok_or_else(|| exceptions::KeyError::py_err("Unknown word and n-grams"))?;
+            .ok_or_else(|| exceptions::PyKeyError::new_err("Unknown word and n-grams"))?;
 
         Self::similarity_results(py, results)
     }
@@ -352,10 +350,10 @@ impl PyEmbeddings {
         match &*embeddings {
             View(e) => e
                 .write_embeddings(&mut writer)
-                .map_err(|err| exceptions::IOError::py_err(err.to_string())),
+                .map_err(|err| exceptions::PyIOError::new_err(err.to_string())),
             NonView(e) => e
                 .write_embeddings(&mut writer)
-                .map_err(|err| exceptions::IOError::py_err(err.to_string())),
+                .map_err(|err| exceptions::PyIOError::new_err(err.to_string())),
         }
     }
 }
@@ -370,7 +368,7 @@ impl PyEmbeddings {
             r.push(IntoPy::into_py(
                 Py::new(
                     py,
-                    PyWordSimilarity::new(ws.word.to_owned(), ws.similarity.into_inner()),
+                    PyWordSimilarity::new(ws.word().to_owned(), ws.cosine_similarity()),
                 )?,
                 py,
             ))
@@ -389,7 +387,7 @@ impl PyMappingProtocol for PyEmbeddings {
                 let gil = pyo3::Python::acquire_gil();
                 Ok(embedding.into_owned().into_pyarray(gil.python()).to_owned())
             }
-            None => Err(exceptions::KeyError::py_err("Unknown word and n-grams")),
+            None => Err(exceptions::PyKeyError::new_err("Unknown word and n-grams")),
         }
     }
 }
@@ -408,12 +406,16 @@ impl PyIterProtocol for PyEmbeddings {
     }
 }
 
-fn read_embeddings<S>(path: &str, mmap: bool) -> Result<Embeddings<VocabWrap, S>, ffio::Error>
+fn read_embeddings<S>(
+    path: &str,
+    mmap: bool,
+) -> finalfusion::error::Result<Embeddings<VocabWrap, S>>
 where
     Embeddings<VocabWrap, S>: ReadEmbeddings + MmapEmbeddings,
 {
-    let f = File::open(path)
-        .map_err(|e| ffio::ErrorKind::io_error("Cannot open embeddings file for reading", e))?;
+    let f = File::open(path).map_err(|e| {
+        finalfusion::error::Error::io_error("Cannot open embeddings file for reading", e)
+    })?;
     let mut reader = BufReader::new(f);
 
     let embeddings = if mmap {
@@ -427,12 +429,12 @@ where
 
 fn read_non_fifu_embeddings<R, V>(path: &str, read_embeddings: R) -> PyResult<PyEmbeddings>
 where
-    R: FnOnce(&mut BufReader<File>) -> ffio::Result<Embeddings<V, NdArray>>,
+    R: FnOnce(&mut BufReader<File>) -> finalfusion::error::Result<Embeddings<V, NdArray>>,
     V: Vocab,
     Embeddings<VocabWrap, StorageViewWrap>: From<Embeddings<V, NdArray>>,
 {
     let f = File::open(path).map_err(|err| {
-        exceptions::IOError::py_err(format!(
+        exceptions::PyIOError::new_err(format!(
             "Cannot read text embeddings from '{}': {}'",
             path, err
         ))
@@ -440,7 +442,7 @@ where
     let mut reader = BufReader::new(f);
 
     let embeddings = read_embeddings(&mut reader).map_err(|err| {
-        exceptions::IOError::py_err(format!(
+        exceptions::PyIOError::new_err(format!(
             "Cannot read text embeddings from '{}': {}'",
             path, err
         ))
@@ -486,13 +488,16 @@ impl<'a> FromPyObject<'a> for PyEmbeddingDefault {
             return Ok(embed);
         }
 
-        Err(exceptions::TypeError::py_err(
+        Err(exceptions::PyTypeError::new_err(
             "failed to construct default value.",
         ))
     }
 }
 
-fn collect_array_from_py_iter(iter: PyIterator, len: Option<usize>) -> PyResult<Py<PyArray1<f32>>> {
+fn collect_array_from_py_iter(
+    iter: &PyIterator,
+    len: Option<usize>,
+) -> PyResult<Py<PyArray1<f32>>> {
     let mut embed_vec = len.map(Vec::with_capacity).unwrap_or_default();
     for item in iter {
         let item = item.and_then(|item| item.extract())?;
@@ -513,30 +518,24 @@ impl<'a> FromPyObject<'a> for Skips<'a> {
         }
         for el in ob
             .iter()
-            .map_err(|_| exceptions::TypeError::py_err("Iterable expected"))?
+            .map_err(|_| exceptions::PyTypeError::new_err("Iterable expected"))?
         {
             let el = el?;
             set.insert(el.extract().map_err(|_| {
-                exceptions::TypeError::py_err(format!("Expected String not: {}", el))
+                exceptions::PyTypeError::new_err(format!("Expected String not: {}", el))
             })?);
         }
         Ok(Skips(set))
     }
 }
 
-struct PyEmbedding<'a>(&'a PyArray1<f32>);
+struct PyEmbedding<'a>(PyReadonlyArray1<'a, f32>);
 
 impl<'a> FromPyObject<'a> for PyEmbedding<'a> {
     fn extract(ob: &'a PyAny) -> Result<Self, PyErr> {
         let embedding = ob
-            .downcast_ref::<PyArray1<f32>>()
-            .map_err(|_| exceptions::TypeError::py_err("Expected array with dtype Float32"))?;
-        if embedding.data_type() != NpyDataType::Float32 {
-            return Err(exceptions::TypeError::py_err(format!(
-                "Expected dtype Float32, got {:?}",
-                embedding.data_type()
-            )));
-        };
+            .extract()
+            .map_err(|_| exceptions::PyTypeError::new_err("Expected array with dtype Float32"))?;
         Ok(PyEmbedding(embedding))
     }
 }

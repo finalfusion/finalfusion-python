@@ -11,7 +11,7 @@ use pyo3::prelude::*;
 use crate::EmbeddingsWrap;
 
 /// finalfusion storage.
-#[pyclass(name=Storage)]
+#[pyclass(name = "Storage", unsendable)]
 pub struct PyStorage {
     embeddings: Rc<RefCell<EmbeddingsWrap>>,
 }
@@ -83,7 +83,7 @@ impl PySequenceProtocol for PyStorage {
         let storage = embeds.storage();
 
         if idx >= storage.shape().0 as isize || idx < 0 {
-            Err(exceptions::IndexError::py_err("list index out of range"))
+            Err(exceptions::PyIndexError::new_err("list index out of range"))
         } else {
             let gil = Python::acquire_gil();
             Ok(storage

@@ -8,7 +8,7 @@ use pyo3::prelude::*;
 
 use crate::EmbeddingsWrap;
 
-#[pyclass(name=EmbeddingIterator)]
+#[pyclass(name = "EmbeddingIterator", unsendable)]
 pub struct PyEmbeddingIterator {
     embeddings: Rc<RefCell<EmbeddingsWrap>>,
     idx: usize,
@@ -52,7 +52,7 @@ impl PyIterProtocol for PyEmbeddingIterator {
 }
 
 /// A word and its embedding and embedding norm.
-#[pyclass(name=Embedding)]
+#[pyclass(name = "Embedding")]
 pub struct PyEmbedding {
     embedding: Py<PyArray1<f32>>,
     norm: f32,
@@ -81,7 +81,7 @@ impl PyEmbedding {
     }
 }
 
-#[pyclass(name=VocabIterator)]
+#[pyclass(name = "VocabIterator", unsendable)]
 pub struct PyVocabIterator {
     embeddings: Rc<RefCell<EmbeddingsWrap>>,
     idx: usize,

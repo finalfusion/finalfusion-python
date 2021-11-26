@@ -5,7 +5,7 @@ use pyo3::prelude::*;
 ///
 /// The similarity is normally a value between -1 (opposite
 /// vectors) and 1 (identical vectors).
-#[pyclass(name=WordSimilarity)]
+#[pyclass(name = "WordSimilarity")]
 pub struct PyWordSimilarity {
     #[pyo3(get)]
     word: String,
