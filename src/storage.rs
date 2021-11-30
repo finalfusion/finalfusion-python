@@ -1,5 +1,4 @@
-use std::cell::RefCell;
-use std::rc::Rc;
+use std::sync::{Arc, RwLock};
 
 use finalfusion::storage::{Storage, StorageView, StorageWrap};
 use ndarray::Array2;
@@ -11,15 +10,16 @@ use pyo3::prelude::*;
 use crate::EmbeddingsWrap;
 
 /// finalfusion storage.
-#[pyclass(name = "Storage", unsendable)]
+#[pyclass(name = "Storage")]
 pub struct PyStorage {
-    embeddings: Rc<RefCell<EmbeddingsWrap>>,
+    embeddings: Arc<RwLock<EmbeddingsWrap>>,
 }
 
 impl PyStorage {
-    pub fn new(embeddings: Rc<RefCell<EmbeddingsWrap>>) -> Self {
+    pub fn new(embeddings: Arc<RwLock<EmbeddingsWrap>>) -> Self {
         PyStorage { embeddings }
     }
+
     /// Copy storage to an array.
     ///
     /// This should only be used for storage types that do not provide
@@ -41,7 +41,7 @@ impl PyStorage {
 impl PyStorage {
     /// Copy the entire embeddings matrix.
     fn matrix_copy(&self) -> Py<PyArray2<f32>> {
-        let embeddings = self.embeddings.borrow();
+        let embeddings = self.embeddings.read().unwrap();
 
         use EmbeddingsWrap::*;
         let gil = pyo3::Python::acquire_gil();
@@ -66,7 +66,7 @@ impl PyStorage {
 
     /// Get the shape of the storage.
     fn shape(&self) -> (usize, usize) {
-        let embeddings = self.embeddings.borrow();
+        let embeddings = self.embeddings.read().unwrap();
         embeddings.storage().shape()
     }
 }
@@ -74,12 +74,12 @@ impl PyStorage {
 #[pyproto]
 impl PySequenceProtocol for PyStorage {
     fn __len__(&self) -> PyResult<usize> {
-        let embeds = self.embeddings.borrow();
+        let embeds = self.embeddings.read().unwrap();
         Ok(embeds.storage().shape().0)
     }
 
     fn __getitem__(&self, idx: isize) -> PyResult<Py<PyArray1<f32>>> {
-        let embeds = self.embeddings.borrow();
+        let embeds = self.embeddings.read().unwrap();
         let storage = embeds.storage();
 
         if idx >= storage.shape().0 as isize || idx < 0 {

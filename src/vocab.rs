@@ -1,5 +1,4 @@
-use std::cell::RefCell;
-use std::rc::Rc;
+use std::sync::{Arc, RwLock};
 
 use finalfusion::vocab::{NGramIndices, SubwordIndices, Vocab, VocabWrap, WordIndex};
 use pyo3::class::sequence::PySequenceProtocol;
@@ -13,13 +12,13 @@ use crate::EmbeddingsWrap;
 type NGramIndex = (String, Vec<usize>);
 
 /// finalfusion vocab.
-#[pyclass(name = "Vocab", unsendable)]
+#[pyclass(name = "Vocab")]
 pub struct PyVocab {
-    embeddings: Rc<RefCell<EmbeddingsWrap>>,
+    embeddings: Arc<RwLock<EmbeddingsWrap>>,
 }
 
 impl PyVocab {
-    pub fn new(embeddings: Rc<RefCell<EmbeddingsWrap>>) -> Self {
+    pub fn new(embeddings: Arc<RwLock<EmbeddingsWrap>>) -> Self {
         PyVocab { embeddings }
     }
 }
@@ -28,7 +27,7 @@ impl PyVocab {
 impl PyVocab {
     #[args(default = "Python::acquire_gil().python().None()")]
     fn get(&self, key: &str, default: PyObject) -> Option<PyObject> {
-        let embeds = self.embeddings.borrow();
+        let embeds = self.embeddings.read().unwrap();
         let gil = pyo3::Python::acquire_gil();
         let idx = embeds.vocab().idx(key).map(|idx| match idx {
             WordIndex::Word(idx) => idx.to_object(gil.python()),
@@ -41,7 +40,7 @@ impl PyVocab {
     }
 
     fn ngram_indices(&self, word: &str) -> PyResult<Option<Vec<NGramIndex>>> {
-        let embeds = self.embeddings.borrow();
+        let embeds = self.embeddings.read().unwrap();
         let indices = match embeds.vocab() {
             VocabWrap::FastTextSubwordVocab(inner) => inner.ngram_indices(word),
             VocabWrap::BucketSubwordVocab(inner) => inner.ngram_indices(word),
@@ -65,7 +64,7 @@ impl PyVocab {
     }
 
     fn subword_indices(&self, word: &str) -> PyResult<Option<Vec<usize>>> {
-        let embeds = self.embeddings.borrow();
+        let embeds = self.embeddings.read().unwrap();
         match embeds.vocab() {
             VocabWrap::FastTextSubwordVocab(inner) => Ok(inner.subword_indices(word)),
             VocabWrap::BucketSubwordVocab(inner) => Ok(inner.subword_indices(word)),
@@ -80,7 +79,7 @@ impl PyVocab {
 
 impl PyVocab {
     fn str_to_indices(&self, query: &str) -> PyResult<WordIndex> {
-        let embeds = self.embeddings.borrow();
+        let embeds = self.embeddings.read().unwrap();
         embeds
             .vocab()
             .idx(query)
@@ -88,7 +87,7 @@ impl PyVocab {
     }
 
     fn validate_and_convert_isize_idx(&self, mut idx: isize) -> PyResult<usize> {
-        let embeds = self.embeddings.borrow();
+        let embeds = self.embeddings.read().unwrap();
         let vocab = embeds.vocab();
         if idx < 0 {
             idx += vocab.words_len() as isize;
@@ -105,7 +104,7 @@ impl PyVocab {
 #[pyproto]
 impl PyMappingProtocol for PyVocab {
     fn __getitem__(&self, query: PyObject) -> PyResult<PyObject> {
-        let embeds = self.embeddings.borrow();
+        let embeds = self.embeddings.read().unwrap();
         let vocab = embeds.vocab();
         let gil = Python::acquire_gil();
         if let Ok(idx) = query.extract::<isize>(gil.python()) {
@@ -134,12 +133,12 @@ impl PyIterProtocol for PyVocab {
 #[pyproto]
 impl PySequenceProtocol for PyVocab {
     fn __len__(&self) -> PyResult<usize> {
-        let embeds = self.embeddings.borrow();
+        let embeds = self.embeddings.read().unwrap();
         Ok(embeds.vocab().words_len())
     }
 
     fn __contains__(&self, word: String) -> PyResult<bool> {
-        let embeds = self.embeddings.borrow();
+        let embeds = self.embeddings.read().unwrap();
         Ok(embeds
             .vocab()
             .idx(&word)

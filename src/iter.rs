@@ -1,5 +1,4 @@
-use std::cell::RefCell;
-use std::rc::Rc;
+use std::sync::{Arc, RwLock};
 
 use finalfusion::vocab::Vocab;
 use numpy::{IntoPyArray, PyArray1};
@@ -8,14 +7,14 @@ use pyo3::prelude::*;
 
 use crate::EmbeddingsWrap;
 
-#[pyclass(name = "EmbeddingIterator", unsendable)]
+#[pyclass(name = "EmbeddingIterator")]
 pub struct PyEmbeddingIterator {
-    embeddings: Rc<RefCell<EmbeddingsWrap>>,
+    embeddings: Arc<RwLock<EmbeddingsWrap>>,
     idx: usize,
 }
 
 impl PyEmbeddingIterator {
-    pub fn new(embeddings: Rc<RefCell<EmbeddingsWrap>>, idx: usize) -> Self {
+    pub fn new(embeddings: Arc<RwLock<EmbeddingsWrap>>, idx: usize) -> Self {
         PyEmbeddingIterator { embeddings, idx }
     }
 }
@@ -29,7 +28,7 @@ impl PyIterProtocol for PyEmbeddingIterator {
     fn __next__(mut slf: PyRefMut<Self>) -> PyResult<Option<PyEmbedding>> {
         let slf = &mut *slf;
 
-        let embeddings = slf.embeddings.borrow();
+        let embeddings = slf.embeddings.read().unwrap();
         let vocab = embeddings.vocab();
 
         if slf.idx < vocab.words_len() {
@@ -81,14 +80,14 @@ impl PyEmbedding {
     }
 }
 
-#[pyclass(name = "VocabIterator", unsendable)]
+#[pyclass(name = "VocabIterator")]
 pub struct PyVocabIterator {
-    embeddings: Rc<RefCell<EmbeddingsWrap>>,
+    embeddings: Arc<RwLock<EmbeddingsWrap>>,
     idx: usize,
 }
 
 impl PyVocabIterator {
-    pub fn new(embeddings: Rc<RefCell<EmbeddingsWrap>>, idx: usize) -> Self {
+    pub fn new(embeddings: Arc<RwLock<EmbeddingsWrap>>, idx: usize) -> Self {
         PyVocabIterator { embeddings, idx }
     }
 }
@@ -102,7 +101,7 @@ impl PyIterProtocol for PyVocabIterator {
     fn __next__(mut slf: PyRefMut<Self>) -> PyResult<Option<String>> {
         let slf = &mut *slf;
 
-        let embeddings = slf.embeddings.borrow();
+        let embeddings = slf.embeddings.read().unwrap();
         let vocab = embeddings.vocab();
 
         if slf.idx < vocab.words_len() {

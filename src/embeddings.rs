@@ -1,8 +1,7 @@
-use std::cell::RefCell;
 use std::collections::HashSet;
 use std::fs::File;
 use std::io::{BufReader, BufWriter};
-use std::rc::Rc;
+use std::sync::{Arc, RwLock};
 
 use finalfusion::compat::text::{ReadText, ReadTextDims};
 use finalfusion::compat::word2vec::ReadWord2Vec;
@@ -25,15 +24,9 @@ use crate::storage::PyStorage;
 use crate::{EmbeddingsWrap, PyEmbeddingIterator, PyVocab, PyWordSimilarity};
 
 /// finalfusion embeddings.
-#[pyclass(name = "Embeddings", unsendable)]
+#[pyclass(name = "Embeddings")]
 pub struct PyEmbeddings {
-    // The use of Rc + RefCell should be safe in this crate:
-    //
-    // 1. Python is single-threaded.
-    // 2. The only mutable borrow (in set_metadata) is limited
-    //    to its method scope.
-    // 3. None of the methods returns borrowed embeddings.
-    embeddings: Rc<RefCell<EmbeddingsWrap>>,
+    embeddings: Arc<RwLock<EmbeddingsWrap>>,
 }
 
 #[pymethods]
@@ -51,13 +44,15 @@ impl PyEmbeddings {
         // fails, attempt to load the embeddings as non-viewable
         // storage.
         let embeddings = match read_embeddings(path, mmap) {
-            Ok(e) => Rc::new(RefCell::new(EmbeddingsWrap::View(e))),
+            Ok(e) => EmbeddingsWrap::View(e),
             Err(_) => read_embeddings(path, mmap)
-                .map(|e| Rc::new(RefCell::new(EmbeddingsWrap::NonView(e))))
+                .map(|e| EmbeddingsWrap::NonView(e))
                 .map_err(|err| exceptions::PyIOError::new_err(err.to_string()))?,
         };
 
-        Ok(PyEmbeddings { embeddings })
+        Ok(PyEmbeddings {
+            embeddings: Arc::new(RwLock::new(embeddings)),
+        })
     }
 
     /// read_fasttext(path,/ lossy)
@@ -157,7 +152,7 @@ impl PyEmbeddings {
         limit: usize,
         mask: (bool, bool, bool),
     ) -> PyResult<Vec<PyObject>> {
-        let embeddings = self.embeddings.borrow();
+        let embeddings = self.embeddings.read().unwrap();
 
         let embeddings = embeddings.view().ok_or_else(|| {
             exceptions::PyValueError::new_err(
@@ -201,7 +196,7 @@ impl PyEmbeddings {
         word: &str,
         default: PyEmbeddingDefault,
     ) -> PyResult<Option<Py<PyArray1<f32>>>> {
-        let embeddings = self.embeddings.borrow();
+        let embeddings = self.embeddings.read().unwrap();
         let gil = pyo3::Python::acquire_gil();
         if let PyEmbeddingDefault::Embedding(array) = &default {
             if array.as_ref(gil.python()).shape()[0] != embeddings.storage().shape().1 {
@@ -228,7 +223,7 @@ impl PyEmbeddings {
     }
 
     fn embedding_with_norm(&self, word: &str) -> Option<Py<PyTuple>> {
-        let embeddings = self.embeddings.borrow();
+        let embeddings = self.embeddings.read().unwrap();
 
         use EmbeddingsWrap::*;
         let embedding_with_norm = match &*embeddings {
@@ -246,7 +241,7 @@ impl PyEmbeddings {
     /// Embeddings metadata.
     #[getter]
     fn metadata(&self) -> PyResult<Option<String>> {
-        let embeddings = self.embeddings.borrow();
+        let embeddings = self.embeddings.read().unwrap();
 
         use EmbeddingsWrap::*;
         let metadata = match &*embeddings {
@@ -276,7 +271,7 @@ impl PyEmbeddings {
             }
         };
 
-        let mut embeddings = self.embeddings.borrow_mut();
+        let mut embeddings = self.embeddings.write().unwrap();
 
         use EmbeddingsWrap::*;
         match &mut *embeddings {
@@ -290,7 +285,7 @@ impl PyEmbeddings {
     /// Perform a similarity query.
     #[args(limit = 10)]
     fn word_similarity(&self, py: Python, word: &str, limit: usize) -> PyResult<Vec<PyObject>> {
-        let embeddings = self.embeddings.borrow();
+        let embeddings = self.embeddings.read().unwrap();
 
         let embeddings = embeddings.view().ok_or_else(|| {
             exceptions::PyValueError::new_err(
@@ -314,7 +309,7 @@ impl PyEmbeddings {
         skip: Skips,
         limit: usize,
     ) -> PyResult<Vec<PyObject>> {
-        let embeddings = self.embeddings.borrow();
+        let embeddings = self.embeddings.read().unwrap();
 
         let embeddings = embeddings.view().ok_or_else(|| {
             exceptions::PyValueError::new_err(
@@ -344,7 +339,7 @@ impl PyEmbeddings {
         let f = File::create(filename)?;
         let mut writer = BufWriter::new(f);
 
-        let embeddings = self.embeddings.borrow();
+        let embeddings = self.embeddings.read().unwrap();
 
         use EmbeddingsWrap::*;
         match &*embeddings {
@@ -380,7 +375,7 @@ impl PyEmbeddings {
 #[pyproto]
 impl PyMappingProtocol for PyEmbeddings {
     fn __getitem__(&self, word: &str) -> PyResult<Py<PyArray1<f32>>> {
-        let embeddings = self.embeddings.borrow();
+        let embeddings = self.embeddings.read().unwrap();
 
         match embeddings.embedding(word) {
             Some(embedding) => {
@@ -449,7 +444,7 @@ where
     })?;
 
     Ok(PyEmbeddings {
-        embeddings: Rc::new(RefCell::new(EmbeddingsWrap::View(embeddings.into()))),
+        embeddings: Arc::new(RwLock::new(EmbeddingsWrap::View(embeddings.into()))),
     })
 }
 
