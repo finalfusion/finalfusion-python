@@ -14,10 +14,10 @@ TEST_NORMS = [
 
 def test_embeddings(embeddings_fifu, embeddings_text, embeddings_text_dims):
     # Check that we cover all words from all embedding below.
-    assert len(embeddings_fifu.vocab()) == 7
-    assert len(embeddings_text.vocab()) == 7
-    assert len(embeddings_text_dims.vocab()) == 7
-    fifu_storage = embeddings_fifu.storage()
+    assert len(embeddings_fifu.vocab) == 7
+    assert len(embeddings_text.vocab) == 7
+    assert len(embeddings_text_dims.vocab) == 7
+    fifu_storage = embeddings_fifu.storage
     # Check that the finalfusion embeddings have the correct dimensionality
     # The correct dimensionality of the other embedding types is asserted
     # in the pairwise comparisons below.

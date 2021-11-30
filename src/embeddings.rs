@@ -129,11 +129,13 @@ impl PyEmbeddings {
     }
 
     /// Get the model's vocabulary.
+    #[getter]
     fn vocab(&self) -> PyResult<PyVocab> {
         Ok(PyVocab::new(self.embeddings.clone()))
     }
 
     /// Get the model's storage.
+    #[getter]
     fn storage(&self) -> PyStorage {
         PyStorage::new(self.embeddings.clone())
     }
