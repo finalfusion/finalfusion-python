@@ -46,47 +46,40 @@ ANALOGY_ORDER = [
 
 def test_analogies(analogy_fifu):
     for idx, analogy in enumerate(
-            analogy_fifu.analogy(
-            "Paris", "Frankreich", "Berlin", 40)):
+        analogy_fifu.analogy("Paris", "Frankreich", "Berlin", 40)
+    ):
         assert ANALOGY_ORDER[idx] == analogy.word
 
-    assert analogy_fifu.analogy(
-        "Paris",
-        "Frankreich",
-        "Paris",
-        1,
-        (True,
-         False,
-         True))[0].word == "Frankreich"
-    assert analogy_fifu.analogy(
-        "Paris",
-        "Frankreich",
-        "Paris",
-        1,
-        (True,
-         True,
-         True))[0].word != "Frankreich"
-    assert analogy_fifu.analogy(
-        "Frankreich",
-        "Frankreich",
-        "Frankreich",
-        1,
-        (False,
-         False,
-         False))[0].word == "Frankreich"
-    assert analogy_fifu.analogy(
-        "Frankreich",
-        "Frankreich",
-        "Frankreich",
-        1,
-        (False,
-         False,
-         True))[0].word != "Frankreich"
+    assert (
+        analogy_fifu.analogy("Paris", "Frankreich", "Paris", 1, (True, False, True))[
+            0
+        ].word
+        == "Frankreich"
+    )
+    assert (
+        analogy_fifu.analogy("Paris", "Frankreich", "Paris", 1, (True, True, True))[
+            0
+        ].word
+        != "Frankreich"
+    )
+    assert (
+        analogy_fifu.analogy(
+            "Frankreich", "Frankreich", "Frankreich", 1, (False, False, False)
+        )[0].word
+        == "Frankreich"
+    )
+    assert (
+        analogy_fifu.analogy(
+            "Frankreich", "Frankreich", "Frankreich", 1, (False, False, True)
+        )[0].word
+        != "Frankreich"
+    )
 
     with pytest.raises(ValueError):
         analogy_fifu.analogy("Paris", "Frankreich", "Paris", 1, (True, True))
     with pytest.raises(ValueError):
-        analogy_fifu.analogy("Paris", "Frankreich", "Paris",
-                             1, (True, True, True, True))
+        analogy_fifu.analogy(
+            "Paris", "Frankreich", "Paris", 1, (True, True, True, True)
+        )
     with pytest.raises(KeyError):
         analogy_fifu.analogy("Paris", "OOV", "Paris", 1, (True, True, True))

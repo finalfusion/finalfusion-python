@@ -32,7 +32,9 @@ def similarity_pq(tests_root):
 
 @pytest.fixture
 def similarity_pq_mmap(tests_root):
-    yield finalfusion.Embeddings(os.path.join(tests_root, "similarity-pq.fifu"), mmap=True)
+    yield finalfusion.Embeddings(
+        os.path.join(tests_root, "similarity-pq.fifu"), mmap=True
+    )
 
 
 @pytest.fixture
@@ -42,7 +44,9 @@ def subword_fifu(tests_root):
 
 @pytest.fixture
 def embeddings_text_dims(tests_root):
-    yield finalfusion.Embeddings.read_text_dims(os.path.join(tests_root, "embeddings.dims.txt"))
+    yield finalfusion.Embeddings.read_text_dims(
+        os.path.join(tests_root, "embeddings.dims.txt")
+    )
 
 
 @pytest.fixture

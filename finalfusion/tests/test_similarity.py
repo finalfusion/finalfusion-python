@@ -77,7 +77,9 @@ def test_embedding_similarity_stuttgart_10(similarity_fifu):
     for idx, sim in enumerate(sims[1:]):
         assert SIMILARITY_ORDER_STUTTGART_10[idx] == sim.word
 
-    for idx, sim in enumerate(similarity_fifu.embedding_similarity(stuttgart, skip={"Stuttgart"}, limit=10)):
+    for idx, sim in enumerate(
+        similarity_fifu.embedding_similarity(stuttgart, skip={"Stuttgart"}, limit=10)
+    ):
         assert SIMILARITY_ORDER_STUTTGART_10[idx] == sim.word
 
 
